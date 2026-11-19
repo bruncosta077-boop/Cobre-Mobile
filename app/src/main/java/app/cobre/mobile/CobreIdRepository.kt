@@ -59,10 +59,12 @@ class CobreIdRepository(context: Context) {
         }
     }
 
-    suspend fun sendPresence() = withContext(Dispatchers.IO) {
+    suspend fun sendPresence(catalogResponseMs: Long? = null) = withContext(Dispatchers.IO) {
+        val meta = JSONObject().put("platform", "Android").put("appVersion", "0.7.0")
+        catalogResponseMs?.takeIf { it in 0..120_000 }?.let { meta.put("catalogResponseMs", it) }
         requestBlocking(
             "/v1/presence", "POST",
-            JSONObject().put("meta", JSONObject().put("platform", "Android").put("appVersion", "0.7.0")),
+            JSONObject().put("meta", meta),
         )
     }
 

@@ -84,7 +84,7 @@ class MainActivity:ComponentActivity(){
     val askNotifications=rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()){}
     var folderUri by remember{mutableStateOf(settings.folderUri)}
     val folderPicker=rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()){uri->if(uri!=null){runCatching{context.contentResolver.takePersistableUriPermission(uri,Intent.FLAG_GRANT_READ_URI_PERMISSION)};settings.setFolder(uri.toString());folderUri=uri.toString()}}
-    var localTracks by remember{mutableStateOf<List<Track>?>(null)}; var desktopTracks by remember{mutableStateOf<List<Track>>(emptyList())}; var desktopStatus by remember{mutableStateOf("")}
+    var localTracks by remember{mutableStateOf<List<Track>?>(null)}; var desktopTracks by remember{mutableStateOf<List<Track>>(emptyList())}; var desktopStatus by remember{mutableStateOf("")}; var desktopCatalogResponseMs by remember{mutableStateOf<Long?>(null)}
     var desktopRefreshKey by remember{mutableIntStateOf(0)}
     var librarySource by remember{mutableStateOf(LibrarySource.All)}
     val allTracks=localTracks?.plus(desktopTracks)
@@ -101,10 +101,11 @@ class MainActivity:ComponentActivity(){
     LaunchedEffect(granted,folderUri){localTracks=if(granted)runCatching{library.load(folderUri?.let{Uri.parse(it)})}.getOrDefault(emptyList()) else emptyList()}
     LaunchedEffect(settings.desktopUrl,desktopRefreshKey){
         val address=settings.desktopUrl
-        if(address.isNullOrBlank()){desktopTracks=emptyList();desktopStatus=""}
-        else{desktopStatus="Conectando ao Cobre Desktop…";runCatching{desktopLibrary.load(address)}.onSuccess{remote->desktopTracks=remote.tracks;desktopStatus="Computador conectado · ${remote.tracks.size} faixas · catálogo respondeu em ${remote.catalogResponseMs} ms"}.onFailure{desktopTracks=emptyList();desktopStatus=it.message?:"Não foi possível conectar ao computador."}}
+        if(address.isNullOrBlank()){desktopTracks=emptyList();desktopCatalogResponseMs=null;desktopStatus=""}
+        else{desktopStatus="Conectando ao Cobre Desktop…";runCatching{desktopLibrary.load(address)}.onSuccess{remote->desktopTracks=remote.tracks;desktopCatalogResponseMs=remote.catalogResponseMs;desktopStatus="Computador conectado · ${remote.tracks.size} faixas · catálogo respondeu em ${remote.catalogResponseMs} ms"}.onFailure{desktopTracks=emptyList();desktopCatalogResponseMs=null;desktopStatus=it.message?:"Não foi possível conectar ao computador."}}
     }
-    LaunchedEffect(account.signedIn){while(account.signedIn){delay(45_000);runCatching{accountRepo.sendPresence();accountRepo.loadDevices()}.onSuccess{account=account.copy(devices=it,message="Conexão ativa.",error=false)}.onFailure{account=account.copy(message=it.message?:"Conexão interrompida.",error=true)}}}
+    LaunchedEffect(account.signedIn,desktopCatalogResponseMs){if(account.signedIn&&desktopCatalogResponseMs!=null)runCatching{accountRepo.sendPresence(desktopCatalogResponseMs)}}
+    LaunchedEffect(account.signedIn,desktopCatalogResponseMs){while(account.signedIn){delay(45_000);runCatching{accountRepo.sendPresence(desktopCatalogResponseMs);accountRepo.loadDevices()}.onSuccess{account=account.copy(devices=it,message="Conexão ativa.",error=false)}.onFailure{account=account.copy(message=it.message?:"Conexão interrompida.",error=true)}}}
     LaunchedEffect(playback.playing,fullPlayer){while(playback.playing&&fullPlayer){delay(450);player.refreshPosition()}}
     LaunchedEffect(playback.currentIndex,playback.queue){playback.queue.getOrNull(playback.currentIndex)?.let(collections::recordPlayed)}
     Column(Modifier.fillMaxSize().background(Bg).statusBarsPadding()){

@@ -1,4 +1,11 @@
-# Cobre Mobile
+<div align="center">
+  <img src="assets/branding/cobre-logo.png" alt="Logo do Cobre" width="150">
+  <h1>Cobre Mobile</h1>
+  <p>Player Android integrado ao ecossistema Cobre</p>
+  <p><strong>Versão 0.7.0 em desenvolvimento</strong></p>
+</div>
+
+Desenvolvimento principal: Bruno C S Moraes · Contribuição ao projeto: [@dilucas00](https://github.com/dilucas00).
 
 Aplicativo Android do ecossistema Cobre. Interface escura com a paleta, o símbolo e a organização visual do Cobre Desktop, adaptados para toque.
 

@@ -55,6 +55,7 @@ fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,
     val context=LocalContext.current
     val audio=context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
     var desktopAddress by remember(settings.desktopUrl){mutableStateOf(settings.desktopUrl.orEmpty())}
+    var showReleaseNotes by remember{mutableStateOf(false)}
     var volume by remember{mutableFloatStateOf(audio.getStreamVolume(AudioManager.STREAM_MUSIC).toFloat()*100f/maxOf(1,audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC)))}
     var outputs by remember{mutableStateOf(audio.getDevices(AudioManager.GET_DEVICES_OUTPUTS).toList())}
     val maxVolume=audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC).coerceAtLeast(1)
@@ -129,9 +130,17 @@ fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,
             SectionHeading(Icons.Default.Refresh,"Aplicativo")
             Text("Cobre Mobile 0.7.0",color=Tx,fontWeight=FontWeight.SemiBold,modifier=Modifier.padding(top=12.dp))
             Text("A biblioteca do computador é transmitida pela rede local; a conta Cobre ID continua cuidando da presença dos dispositivos.",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=4.dp))
+            TextButton(onClick={showReleaseNotes=true}){Text("Notas da versão",color=MaterialTheme.colorScheme.primary)}
+            Text("Com contribuição de dilucas00",color=Mu,style=MaterialTheme.typography.bodySmall)
         }
         Spacer(Modifier.height(10.dp))
     }
+    if(showReleaseNotes)AlertDialog(
+        onDismissRequest={showReleaseNotes=false},
+        title={Text("Cobre Mobile 0.7.0")},
+        text={Text("Bibliotecas local e do Desktop separadas, visão conjunta sem duplicatas, ações nos álbuns por toque longo, player com volume visível e ajustes visuais.\n\nEsta versão ainda precisa ser validada no aparelho. Confira CHANGELOG.md para o histórico completo.")},
+        confirmButton={TextButton(onClick={showReleaseNotes=false}){Text("Entendi")}},
+    )
 }
 
 @Composable private fun SettingsCard(content:@Composable ColumnScope.()->Unit){Card(colors=CardDefaults.cardColors(containerColor=Panel),shape=RoundedCornerShape(17.dp)){Column(Modifier.fillMaxWidth().padding(16.dp),content=content)}}
