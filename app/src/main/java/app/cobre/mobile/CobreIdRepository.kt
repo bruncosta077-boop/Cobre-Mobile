@@ -62,7 +62,7 @@ class CobreIdRepository(context: Context) {
     suspend fun sendPresence() = withContext(Dispatchers.IO) {
         requestBlocking(
             "/v1/presence", "POST",
-            JSONObject().put("meta", JSONObject().put("platform", "Android").put("appVersion", "0.2.0")),
+            JSONObject().put("meta", JSONObject().put("platform", "Android").put("appVersion", "0.3.0")),
         )
     }
 

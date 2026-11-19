@@ -1,22 +1,25 @@
 # Cobre Mobile — status
 
-## Versão 0.2.0 em desenvolvimento
+## Versão 0.2.0 — validada pelo autor
 
-O APK 0.1.0 foi instalado e usado no celular do autor. A versão 0.2.0 amplia o player local e adiciona a base de Cobre ID. O build do GitHub Actions concluiu com sucesso; falta reinstalar e validar as mudanças novas no aparelho.
+No aparelho, o autor confirmou login Cobre ID, leitura das músicas, reprodução normal e ícone do app.
 
-### Incluído no código 0.2.0
-- Biblioteca organizada em álbuns, artistas e faixas, com busca.
-- Capa, detalhes do álbum, mini player e tela de reprodução.
-- Fila com reprodução, remoção e reordenação.
-- Reprodução em segundo plano pelo Media3.
-- Ícone da marca incluído no APK, incluindo ícone adaptativo.
-- Login/criação de conta Cobre ID, dispositivos e presença no servidor atual.
-- Refresh token cifrado com chave protegida pelo Android Keystore.
+## Versão 0.3.0 — código em desenvolvimento
+
+- Filtro da biblioteca por pasta escolhida no seletor de documentos do Android.
+- Paletas de destaque correspondentes às opções do Desktop.
+- Aba Configurações, volume de música do Android e informações detalhadas das saídas de áudio disponíveis.
+- Ajuste da interface e da navegação para aproximar o app da identidade visual Desktop.
 
 ### Próxima validação
-1. **Concluído:** `assembleDebug` compilou no workflow do GitHub Actions. [Ver build e baixar o APK](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/44563833217).
-2. Instalar o APK 0.2.0 no aparelho e conferir biblioteca, navegação, fila, controles, notificação e retomada.
-3. Informar a URL do servidor na tela Cobre ID e conferir login e presença. A conexão depende de um Cobre Server acessível; streaming ainda não existe.
+1. Compilar o APK 0.3.0 pelo GitHub Actions.
+2. No aparelho, conferir: filtro de pasta (incluindo Mostrar tudo), persistência da cor após reabrir, volume, saída conectada, biblioteca, reprodução, fila e Cobre ID.
+3. Registrar qualquer diferença antes de avançar a paridade de recursos.
 
-### Ainda em desenvolvimento
-Room para estado persistente, playlists, favoritos, histórico, letras, metadados avançados, DSP, streaming da biblioteca do PC e sincronização.
+## Funções do Desktop que ainda faltam
+
+Playlists persistentes, favoritos, histórico/estatísticas, letras, correção de metadados, créditos de encarte, equalizador, DSP, crossfade, streaming do Desktop e sincronização.
+
+## Limites da integração atual
+
+Cobre ID autentica e envia presença. Isso não prova que o Desktop está alcançável. O servidor ainda não transporta áudio nem sincroniza dados. Para conexão pela internet, o servidor também precisa ser publicado com HTTPS.

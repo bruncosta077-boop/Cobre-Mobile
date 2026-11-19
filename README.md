@@ -1,30 +1,36 @@
 # Cobre Mobile
 
-Aplicativo Android do ecossistema Cobre. A interface usa a paleta escura e os detalhes em cobre do Desktop, adaptados para toque e telas pequenas.
+Aplicativo Android do ecossistema Cobre. Interface escura com a paleta, o símbolo e a organização visual do Cobre Desktop, adaptados para toque.
 
-## Versão em desenvolvimento: 0.2.0
+## Versão em desenvolvimento: 0.3.0
 
-- Biblioteca local com visualização de álbuns, artistas e faixas, capas e busca.
-- Tela do álbum, fila editável, mini player e tela de reprodução com progresso, aleatório e repetição.
-- Reprodução em segundo plano por Media3, com integração à notificação e aos controles do Android.
-- Ícone Cobre incluído nos recursos do APK.
-- Área Cobre ID para login, dispositivos e presença, com refresh token protegido pelo Android Keystore.
+- Biblioteca local com álbuns, artistas, faixas, capas e busca.
+- Pasta de biblioteca configurável pelo seletor de pastas do Android.
+- Detalhe do álbum, fila editável, mini player e tela completa com progresso, aleatório e repetição.
+- Reprodução em segundo plano pelo Media3 e controles na notificação/tela bloqueada.
+- Cobre ID para login, dispositivos e presença; refresh token protegido pelo Android Keystore.
+- Aba de configurações com paletas do Desktop, volume de música e detalhes das saídas informadas pelo Android.
+- Ícone Cobre incluído no APK em formatos legado e adaptativo.
 
-A base 0.1.0 já foi instalada e usada no celular do autor. O código 0.2.0 compilou com sucesso no GitHub Actions. Ainda precisa de nova validação em aparelho antes de ser considerado estável.
+A versão 0.2.0 foi instalada e validada pelo autor: Cobre ID conectou, a biblioteca foi lida, a reprodução funcionou e o ícone apareceu. A versão 0.3.0 contém mudanças novas e precisa compilar e voltar ao aparelho antes de ser considerada validada.
 
-## Cobre ID e conexão
+## Conexão
 
-O Mobile fala com as rotas atuais do [Cobre Server](https://github.com/bruncosta077-boop/Cobre-Server) para login, lista de dispositivos e presença. Informe a URL do servidor na área **Cobre ID**. HTTP é aceito somente em endereços privados da rede local; para acessar pela internet o servidor precisa usar HTTPS.
+O Mobile usa as rotas atuais do [Cobre Server](https://github.com/bruncosta077-boop/Cobre-Server) para login, dispositivos e presença. Informe a URL na área Cobre ID. HTTP só é aceito para endereços privados da rede local; fora dela, use HTTPS.
 
-O servidor atual ainda não transmite áudio, não entrega a biblioteca do Desktop ao celular e não sincroniza playlists. Esses recursos serão desenvolvidos em etapas posteriores.
+O servidor atual ainda não transmite músicas do Desktop e não sincroniza biblioteca ou playlists. Os indicadores de presença mostram que o app entrou em contato com o servidor, não que o PC está pronto para enviar áudio.
+
+## Funções do Desktop ainda ausentes no Mobile
+
+Playlists persistentes, favoritos, histórico e estatísticas, letras sincronizadas, edição de metadados, créditos de encarte, equalizador e efeitos DSP, crossfade, streaming do Desktop e sincronização entre dispositivos.
 
 ## Gerar APK de teste
 
-1. Abra a aba **Actions** deste repositório.
+1. Abra **Actions** neste repositório.
 2. Selecione **Build APK** e clique em **Run workflow**.
 3. Baixe o artefato `cobre-mobile-debug-apk` e extraia o APK.
 
-O workflow também roda quando uma alteração chega à branch `main`. O APK é de depuração e não está assinado para publicação na Play Store.
+O workflow também roda ao enviar alterações para `main`. O APK é de depuração e não está assinado para a Play Store.
 
 ## Compilar localmente
 
@@ -33,11 +39,5 @@ Requer JDK 17 e Gradle 8.9:
 ```sh
 gradle assembleDebug
 ```
-
-## Estrutura
-
-- `app/` — aplicativo Android em Kotlin, Jetpack Compose e Media3.
-- `ROADMAP.md` — etapas seguintes para playlists, letras, áudio e ligação ao Desktop.
-- `STATUS.md` — estado da versão e validações feitas.
 
 O projeto não declara uma licença de redistribuição. Consulte o autor antes de reutilizar ou redistribuir o código.

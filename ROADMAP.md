@@ -1,74 +1,41 @@
-# Cobre Mobile — roadmap
+# Cobre Mobile — roadmap de paridade com Desktop
 
-Este documento acompanha o desenvolvimento do aplicativo Mobile. **Uma etapa só passa a validada depois de compilada e conferida em aparelho real.**
+## Estado validado
 
-## Estado atual
+**0.2.0 validado em aparelho pelo autor:** Cobre ID conectado, músicas lidas, reprodução normal e ícone instalado.
 
-### Base 0.1.0 — validada pelo autor
-Player local instalado e usado no celular: leitura da biblioteca, grade de álbuns, reprodução Media3 e execução em segundo plano.
+**0.3.0 em código:** seletor de pasta para a biblioteca, paletas de cor do Desktop, tela de áudio/configurações e navegação Mobile refinada. O APK ainda precisa de build e teste em aparelho.
 
-### Versão 0.2.0 — código em desenvolvimento
-- Biblioteca com abas de álbuns, artistas e faixas; busca por título, álbum e artista.
-- Detalhe do álbum, fila editável, mini player e tela completa com progresso, aleatório e repetição.
-- Ícone do Cobre incluído no APK como ícone legado e adaptativo.
-- Base Cobre ID para login/criação de conta, renovação de sessão, dispositivos e presença.
-- Refresh token cifrado com chave do Android Keystore.
-- Reprodução continua sendo local. O Cobre Server atual não fornece áudio nem sincroniza bibliotecas.
+## Próximo passo
 
-**Build concluído:** o GitHub Actions compilou o APK 0.2.0. **Próximo passo:** instalar no aparelho e validar navegação, reprodução, fila, controles, notificação, reinício e integração Cobre ID com um servidor acessível.
+Compilar e validar o 0.3.0 no aparelho. Depois, fechar a paridade local prioritária:
 
-## Próximas etapas
+1. Banco local para fila, playlists, favoritos, avaliações e histórico.
+2. Letras locais e sincronizadas; artista do álbum, disco e total de faixas por tags.
+3. Busca e gestão de encartes/metadados.
+4. Equalizador, volume prévio, crossfade e efeitos DSP medidos no Android.
 
-### 1 — Biblioteca e dados locais
-- Room para biblioteca indexada, playlists, favoritos, avaliações e histórico.
-- IDs estáveis para preparar sincronização entre aparelhos.
-- Fila e faixa atual restauradas depois de fechar/reabrir o app.
-- Paginação, atualização da biblioteca e melhor ordenação em coleções grandes.
+## Streaming e sincronização: ordem técnica
 
-### 2 — Letras e metadados
-- Letras `.lrc` sincronizadas e letras `.txt` ao lado da música.
-- Artista do álbum, disco e total de faixas a partir das tags.
-- Correção de metadados, capas personalizadas e busca geral de encarte.
+Começar pelo **teste de transporte do streaming**: um Desktop e um celular na rede local; medir início, busca dentro da faixa, interrupção e retomada. Em seguida testar outra rede/CGNAT para saber se é necessário WebRTC com relay. Essa etapa tem maior risco de arquitetura e precisa de resposta cedo.
 
-### 3 — Áudio
-- Equalizador de 10 bandas com proteção contra clipping.
-- Balanço, mono, graves/agudos e ReplayGain.
-- Gapless e crossfade medidos com arquivos de referência.
-- Identificar a saída real do aparelho; não prometer bit-perfect sem validação.
+Depois do transporte escolhido, desenvolver autenticação/controle de sessão no servidor para streaming; sincronizar playlists, favoritos, histórico e preferências após os IDs estáveis e as APIs de conflito estarem definidos. Presença de Cobre ID não equivale a streaming.
 
-### 4 — Cobre ID e dispositivos
-- Validar renovação, remoção e reconexão de dispositivos.
-- Servidor publicado atrás de HTTPS para acesso pela internet.
-- Indicadores de conexão que distingam presença, alcance e qualidade do áudio.
+## Compatibilidade pendente do Desktop
 
-### 5 — Biblioteca do Desktop no celular
-- Validar a arquitetura de transporte com rede local, 4G/5G e CGNAT antes de prometer conexão universal.
-- Streaming protegido e autorizado pelo Cobre ID; leitura com Range e cache no Media3.
-- Estado claro quando o PC estiver desligado, sem rede ou indisponível.
-- Qualidade original por padrão e modo econômico opcional.
-
-### 6 — Sincronização e acabamento
-- Playlists, favoritos, avaliações, histórico e preferências.
-- Escrita offline com envio posterior e resolução de conflitos.
-- Downloads para uso offline, temporizador, widget e Android Auto.
-- Acessibilidade, bateria, tablets/dobráveis e idiomas adicionais.
-
-### Depois — Cobre TV
-Interface para controle remoto e navegação por foco, reaproveitando componentes estáveis do Mobile.
-
-## Decisões
-
-| Decisão | Motivo |
+| Recurso do Desktop | Mobile |
 |---|---|
-| Kotlin, Compose e Media3 | Integração Android, reprodução em segundo plano e futura TV |
-| Funcionar sem login para música local | Biblioteca do aparelho não depende de conta |
-| Chave do refresh token no Android Keystore | Reduz exposição do token persistente |
-| HTTPS para servidor fora da rede privada | Credenciais não devem atravessar a internet em HTTP |
-| Arquivo original como qualidade padrão | Evitar transcodificação sem necessidade |
+| Biblioteca, artistas, álbuns, faixas e reprodução local | Base 0.2 validada; pasta e tema em 0.3 |
+| Busca, fila, mini player e player completo | Na base 0.2 |
+| Conta e dispositivos | Login/presença integrados; streaming ainda ausente |
+| Playlists, favoritos, histórico e estatísticas | Ainda faltam |
+| Letras, metadados e créditos de encarte | Ainda faltam |
+| Equalizador, crossfade e DSP | Ainda faltam; saída Android precisa de medição |
+| Biblioteca Desktop no celular e sincronização | Depende do transporte, backend e IDs estáveis |
 
-## Limites conhecidos
+## Segurança e plataforma
 
-- 0.2.0 ainda não foi compilado nem validado em aparelho.
-- A tela Cobre ID precisa de uma URL do Cobre Server acessível; o servidor atual é HTTP e ainda não está pronto para acesso público pela internet.
-- Presença online não prova que o Desktop está alcançável e ainda não há streaming, sincronização ou métricas de velocidade.
-- A biblioteca usa IDs do MediaStore, que são locais ao aparelho; ainda não há persistência de fila, playlists, histórico ou favoritos.
+- Refresh token protegido pelo Android Keystore.
+- HTTP aceito apenas para endereços locais privados; acesso pela internet requer HTTPS.
+- A tela de áudio lista saídas que o Android anuncia e o volume do sistema. A troca da rota ativa fica sob controle do Android.
+- O Cobre Server atual faz contas, sessões, dispositivos e presença; não transmite áudio nem mede velocidade do stream.
