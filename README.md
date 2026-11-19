@@ -2,7 +2,7 @@
 
 Aplicativo Android do ecossistema Cobre. Interface escura com a paleta, o símbolo e a organização visual do Cobre Desktop, adaptados para toque.
 
-## Versão em desenvolvimento: 0.3.0
+## Versão em desenvolvimento: 0.4.0
 
 - Biblioteca local com álbuns, artistas, faixas, capas e busca.
 - Pasta de biblioteca configurável pelo seletor de pastas do Android.
@@ -10,9 +10,10 @@ Aplicativo Android do ecossistema Cobre. Interface escura com a paleta, o símbo
 - Reprodução em segundo plano pelo Media3 e controles na notificação/tela bloqueada.
 - Cobre ID para login, dispositivos e presença; refresh token protegido pelo Android Keystore.
 - Aba de configurações com paletas do Desktop, volume de música e detalhes das saídas informadas pelo Android.
+- Favoritos, histórico recente e playlists locais persistidos em SQLite.
 - Ícone Cobre incluído no APK em formatos legado e adaptativo.
 
-A versão 0.2.0 foi instalada e validada pelo autor: Cobre ID conectou, a biblioteca foi lida, a reprodução funcionou e o ícone apareceu. A versão 0.3.0 contém mudanças novas e precisa compilar e voltar ao aparelho antes de ser considerada validada.
+A versão 0.2.0 foi instalada e validada pelo autor: Cobre ID conectou, a biblioteca foi lida, a reprodução funcionou e o ícone apareceu. As versões 0.3.0 e 0.4.0 têm mudanças ainda não confirmadas no aparelho.
 
 ## Conexão
 

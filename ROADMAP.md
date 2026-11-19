@@ -4,13 +4,15 @@
 
 **0.2.0 validado em aparelho pelo autor:** Cobre ID conectado, músicas lidas, reprodução normal e ícone instalado.
 
-**0.3.0 em código:** seletor de pasta para a biblioteca, paletas de cor do Desktop, tela de áudio/configurações e navegação Mobile refinada. O APK ainda precisa de build e teste em aparelho.
+**0.3.0 incorporado em 0.4.0:** seletor de pasta, paletas de cor, tela de áudio/configurações.
+
+**0.4.0 em código:** favoritos, histórico recente e playlists locais persistidos em SQLite. O APK ainda precisa de build e teste em aparelho.
 
 ## Próximo passo
 
-Compilar e validar o 0.3.0 no aparelho. Depois, fechar a paridade local prioritária:
+Compilar e validar o 0.4.0 no aparelho. Depois, avançar a paridade local prioritária:
 
-1. Banco local para fila, playlists, favoritos, avaliações e histórico.
+1. Avaliações e restauração da fila após reiniciar o app.
 2. Letras locais e sincronizadas; artista do álbum, disco e total de faixas por tags.
 3. Busca e gestão de encartes/metadados.
 4. Equalizador, volume prévio, crossfade e efeitos DSP medidos no Android.

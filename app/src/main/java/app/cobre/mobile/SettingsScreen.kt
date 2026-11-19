@@ -116,7 +116,7 @@ fun SettingsPage(settings:MobileSettings,folderUri:String?,onPickFolder:()->Unit
         }
         SettingsCard {
             SectionHeading(Icons.Default.Refresh,"Aplicativo")
-            Text("Cobre Mobile 0.3.0",color=Tx,fontWeight=FontWeight.SemiBold,modifier=Modifier.padding(top=12.dp))
+            Text("Cobre Mobile 0.4.0",color=Tx,fontWeight=FontWeight.SemiBold,modifier=Modifier.padding(top=12.dp))
             Text("A biblioteca local continua disponível sem Cobre ID. A conexão da conta mostra presença e dispositivos do servidor.",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=4.dp))
         }
         Spacer(Modifier.height(10.dp))
