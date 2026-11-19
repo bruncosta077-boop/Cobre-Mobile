@@ -169,7 +169,22 @@ class MainActivity:ComponentActivity(){
 @OptIn(ExperimentalFoundationApi::class)
 @Composable private fun AlbumGrid(albums:List<Album>,onClick:(Album)->Unit,onPlayAlbum:(List<Track>)->Unit={},onQueueAlbum:(List<Track>)->Unit={}){
     LazyVerticalGrid(GridCells.Fixed(2),contentPadding=PaddingValues(16.dp),horizontalArrangement=Arrangement.spacedBy(14.dp),verticalArrangement=Arrangement.spacedBy(18.dp)){
-        items(albums,key=Album::key){a->var menu by remember{mutableStateOf(false)};Box{Column(Modifier.clip(RoundedCornerShape(12.dp)).combinedClickable(onClick={onClick(a)},onLongClick={menu=true})){Cover(a.tracks.first(),Modifier.fillMaxWidth().aspectRatio(1f).clip(RoundedCornerShape(10.dp)));Text(a.title,color=Tx,maxLines=1,overflow=TextOverflow.Ellipsis,fontWeight=FontWeight.Medium,modifier=Modifier.padding(top=8.dp));Text(a.artist,color=Mu,maxLines=1,overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.bodySmall);Text("${a.tracks.size} faixas${if(a.year>0)" · ${a.year}" else ""}",color=Mu.copy(alpha=.7f),style=MaterialTheme.typography.labelSmall)};DropdownMenu(expanded=menu,onDismissRequest={menu=false}){DropdownMenuItem(text={Text("Reproduzir álbum")},onClick={menu=false;onPlayAlbum(a.tracks)});DropdownMenuItem(text={Text("Adicionar à fila")},onClick={menu=false;onQueueAlbum(a.tracks)});DropdownMenuItem(text={Text("Abrir álbum")},onClick={menu=false;onClick(a)})}}
+        items(albums,key=Album::key){a->
+            var menu by remember{mutableStateOf(false)}
+            Box {
+                Column(Modifier.clip(RoundedCornerShape(12.dp)).combinedClickable(onClick={onClick(a)},onLongClick={menu=true})) {
+                    Cover(a.tracks.first(),Modifier.fillMaxWidth().aspectRatio(1f).clip(RoundedCornerShape(10.dp)))
+                    Text(a.title,color=Tx,maxLines=1,overflow=TextOverflow.Ellipsis,fontWeight=FontWeight.Medium,modifier=Modifier.padding(top=8.dp))
+                    Text(a.artist,color=Mu,maxLines=1,overflow=TextOverflow.Ellipsis,style=MaterialTheme.typography.bodySmall)
+                    Text("${a.tracks.size} faixas${if(a.year>0)" · ${a.year}" else ""}",color=Mu.copy(alpha=.7f),style=MaterialTheme.typography.labelSmall)
+                }
+                DropdownMenu(expanded=menu,onDismissRequest={menu=false}) {
+                    DropdownMenuItem(text={Text("Reproduzir álbum")},onClick={menu=false;onPlayAlbum(a.tracks)})
+                    DropdownMenuItem(text={Text("Adicionar à fila")},onClick={menu=false;onQueueAlbum(a.tracks)})
+                    DropdownMenuItem(text={Text("Abrir álbum")},onClick={menu=false;onClick(a)})
+                }
+            }
+        }
     }
 }
 
