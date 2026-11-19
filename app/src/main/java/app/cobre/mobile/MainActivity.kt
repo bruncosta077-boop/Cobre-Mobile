@@ -119,7 +119,7 @@ class MainActivity:ComponentActivity(){
                     Page.Queue->QueuePage(playback,player,collections)
                     Page.Collections->CollectionsPage(collections,{list->player.play(list,0)},{track->player.addToQueue(track)})
                     Page.Account->AccountPage(accountRepo,account){account=it}
-                    Page.Settings->SettingsPage(settings,folderUri,desktopStatus,desktopTracks.size,{folderPicker.launch(folderUri?.let{Uri.parse(it)})},{folderUri?.let{old->runCatching{context.contentResolver.releasePersistableUriPermission(Uri.parse(old),Intent.FLAG_GRANT_READ_URI_PERMISSION)}};settings.setFolder(null);folderUri=null},{settings.setDesktopUrl(it);desktopRefreshKey++},{settings.setDesktopUrl(null);desktopRefreshKey++})
+                    Page.Settings->SettingsPage(settings,folderUri,desktopStatus,desktopTracks.size,{folderPicker.launch(folderUri?.let{Uri.parse(it)})},{folderUri?.let{old->runCatching{context.contentResolver.releasePersistableUriPermission(Uri.parse(old),Intent.FLAG_GRANT_READ_URI_PERMISSION)}};settings.setFolder(null);folderUri=null},{settings.saveDesktopUrl(it);desktopRefreshKey++},{settings.saveDesktopUrl(null);desktopRefreshKey++})
                 }
             }
             if(playback.hasItem) MiniPlayer(playback,player){fullPlayer=true}

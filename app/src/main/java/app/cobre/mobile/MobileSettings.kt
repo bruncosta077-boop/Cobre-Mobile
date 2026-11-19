@@ -28,7 +28,7 @@ class MobileSettings(context: Context) {
         prefs.edit().putString("library_folder", uri).apply()
     }
 
-    fun setDesktopUrl(url: String?) {
+    fun saveDesktopUrl(url: String?) {
         desktopUrl = url?.trim()?.takeIf(String::isNotBlank)
         prefs.edit().putString("desktop_library_url", desktopUrl).apply()
     }
