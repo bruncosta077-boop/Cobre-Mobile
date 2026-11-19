@@ -18,6 +18,7 @@ class DesktopLibraryRepository {
         val endpoint = Uri.parse(connectionInfo.origin).buildUpon()
             .appendPath("api").appendPath("lib").appendQueryParameter("k", connectionInfo.token).build()
         val connection = (URL(endpoint.toString()).openConnection() as HttpURLConnection).apply {
+            instanceFollowRedirects = false // A chave LAN nunca deve seguir um redirecionamento para outro servidor.
             connectTimeout = 5_000
             readTimeout = 12_000
             requestMethod = "GET"

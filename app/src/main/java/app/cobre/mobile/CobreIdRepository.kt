@@ -104,6 +104,7 @@ class CobreIdRepository(context: Context) {
         val base = normalizeUrl(serverUrl)
         if (base.isBlank()) throw CobreIdException("Informe o endereço do Cobre Server.")
         val connection = (URL(base + path).openConnection() as HttpURLConnection).apply {
+            instanceFollowRedirects = false // Nunca encaminha senha ou token para outro host por redirecionamento.
             requestMethod = method
             connectTimeout = 6_000
             readTimeout = 8_000
@@ -185,7 +186,7 @@ class CobreIdRepository(context: Context) {
     }
 
     private fun isPrivateHost(host: String): Boolean {
-        if (host == "localhost" || host == "::1" || host.endsWith(".local")) return true
+        if (host == "localhost" || host == "::1") return true
         val parts = host.split('.')
         if (parts.size != 4) return false
         val octets = parts.map { it.toIntOrNull() ?: return false }

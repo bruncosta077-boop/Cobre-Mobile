@@ -32,6 +32,10 @@ O Mobile usa o [Cobre Server](https://github.com/bruncosta077-boop/Cobre-Server)
 
 O áudio da biblioteca do Desktop é entregue pelo próprio computador na rede local, com requisições HTTP por partes para permitir busca na faixa. Essa conexão não passa pelo Cobre Server. Acesso pela internet e sincronização de playlists continuam pendentes; presença do Cobre ID não prova que o computador está alcançável.
 
+## Segurança da conexão
+
+O refresh token do Cobre ID fica protegido pelo Android Keystore. Para conexões HTTP, o app aceita apenas loopback ou endereço IPv4 privado; HTTPS usa a validação padrão de certificados do Android. As requisições de conta e catálogo não seguem redirecionamentos, para evitar encaminhar senhas, tokens ou a chave da biblioteca a outro host. O tráfego HTTP local continua sem criptografia e deve ser usado somente em uma rede Wi-Fi confiável.
+
 ## Funções do Desktop ainda ausentes no Mobile
 
 Estatísticas, letras sincronizadas, edição de metadados, créditos de encarte, equalizador e efeitos DSP, crossfade e sincronização de bibliotecas/playlists entre aparelhos.

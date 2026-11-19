@@ -6,6 +6,7 @@
 - Player destaca volume e metadados e a tela de álbuns oferece ações por toque longo.
 - Paletas e navegação refinadas para aproximar o app do Desktop em telas de toque.
 - Esta revisão precisa ser instalada e validada no aparelho antes de ser marcada como estável.
+- Conexões HTTP do Cobre ID ficam limitadas a loopback/endereço IPv4 privado, e os clientes não seguem redirecionamentos que poderiam encaminhar senhas ou tokens a outro host.
 
 ## 0.6.0 — validada pelo autor
 
