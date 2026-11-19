@@ -49,9 +49,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-private val Bg=Color(0xFF10100F); private val Panel=Color(0xFF191816); private val CardBg=Color(0xFF211F1D)
-private val Line=Color(0xFF302C28); private val Tx=Color(0xFFECE6DF); private val Mu=Color(0xFF9B938B)
-private val Green=Color(0xFF7EB783)
+internal val Bg=Color(0xFF10100F); internal val Panel=Color(0xFF191816); internal val CardBg=Color(0xFF211F1D)
+internal val Line=Color(0xFF302C28); internal val Tx=Color(0xFFECE6DF); internal val Mu=Color(0xFF9B938B)
+internal val Green=Color(0xFF7EB783)
 private enum class Page { Library, Queue, Collections, Account, Settings }
 private enum class LibraryTab { Albums, Artists, Tracks }
 data class AccountUi(val signedIn:Boolean=false,val email:String="",val devices:List<CobreDevice> = emptyList(),val busy:Boolean=false,val message:String="",val error:Boolean=false,val serverReady:Boolean?=null)
