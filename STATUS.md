@@ -1,28 +1,22 @@
-# Cobre Mobile — STATUS (Etapa 4, fatia 1)
+# Cobre Mobile — status
 
-> Plano completo e histórico: ver `ROADMAP.md`.
+## Versão 0.2.0 em desenvolvimento
 
-## Feito (escrito, NÃO compilado nem testado em aparelho)
-- Projeto Gradle/Compose com Media3 (ExoPlayer + MediaSession).
-- Biblioteca local via MediaStore, agrupada por artista|álbum (igual ao Desktop 3.1).
-- Grade de álbuns, tela do álbum, mini player, capas via loadThumbnail.
-- Serviço de reprodução em segundo plano com notificação e tela de bloqueio (MediaSessionService).
-- Tema com a paleta do Desktop.
+O APK 0.1.0 foi instalado e usado no celular do autor. A versão 0.2.0 amplia o player local e adiciona a base de Cobre ID. Ela ainda precisa compilar no Actions e ser reinstalada para validar as mudanças novas.
 
-## Não verificado (preciso abrir no Android Studio)
-- Compilação: versões em build.gradle.kts são as que conheço; atualizar ao abrir o projeto.
-- Permissões em Android 13+ e 14+, notificação de mídia, retomada após matar o app.
-- Capas de arquivos sem arte; desempenho com biblioteca grande (grade sem paginação).
+### Incluído no código 0.2.0
+- Biblioteca organizada em álbuns, artistas e faixas, com busca.
+- Capa, detalhes do álbum, mini player e tela de reprodução.
+- Fila com reprodução, remoção e reordenação.
+- Reprodução em segundo plano pelo Media3.
+- Ícone da marca incluído no APK, incluindo ícone adaptativo.
+- Login/criação de conta Cobre ID, dispositivos e presença no servidor atual.
+- Refresh token cifrado com chave protegida pelo Android Keystore.
 
-## Limitações conhecidas / decisões
-- minSdk 29 (Android 10): simplifica capas e armazenamento. Decisão revisável.
-- Sem artista do álbum nem disco (MediaStore); mesma limitação do Desktop. Sairá da Etapa 2a.
-- Sem busca, playlists, fila, letras, DSP, login. Próximas fatias.
-- Sem IDs estáveis ainda: usa o _ID do MediaStore (local ao aparelho).
+### Próxima validação
+1. Compilar `assembleDebug` pelo workflow do GitHub Actions.
+2. Instalar o APK 0.2.0 no aparelho e conferir biblioteca, navegação, fila, controles, notificação e retomada.
+3. Informar a URL do servidor na tela Cobre ID e conferir login e presença. A conexão depende de um Cobre Server acessível; streaming ainda não existe.
 
-## Como gerar o APK (sem Android Studio)
-1. Crie um repositório no GitHub e envie o conteúdo desta pasta (a raiz do repositório é esta pasta).
-2. Aba Actions > "Build APK" > Run workflow.
-3. Ao terminar (alguns minutos), baixe o artefato "cobre-mobile-debug-apk" (um .zip com o .apk dentro).
-4. No celular, instale o .apk (permita "instalar apps desconhecidos"). É APK de depuração, assinado com chave de debug.
-Não testado: se o build falhar, o log do Actions mostra o erro e eu corrijo a partir dele.
+### Ainda em desenvolvimento
+Room para estado persistente, playlists, favoritos, histórico, letras, metadados avançados, DSP, streaming da biblioteca do PC e sincronização.

@@ -1,22 +1,30 @@
 # Cobre Mobile
 
-Player Android para a biblioteca de músicas local do aparelho. Este repositório contém somente o aplicativo Mobile.
+Aplicativo Android do ecossistema Cobre. A interface usa a paleta escura e os detalhes em cobre do Desktop, adaptados para toque e telas pequenas.
 
-## Estado atual
+## Versão em desenvolvimento: 0.2.0
 
-- Versão do projeto: **0.1.0**.
-- Kotlin, Jetpack Compose e AndroidX Media3.
-- Leitura da biblioteca local, tela de álbuns, mini player e reprodução em segundo plano estão implementados no código.
-- A versão ainda não foi compilada nem validada em um aparelho real. Veja [STATUS.md](STATUS.md) e [ROADMAP.md](ROADMAP.md).
-- Cobre ID, playlists, fila completa, letras, DSP e conexão com Desktop/TV ainda não estão implementados no Mobile.
+- Biblioteca local com visualização de álbuns, artistas e faixas, capas e busca.
+- Tela do álbum, fila editável, mini player e tela de reprodução com progresso, aleatório e repetição.
+- Reprodução em segundo plano por Media3, com integração à notificação e aos controles do Android.
+- Ícone Cobre incluído nos recursos do APK.
+- Área Cobre ID para login, dispositivos e presença, com refresh token protegido pelo Android Keystore.
 
-## Gerar APK de depuração
+A base 0.1.0 já foi instalada e usada no celular do autor. Esta atualização 0.2.0 precisa passar pela compilação do GitHub Actions e por nova validação em aparelho antes de ser considerada estável.
+
+## Cobre ID e conexão
+
+O Mobile fala com as rotas atuais do [Cobre Server](https://github.com/bruncosta077-boop/Cobre-Server) para login, lista de dispositivos e presença. Informe a URL do servidor na área **Cobre ID**. HTTP é aceito somente em endereços privados da rede local; para acessar pela internet o servidor precisa usar HTTPS.
+
+O servidor atual ainda não transmite áudio, não entrega a biblioteca do Desktop ao celular e não sincroniza playlists. Esses recursos serão desenvolvidos em etapas posteriores.
+
+## Gerar APK de teste
 
 1. Abra a aba **Actions** deste repositório.
-2. Escolha **Build APK** e clique em **Run workflow**.
-3. Quando terminar, baixe o artefato `cobre-mobile-debug-apk` e extraia o APK.
+2. Selecione **Build APK** e clique em **Run workflow**.
+3. Baixe o artefato `cobre-mobile-debug-apk` e extraia o APK.
 
-O workflow também é executado em cada atualização enviada para `main`. O APK gerado é de depuração; ele não é uma versão assinada para publicação na Play Store.
+O workflow também roda quando uma alteração chega à branch `main`. O APK é de depuração e não está assinado para publicação na Play Store.
 
 ## Compilar localmente
 
@@ -28,8 +36,8 @@ gradle assembleDebug
 
 ## Estrutura
 
-- `app/` — aplicativo Android.
-- `ROADMAP.md` — próximas etapas planejadas.
-- `STATUS.md` — o que foi escrito e o que ainda precisa ser verificado.
+- `app/` — aplicativo Android em Kotlin, Jetpack Compose e Media3.
+- `ROADMAP.md` — etapas seguintes para playlists, letras, áudio e ligação ao Desktop.
+- `STATUS.md` — estado da versão e validações feitas.
 
-Este código não declara uma licença de redistribuição. Consulte o autor antes de reutilizar ou redistribuir.
+O projeto não declara uma licença de redistribuição. Consulte o autor antes de reutilizar ou redistribuir o código.
