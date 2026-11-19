@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AudioFile
+import androidx.compose.material.icons.filled.Devices
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Refresh
@@ -50,9 +51,10 @@ private val desktopAccents=listOf(
 )
 
 @Composable
-fun SettingsPage(settings:MobileSettings,folderUri:String?,onPickFolder:()->Unit,onClearFolder:()->Unit){
+fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,desktopTrackCount:Int,onPickFolder:()->Unit,onClearFolder:()->Unit,onSaveDesktopUrl:(String)->Unit,onDisconnectDesktop:()->Unit){
     val context=LocalContext.current
     val audio=context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+    var desktopAddress by remember(settings.desktopUrl){mutableStateOf(settings.desktopUrl.orEmpty())}
     var volume by remember{mutableFloatStateOf(audio.getStreamVolume(AudioManager.STREAM_MUSIC).toFloat()*100f/maxOf(1,audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC)))}
     var outputs by remember{mutableStateOf(audio.getDevices(AudioManager.GET_DEVICES_OUTPUTS).toList())}
     val maxVolume=audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC).coerceAtLeast(1)
@@ -76,6 +78,15 @@ fun SettingsPage(settings:MobileSettings,folderUri:String?,onPickFolder:()->Unit
                 if(folderUri!=null)TextButton(onClick=onClearFolder){Text("Mostrar tudo",color=Mu)}
             }
             Text("A biblioteca passa a mostrar somente músicas dentro da pasta escolhida.",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=5.dp))
+            Text("Biblioteca do computador",color=Tx,fontWeight=FontWeight.SemiBold,modifier=Modifier.padding(top=18.dp))
+            Text("No Cobre Desktop, abra Acesso remoto e copie o endereço completo. Os dois aparelhos precisam estar na mesma rede Wi-Fi.",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=4.dp))
+            OutlinedTextField(value=desktopAddress,onValueChange={desktopAddress=it},modifier=Modifier.fillMaxWidth().padding(top=8.dp),label={Text("Endereço do Cobre Desktop")},placeholder={Text("http://192.168.1.20:8787/?k=...")},singleLine=true,colors=fieldColors())
+            if(desktopStatus.isNotBlank())Text(desktopStatus,color=if(desktopStatus.startsWith("Computador conectado"))MaterialTheme.colorScheme.primary else Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=5.dp))
+            Row(horizontalArrangement=Arrangement.spacedBy(8.dp),modifier=Modifier.padding(top=5.dp)){
+                Button(onClick={onSaveDesktopUrl(desktopAddress)},enabled=desktopAddress.isNotBlank(),colors=ButtonDefaults.buttonColors(containerColor=MaterialTheme.colorScheme.primary),shape=RoundedCornerShape(22.dp)){Icon(Icons.Default.Devices,null);Spacer(Modifier.width(6.dp));Text("Conectar")}
+                if(settings.desktopUrl!=null)TextButton(onClick={desktopAddress="";onDisconnectDesktop()}){Text("Desconectar",color=Mu)}
+            }
+            if(desktopTrackCount>0)Text("As ${desktopTrackCount} faixas do computador aparecem junto com a biblioteca local.",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=3.dp))
         }
         SettingsCard {
             SectionHeading(Icons.Default.Palette,"Aparência")
@@ -116,8 +127,8 @@ fun SettingsPage(settings:MobileSettings,folderUri:String?,onPickFolder:()->Unit
         }
         SettingsCard {
             SectionHeading(Icons.Default.Refresh,"Aplicativo")
-            Text("Cobre Mobile 0.4.0",color=Tx,fontWeight=FontWeight.SemiBold,modifier=Modifier.padding(top=12.dp))
-            Text("A biblioteca local continua disponível sem Cobre ID. A conexão da conta mostra presença e dispositivos do servidor.",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=4.dp))
+            Text("Cobre Mobile 0.5.0",color=Tx,fontWeight=FontWeight.SemiBold,modifier=Modifier.padding(top=12.dp))
+            Text("A biblioteca do computador é transmitida pela rede local; a conta Cobre ID continua cuidando da presença dos dispositivos.",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=4.dp))
         }
         Spacer(Modifier.height(10.dp))
     }

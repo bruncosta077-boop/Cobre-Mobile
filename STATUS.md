@@ -11,21 +11,27 @@ No aparelho, o autor confirmou login Cobre ID, leitura das músicas, reproduçã
 - Aba Configurações, volume de música do Android e informações detalhadas das saídas de áudio disponíveis.
 - Ajuste da interface e da navegação para aproximar o app da identidade visual Desktop.
 
-## Versão 0.4.0 — código em desenvolvimento
+## Versão 0.4.0 — incorporada à 0.5.0
 
 - Favoritos, histórico recente e playlists locais persistidos em SQLite.
 - Criar playlist a partir da fila; reproduzir playlists e administrar favoritos na aba Coleção.
-- O APK ainda precisa compilar e voltar ao aparelho antes de considerar essa etapa validada.
+
+## Versão 0.5.0 — código em desenvolvimento
+
+- Biblioteca local combinada com o catálogo do Cobre Desktop.
+- Reprodução das faixas do computador usando o endpoint LAN já existente no Desktop e suporte a HTTP Range do Media3.
+- A conexão usa o endereço e a chave mostrados em **Acesso remoto** no Desktop; exige a mesma rede local e não passa pelo Cobre Server.
+- O APK precisa compilar e ser instalado pelo autor para validar a rede e a reprodução no aparelho.
 
 ### Próxima validação
-1. Compilar o APK 0.4.0 pelo GitHub Actions.
-2. No aparelho, conferir pasta, paleta, saídas de áudio, favoritos, histórico, playlists, reprodução, fila e Cobre ID.
-3. Registrar qualquer diferença e corrigir antes de avançar para streaming.
+1. Compilar o APK 0.5.0 pelo GitHub Actions.
+2. No aparelho, conferir configuração da URL LAN, leitura dos álbuns/faixas Desktop, capas, reprodução, busca de posição e retorno ao áudio local.
+3. Favoritos e playlists permanecem armazenados localmente; sincronizá-los com o servidor é etapa posterior.
 
 ## Funções do Desktop que ainda faltam
 
-Estatísticas, letras, correção de metadados, créditos de encarte, equalizador, DSP, crossfade, streaming do Desktop e sincronização com servidor.
+Estatísticas, letras, correção de metadados, créditos de encarte, equalizador, DSP, crossfade, sincronização de playlists/bibliotecas e acesso do Desktop pela internet.
 
 ## Limites da integração atual
 
-Cobre ID autentica e envia presença. Isso não prova que o Desktop está alcançável. O servidor ainda não transporta áudio nem sincroniza dados. Para conexão pela internet, o servidor também precisa ser publicado com HTTPS.
+Cobre ID autentica e envia presença, mas não anuncia o endpoint LAN do Desktop. O áudio atual usa o servidor HTTP local do Desktop; ambos os aparelhos precisam estar na mesma rede. O Cobre Server ainda não faz relay de áudio nem sincroniza dados.

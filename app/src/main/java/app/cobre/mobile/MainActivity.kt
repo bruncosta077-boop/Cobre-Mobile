@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Bundle
 import android.util.Size
@@ -48,6 +49,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.net.HttpURLConnection
+import java.net.URL
 
 internal val Bg=Color(0xFF10100F); internal val Panel=Color(0xFF191816); internal val CardBg=Color(0xFF211F1D)
 internal val Line=Color(0xFF302C28); internal val Tx=Color(0xFFECE6DF); internal val Mu=Color(0xFF9B938B)
@@ -77,7 +80,11 @@ class MainActivity:ComponentActivity(){
     val askNotifications=rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()){}
     var folderUri by remember{mutableStateOf(settings.folderUri)}
     val folderPicker=rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()){uri->if(uri!=null){runCatching{context.contentResolver.takePersistableUriPermission(uri,Intent.FLAG_GRANT_READ_URI_PERMISSION)};settings.setFolder(uri.toString());folderUri=uri.toString()}}
-    var tracks by remember{mutableStateOf<List<Track>?>(null)}; var search by remember{mutableStateOf(false)}; var query by remember{mutableStateOf("")}
+    var localTracks by remember{mutableStateOf<List<Track>?>(null)}; var desktopTracks by remember{mutableStateOf<List<Track>>(emptyList())}; var desktopStatus by remember{mutableStateOf("")}
+    var desktopRefreshKey by remember{mutableIntStateOf(0)}
+    val tracks=localTracks?.plus(desktopTracks)
+    val desktopLibrary=remember{DesktopLibraryRepository()}
+    var search by remember{mutableStateOf(false)}; var query by remember{mutableStateOf("")}
     var page by remember{mutableStateOf(Page.Library)}; var tab by remember{mutableStateOf(LibraryTab.Albums)}
     var album by remember{mutableStateOf<Album?>(null)}; var artist by remember{mutableStateOf<Artist?>(null)}; var fullPlayer by remember{mutableStateOf(false)}
     val playback by player.state.collectAsState(); var account by remember{mutableStateOf(AccountUi(email=accountRepo.savedEmail))}; val scope=rememberCoroutineScope()
@@ -85,19 +92,25 @@ class MainActivity:ComponentActivity(){
         account=account.copy(busy=true,message="Reconectando ao Cobre ID…")
         runCatching{accountRepo.restoreSession();accountRepo.sendPresence();accountRepo.loadDevices()}.onSuccess{account=AccountUi(true,accountRepo.savedEmail,it,message="Conta conectada.")}.onFailure{account=AccountUi(email=accountRepo.savedEmail,message=it.message?:"Sessão expirada.",error=true)}
     }}
-    LaunchedEffect(granted,folderUri){tracks=if(granted)runCatching{library.load(folderUri?.let{Uri.parse(it)})}.getOrDefault(emptyList()) else null}
+    LaunchedEffect(granted,folderUri){localTracks=if(granted)runCatching{library.load(folderUri?.let{Uri.parse(it)})}.getOrDefault(emptyList()) else emptyList()}
+    LaunchedEffect(settings.desktopUrl,desktopRefreshKey){
+        val address=settings.desktopUrl
+        if(address.isNullOrBlank()){desktopTracks=emptyList();desktopStatus=""}
+        else{desktopStatus="Conectando ao Cobre Desktop…";runCatching{desktopLibrary.load(address)}.onSuccess{remote->desktopTracks=remote;desktopStatus="Computador conectado · ${remote.size} faixas"}.onFailure{desktopTracks=emptyList();desktopStatus=it.message?:"Não foi possível conectar ao computador."}}
+    }
     LaunchedEffect(account.signedIn){while(account.signedIn){delay(45_000);runCatching{accountRepo.sendPresence();accountRepo.loadDevices()}.onSuccess{account=account.copy(devices=it,message="Conexão ativa.",error=false)}.onFailure{account=account.copy(message=it.message?:"Conexão interrompida.",error=true)}}}
     LaunchedEffect(playback.playing,fullPlayer){while(playback.playing&&fullPlayer){delay(450);player.refreshPosition()}}
     LaunchedEffect(playback.currentIndex,playback.queue){playback.queue.getOrNull(playback.currentIndex)?.let(collections::recordPlayed)}
     Column(Modifier.fillMaxSize().background(Bg).statusBarsPadding()){
         if(fullPlayer&&playback.hasItem) PlayerPage(playback,player,{fullPlayer=false},{fullPlayer=false;page=Page.Queue})
         else {
-            Header(page,search,query,{query=it},{search=!search;query="";tab=LibraryTab.Tracks;album=null;artist=null},{scope.launch{granted=ContextCompat.checkSelfPermission(context,permission)==PackageManager.PERMISSION_GRANTED;if(granted)tracks=runCatching{library.load(folderUri?.let{Uri.parse(it)})}.getOrDefault(emptyList())}})
+            Header(page,search,query,{query=it},{search=!search;query="";tab=LibraryTab.Tracks;album=null;artist=null},{scope.launch{granted=ContextCompat.checkSelfPermission(context,permission)==PackageManager.PERMISSION_GRANTED;localTracks=if(granted)runCatching{library.load(folderUri?.let{Uri.parse(it)})}.getOrDefault(emptyList()) else emptyList();desktopRefreshKey++}})
             Box(Modifier.weight(1f).fillMaxWidth()){
                 when(page){
                     Page.Library->when{
-                        !granted->EmptyState(Icons.Default.LibraryMusic,"Sua música começa aqui","Permita o acesso ao áudio para montar sua biblioteca neste aparelho."){askAudio.launch(permission)}
-                        tracks==null->Loading()
+                        localTracks==null->Loading()
+                        tracks.isNullOrEmpty()&&desktopStatus.startsWith("Conectando")->Loading("Conectando ao Cobre Desktop…")
+                        tracks.isNullOrEmpty()&&!granted->EmptyState(Icons.Default.LibraryMusic,"Sua música começa aqui","Conecte ao computador ou permita acesso ao áudio para usar a biblioteca deste aparelho."){askAudio.launch(permission)}
                         else->LibraryPage(tracks.orEmpty(),library,collections,tab,query,album,artist,{tab=it;album=null;artist=null},{album=it},{artist=it},{album=null;artist=null},{list,index->
                             if(Build.VERSION.SDK_INT>=33&&ContextCompat.checkSelfPermission(context,Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED)askNotifications.launch(Manifest.permission.POST_NOTIFICATIONS)
                             player.play(list,index)
@@ -106,7 +119,7 @@ class MainActivity:ComponentActivity(){
                     Page.Queue->QueuePage(playback,player,collections)
                     Page.Collections->CollectionsPage(collections,{list->player.play(list,0)},{track->player.addToQueue(track)})
                     Page.Account->AccountPage(accountRepo,account){account=it}
-                    Page.Settings->SettingsPage(settings,folderUri,{folderPicker.launch(folderUri?.let{Uri.parse(it)})},{folderUri?.let{old->runCatching{context.contentResolver.releasePersistableUriPermission(Uri.parse(old),Intent.FLAG_GRANT_READ_URI_PERMISSION)}};settings.setFolder(null);folderUri=null})
+                    Page.Settings->SettingsPage(settings,folderUri,desktopStatus,desktopTracks.size,{folderPicker.launch(folderUri?.let{Uri.parse(it)})},{folderUri?.let{old->runCatching{context.contentResolver.releasePersistableUriPermission(Uri.parse(old),Intent.FLAG_GRANT_READ_URI_PERMISSION)}};settings.setFolder(null);folderUri=null},{settings.setDesktopUrl(it);desktopRefreshKey++},{settings.setDesktopUrl(null);desktopRefreshKey++})
                 }
             }
             if(playback.hasItem) MiniPlayer(playback,player){fullPlayer=true}
@@ -224,12 +237,13 @@ class MainActivity:ComponentActivity(){
 }
 
 @Composable private fun Cover(track:Track?,modifier:Modifier=Modifier){
-    val context=LocalContext.current;val bitmap by produceState<Bitmap?>(null,track?.id){value=if(track==null)null else withContext(Dispatchers.IO){runCatching{context.contentResolver.loadThumbnail(track.uri,Size(480,480),null)}.getOrNull()}}
+    val context=LocalContext.current;val desktop=remember{DesktopLibraryRepository()};val coverUri=track?.let(desktop::coverUri)
+    val bitmap by produceState<Bitmap?>(null,track?.uri,coverUri){value=if(track==null)null else withContext(Dispatchers.IO){runCatching{if(coverUri==null)context.contentResolver.loadThumbnail(track.uri,Size(480,480),null)else{val connection=URL(coverUri.toString()).openConnection() as HttpURLConnection;try{if(connection.responseCode==HttpURLConnection.HTTP_OK)connection.inputStream.use{BitmapFactory.decodeStream(it)}else null}finally{connection.disconnect()}}}.getOrNull()}}
     Box(modifier.background(CardBg),contentAlignment=Alignment.Center){if(bitmap!=null)Image(bitmap!!.asImageBitmap(),track?.album,Modifier.fillMaxSize(),contentScale=ContentScale.Crop)else Icon(Icons.Default.MusicNote,null,tint=MaterialTheme.colorScheme.primary.copy(alpha=.75f),modifier=Modifier.size(36.dp))}
 }
 
 @Composable private fun EmptyState(icon:ImageVector,title:String,message:String,action:(()->Unit)?=null){Column(Modifier.fillMaxSize().padding(28.dp),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.Center){Icon(icon,null,tint=MaterialTheme.colorScheme.primary,modifier=Modifier.size(42.dp));Spacer(Modifier.height(14.dp));Text(title,color=Tx,style=MaterialTheme.typography.titleLarge,fontWeight=FontWeight.SemiBold);Spacer(Modifier.height(6.dp));Text(message,color=Mu,textAlign=TextAlign.Center);if(action!=null){Spacer(Modifier.height(16.dp));Button(onClick=action,colors=ButtonDefaults.buttonColors(containerColor=MaterialTheme.colorScheme.primary),shape=RoundedCornerShape(24.dp)){Text("Permitir acesso")}}}}
-@Composable private fun Loading(){Box(Modifier.fillMaxSize(),contentAlignment=Alignment.Center){Column(horizontalAlignment=Alignment.CenterHorizontally){CircularProgressIndicator(color=MaterialTheme.colorScheme.primary);Spacer(Modifier.height(14.dp));Text("Lendo sua biblioteca…",color=Mu)}}}
+@Composable private fun Loading(message:String="Lendo sua biblioteca…"){Box(Modifier.fillMaxSize(),contentAlignment=Alignment.Center){Column(horizontalAlignment=Alignment.CenterHorizontally){CircularProgressIndicator(color=MaterialTheme.colorScheme.primary);Spacer(Modifier.height(14.dp));Text(message,color=Mu)}}}
 @Composable private fun navColors()=NavigationBarItemDefaults.colors(selectedIconColor=MaterialTheme.colorScheme.primary,selectedTextColor=MaterialTheme.colorScheme.primary,indicatorColor=MaterialTheme.colorScheme.primary.copy(alpha=.15f),unselectedIconColor=Mu,unselectedTextColor=Mu)
 @Composable private fun fieldColors()=OutlinedTextFieldDefaults.colors(focusedBorderColor=MaterialTheme.colorScheme.primary,unfocusedBorderColor=Line,focusedLabelColor=MaterialTheme.colorScheme.primary,unfocusedLabelColor=Mu,focusedTextColor=Tx,unfocusedTextColor=Tx,cursorColor=MaterialTheme.colorScheme.primary)
 private fun time(ms:Long):String{val s=ms.coerceAtLeast(0)/1000;return "${s/60}:${(s%60).toString().padStart(2,'0')}"}

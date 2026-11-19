@@ -14,6 +14,8 @@ class MobileSettings(context: Context) {
         private set
     var folderUri by mutableStateOf(prefs.getString("library_folder", null))
         private set
+    var desktopUrl by mutableStateOf(prefs.getString("desktop_library_url", null))
+        private set
 
     fun setAccent(primary: Int, secondary: Int) {
         accentPrimary = primary
@@ -24,5 +26,10 @@ class MobileSettings(context: Context) {
     fun setFolder(uri: String?) {
         folderUri = uri
         prefs.edit().putString("library_folder", uri).apply()
+    }
+
+    fun setDesktopUrl(url: String?) {
+        desktopUrl = url?.trim()?.takeIf(String::isNotBlank)
+        prefs.edit().putString("desktop_library_url", desktopUrl).apply()
     }
 }
