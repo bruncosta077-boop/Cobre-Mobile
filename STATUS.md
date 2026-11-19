@@ -16,21 +16,27 @@ No aparelho, o autor confirmou login Cobre ID, leitura das músicas, reproduçã
 - Favoritos, histórico recente e playlists locais persistidos em SQLite.
 - Criar playlist a partir da fila; reproduzir playlists e administrar favoritos na aba Coleção.
 
-## Versão 0.5.0 — APK gerado, aguardando teste no aparelho
+## Versão 0.5.0 — incorporada à 0.6.0
 
 - Biblioteca local combinada com o catálogo do Cobre Desktop.
 - Reprodução das faixas do computador usando o endpoint LAN já existente no Desktop e suporte a HTTP Range do Media3.
 - A conexão usa o endereço e a chave mostrados em **Acesso remoto** no Desktop; exige a mesma rede local e não passa pelo Cobre Server.
-- O APK foi gerado pelo GitHub Actions; falta instalar e validar a rede e a reprodução no aparelho.
+- Biblioteca LAN e áudio direto do Desktop.
 
-## Versão 0.6.0 — código em desenvolvimento
+## Versão 0.6.0 — conexão validada pelo autor
 
-- A tela de configurações mostra quantas faixas recebeu e o tempo de resposta ao carregar o catálogo do Desktop.
-- Essa medida confirma a resposta da biblioteca, não mede a velocidade contínua do áudio.
+- O autor confirmou que a conexão com a biblioteca do Desktop funcionou bem.
+- A tela informa quantidade de faixas e tempo de resposta do catálogo; isso não mede a taxa contínua do áudio.
+
+## Versão 0.7.0 — em desenvolvimento
+
+- Alternância entre celular, computador e biblioteca conjunta; elimina faixas duplicadas na visão conjunta.
+- Player reorganizado com volume visível e informações de álbum, ano, origem e faixa.
+- Toque longo em álbum abre ações rápidas; paletas ajustadas para tons mais suaves.
 
 ### Próxima validação
-1. Gerar e instalar o APK 0.6.0 pelo GitHub Actions.
-2. No aparelho, conferir configuração da URL LAN, leitura dos álbuns/faixas Desktop, capas, reprodução, busca de posição e retorno ao áudio local.
+1. Gerar e instalar o APK 0.7.0 pelo GitHub Actions.
+2. Conferir no aparelho as fontes separadas e a visão conjunta, as ações por toque longo, volume, aparência do player e paletas.
 3. Favoritos e playlists permanecem armazenados localmente; sincronizá-los com o servidor é etapa posterior.
 
 ## Funções do Desktop que ainda faltam

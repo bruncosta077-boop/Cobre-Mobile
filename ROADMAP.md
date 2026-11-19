@@ -8,13 +8,15 @@
 
 **0.4.0 incorporado em 0.5.0:** favoritos, histórico recente e playlists locais persistidos em SQLite.
 
-**0.5.0 compilado:** agrega a biblioteca LAN do Desktop e envia o áudio diretamente do computador para o Mobile. Aguarda validação no aparelho.
+**0.5.0 incorporado em 0.6.0:** agrega a biblioteca LAN do Desktop e envia o áudio diretamente do computador para o Mobile.
 
-**0.6.0 em código:** mostra no Mobile o tempo para receber o catálogo do Desktop e a quantidade de faixas. A medição é da resposta do catálogo, não da taxa contínua de áudio.
+**0.6.0 validado pelo autor:** conexão e reprodução da biblioteca Desktop funcionaram; a tela mostra também o tempo de resposta do catálogo.
+
+**0.7.0 em código:** separa fontes local e Desktop, deduplica a visão conjunta, expõe o volume no player, adiciona ações de toque longo e refina a apresentação.
 
 ## Próximo passo
 
-Compilar e validar o 0.6.0 no aparelho. Depois, avançar a paridade local prioritária:
+Compilar e validar o 0.7.0 no aparelho. Depois, avançar a paridade local prioritária:
 
 1. Avaliações e restauração da fila após reiniciar o app.
 2. Letras locais e sincronizadas; artista do álbum, disco e total de faixas por tags.

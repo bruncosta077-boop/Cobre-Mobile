@@ -42,12 +42,12 @@ import kotlin.math.roundToInt
 private data class AccentChoice(val name:String,val primary:Int,val secondary:Int)
 private val desktopAccents=listOf(
     AccentChoice("Cobre",0xFFC9773F.toInt(),0xFFE6A06A.toInt()),
-    AccentChoice("Branco e rosa",0xFFF2F2F2.toInt(),0xFFF08CB5.toInt()),
-    AccentChoice("Preto e dourado",0xFFB8892B.toInt(),0xFFF4D479.toInt()),
-    AccentChoice("Azul e ciano",0xFF4A8DE0.toInt(),0xFF5FD6E0.toInt()),
-    AccentChoice("Pôr do sol",0xFFE8604C.toInt(),0xFFF6B45C.toInt()),
-    AccentChoice("Roxo e rosa",0xFF8A63D2.toInt(),0xFFE07AB8.toInt()),
-    AccentChoice("Verde e limão",0xFF3FA66B.toInt(),0xFFC4E05C.toInt()),
+    AccentChoice("Rosa suave",0xFFD99AA9.toInt(),0xFFF1C4CE.toInt()),
+    AccentChoice("Dourado",0xFFD2AC67.toInt(),0xFFE8CC8F.toInt()),
+    AccentChoice("Azul aço",0xFF6D91B8.toInt(),0xFF91B7C7.toInt()),
+    AccentChoice("Terracota",0xFFC97863.toInt(),0xFFDCA779.toInt()),
+    AccentChoice("Lavanda",0xFF9B80C2.toInt(),0xFFC698B0.toInt()),
+    AccentChoice("Verde sálvia",0xFF77A786.toInt(),0xFFB4C39A.toInt()),
 )
 
 @Composable
@@ -91,7 +91,7 @@ fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,
         SettingsCard {
             SectionHeading(Icons.Default.Palette,"Aparência")
             Text("Cor de destaque",color=Tx,fontWeight=FontWeight.SemiBold,modifier=Modifier.padding(top=12.dp))
-            Text("As mesmas paletas do Cobre Desktop.",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=3.dp))
+            Text("Paletas ajustadas para manter o contraste no tema escuro.",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=3.dp))
             Column(Modifier.padding(top=10.dp),verticalArrangement=Arrangement.spacedBy(12.dp)){
                 desktopAccents.chunked(4).forEach{row->Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){row.forEach{choice->
                     val selected=settings.accentPrimary==choice.primary
@@ -127,7 +127,7 @@ fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,
         }
         SettingsCard {
             SectionHeading(Icons.Default.Refresh,"Aplicativo")
-            Text("Cobre Mobile 0.6.0",color=Tx,fontWeight=FontWeight.SemiBold,modifier=Modifier.padding(top=12.dp))
+            Text("Cobre Mobile 0.7.0",color=Tx,fontWeight=FontWeight.SemiBold,modifier=Modifier.padding(top=12.dp))
             Text("A biblioteca do computador é transmitida pela rede local; a conta Cobre ID continua cuidando da presença dos dispositivos.",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=4.dp))
         }
         Spacer(Modifier.height(10.dp))
