@@ -1,0 +1,15 @@
+.gradle/
+build/
+local.properties
+.idea/
+*.iml
+cobre-mobile.zip
+*.apk
+*.aab
+*.jks
+*.keystore
+cobre-mobile.zip
+*.apk
+*.aab
+*.jks
+*.keystore
