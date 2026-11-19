@@ -10,7 +10,7 @@ Aplicativo Android do ecossistema Cobre. A interface usa a paleta escura e os de
 - Ícone Cobre incluído nos recursos do APK.
 - Área Cobre ID para login, dispositivos e presença, com refresh token protegido pelo Android Keystore.
 
-A base 0.1.0 já foi instalada e usada no celular do autor. Esta atualização 0.2.0 precisa passar pela compilação do GitHub Actions e por nova validação em aparelho antes de ser considerada estável.
+A base 0.1.0 já foi instalada e usada no celular do autor. O código 0.2.0 compilou com sucesso no GitHub Actions. Ainda precisa de nova validação em aparelho antes de ser considerado estável.
 
 ## Cobre ID e conexão
 

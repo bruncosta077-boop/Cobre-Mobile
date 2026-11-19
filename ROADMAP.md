@@ -15,7 +15,7 @@ Player local instalado e usado no celular: leitura da biblioteca, grade de álbu
 - Refresh token cifrado com chave do Android Keystore.
 - Reprodução continua sendo local. O Cobre Server atual não fornece áudio nem sincroniza bibliotecas.
 
-**Próximo passo:** compilar o 0.2.0 pelo workflow, instalar no aparelho e validar navegação, reprodução, fila, controles, notificação, reinício e integração Cobre ID com um servidor acessível.
+**Build concluído:** o GitHub Actions compilou o APK 0.2.0. **Próximo passo:** instalar no aparelho e validar navegação, reprodução, fila, controles, notificação, reinício e integração Cobre ID com um servidor acessível.
 
 ## Próximas etapas
 
