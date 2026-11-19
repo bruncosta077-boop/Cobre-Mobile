@@ -127,7 +127,7 @@ fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,
         }
         SettingsCard {
             SectionHeading(Icons.Default.Refresh,"Aplicativo")
-            Text("Cobre Mobile 0.5.0",color=Tx,fontWeight=FontWeight.SemiBold,modifier=Modifier.padding(top=12.dp))
+            Text("Cobre Mobile 0.6.0",color=Tx,fontWeight=FontWeight.SemiBold,modifier=Modifier.padding(top=12.dp))
             Text("A biblioteca do computador é transmitida pela rede local; a conta Cobre ID continua cuidando da presença dos dispositivos.",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=4.dp))
         }
         Spacer(Modifier.height(10.dp))

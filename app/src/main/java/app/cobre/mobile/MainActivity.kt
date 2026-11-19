@@ -96,7 +96,7 @@ class MainActivity:ComponentActivity(){
     LaunchedEffect(settings.desktopUrl,desktopRefreshKey){
         val address=settings.desktopUrl
         if(address.isNullOrBlank()){desktopTracks=emptyList();desktopStatus=""}
-        else{desktopStatus="Conectando ao Cobre Desktop…";runCatching{desktopLibrary.load(address)}.onSuccess{remote->desktopTracks=remote;desktopStatus="Computador conectado · ${remote.size} faixas"}.onFailure{desktopTracks=emptyList();desktopStatus=it.message?:"Não foi possível conectar ao computador."}}
+        else{desktopStatus="Conectando ao Cobre Desktop…";runCatching{desktopLibrary.load(address)}.onSuccess{remote->desktopTracks=remote.tracks;desktopStatus="Computador conectado · ${remote.tracks.size} faixas · catálogo respondeu em ${remote.catalogResponseMs} ms"}.onFailure{desktopTracks=emptyList();desktopStatus=it.message?:"Não foi possível conectar ao computador."}}
     }
     LaunchedEffect(account.signedIn){while(account.signedIn){delay(45_000);runCatching{accountRepo.sendPresence();accountRepo.loadDevices()}.onSuccess{account=account.copy(devices=it,message="Conexão ativa.",error=false)}.onFailure{account=account.copy(message=it.message?:"Conexão interrompida.",error=true)}}}
     LaunchedEffect(playback.playing,fullPlayer){while(playback.playing&&fullPlayer){delay(450);player.refreshPosition()}}

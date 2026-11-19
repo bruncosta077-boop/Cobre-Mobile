@@ -1,6 +1,7 @@
 package app.cobre.mobile
 
 import android.net.Uri
+import android.os.SystemClock
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
@@ -8,9 +9,12 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 /** Reads the Desktop's existing LAN library endpoint and produces streamable Media3 items. */
+data class DesktopLibrarySnapshot(val tracks: List<Track>, val catalogResponseMs: Long)
+
 class DesktopLibraryRepository {
-    suspend fun load(address: String): List<Track> = withContext(Dispatchers.IO) {
+    suspend fun load(address: String): DesktopLibrarySnapshot = withContext(Dispatchers.IO) {
         val connectionInfo = parseAddress(address)
+        val startedAt = SystemClock.elapsedRealtime()
         val endpoint = Uri.parse(connectionInfo.origin).buildUpon()
             .appendPath("api").appendPath("lib").appendQueryParameter("k", connectionInfo.token).build()
         val connection = (URL(endpoint.toString()).openConnection() as HttpURLConnection).apply {
@@ -55,7 +59,7 @@ class DesktopLibraryRepository {
         } finally {
             connection.disconnect()
         }
-        items
+        DesktopLibrarySnapshot(items, (SystemClock.elapsedRealtime() - startedAt).coerceAtLeast(0))
     }
 
     fun coverUri(track: Track): Uri? {

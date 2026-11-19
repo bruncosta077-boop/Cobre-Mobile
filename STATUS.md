@@ -16,15 +16,20 @@ No aparelho, o autor confirmou login Cobre ID, leitura das músicas, reproduçã
 - Favoritos, histórico recente e playlists locais persistidos em SQLite.
 - Criar playlist a partir da fila; reproduzir playlists e administrar favoritos na aba Coleção.
 
-## Versão 0.5.0 — código em desenvolvimento
+## Versão 0.5.0 — APK gerado, aguardando teste no aparelho
 
 - Biblioteca local combinada com o catálogo do Cobre Desktop.
 - Reprodução das faixas do computador usando o endpoint LAN já existente no Desktop e suporte a HTTP Range do Media3.
 - A conexão usa o endereço e a chave mostrados em **Acesso remoto** no Desktop; exige a mesma rede local e não passa pelo Cobre Server.
-- O APK precisa compilar e ser instalado pelo autor para validar a rede e a reprodução no aparelho.
+- O APK foi gerado pelo GitHub Actions; falta instalar e validar a rede e a reprodução no aparelho.
+
+## Versão 0.6.0 — código em desenvolvimento
+
+- A tela de configurações mostra quantas faixas recebeu e o tempo de resposta ao carregar o catálogo do Desktop.
+- Essa medida confirma a resposta da biblioteca, não mede a velocidade contínua do áudio.
 
 ### Próxima validação
-1. Compilar o APK 0.5.0 pelo GitHub Actions.
+1. Gerar e instalar o APK 0.6.0 pelo GitHub Actions.
 2. No aparelho, conferir configuração da URL LAN, leitura dos álbuns/faixas Desktop, capas, reprodução, busca de posição e retorno ao áudio local.
 3. Favoritos e playlists permanecem armazenados localmente; sincronizá-los com o servidor é etapa posterior.
 
