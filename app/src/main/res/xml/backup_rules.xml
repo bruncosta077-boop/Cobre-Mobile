@@ -3,5 +3,5 @@
     <include domain="database" path="." />
     <include domain="sharedpref" path="cobre-mobile-appearance.xml" />
     <include domain="sharedpref" path="cobre-mobile-local-access.xml" />
-    <include domain="sharedpref" path="cobre-id.xml" />
+    <include domain="sharedpref" path="cobre-id-settings.xml" />
 </full-backup-content>

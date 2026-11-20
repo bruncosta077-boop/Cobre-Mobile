@@ -20,18 +20,23 @@ import javax.crypto.spec.GCMParameterSpec
 /** Client for the currently implemented Cobre Server account, presence and device endpoints. */
 class CobreIdRepository(context: Context) {
     private val appContext = context.applicationContext
-    private val prefs = appContext.getSharedPreferences("cobre-id", Context.MODE_PRIVATE)
+    private val legacyPrefs = appContext.getSharedPreferences("cobre-id", Context.MODE_PRIVATE)
+    private val prefs = appContext.getSharedPreferences("cobre-id-settings", Context.MODE_PRIVATE)
     private val secretPrefs = appContext.getSharedPreferences("cobre-id-secrets", Context.MODE_PRIVATE)
     private var accessToken: String? = null
 
     init {
-        // Move the encrypted refresh token out of the preferences eligible for Android backup.
-        val legacyToken = prefs.getString("refresh_token", null)
-        if (!legacyToken.isNullOrBlank()) {
-            val moved = !secretPrefs.getString("refresh_token", null).isNullOrBlank() ||
-                secretPrefs.edit().putString("refresh_token", legacyToken).commit()
-            if (moved) prefs.edit().remove("refresh_token").commit()
-        }
+        // Migrate the old mixed file, then keep settings and the encrypted token in separate files.
+        val legacyEmail = legacyPrefs.getString("email", null)
+        val legacyServer = legacyPrefs.getString("server_url", null)
+        val legacyToken = legacyPrefs.getString("refresh_token", null)
+        val settingsEditor = prefs.edit()
+        if (!prefs.contains("email") && legacyEmail != null) settingsEditor.putString("email", legacyEmail)
+        if (!prefs.contains("server_url") && legacyServer != null) settingsEditor.putString("server_url", legacyServer)
+        val settingsMoved = settingsEditor.commit()
+        val tokenMoved = legacyToken.isNullOrBlank() || !secretPrefs.getString("refresh_token", null).isNullOrBlank() ||
+            secretPrefs.edit().putString("refresh_token", legacyToken).commit()
+        if (settingsMoved && tokenMoved) legacyPrefs.edit().clear().commit()
     }
 
     val serverUrl: String get() = prefs.getString("server_url", "").orEmpty()
