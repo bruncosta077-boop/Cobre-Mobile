@@ -1,5 +1,12 @@
 # Cobre Mobile — status
 
+## Versão 0.9.0 — pré-release publicada
+
+- GitHub Actions compilou e publicou o APK `Cobre-Mobile-0.9.0.apk` em [Releases](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.9.0).
+- Backup seletivo habilitado para banco local e cores; Cobre ID, chave/endereço Desktop e permissão de pasta ficam excluídos.
+- Certificados debug 0.8.0 e 0.9.0 foram comparados e são diferentes. Não é possível instalar 0.9.0 por cima da 0.8.0; não desinstalar se houver dados locais a preservar.
+- Faltam chave de assinatura de distribuição estável, teste do backup/restauração e confirmação em aparelho real.
+
 ## Versão 0.2.0 — validada pelo autor
 
 No aparelho, o autor confirmou login Cobre ID, leitura das músicas, reprodução normal e ícone do app.

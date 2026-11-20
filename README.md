@@ -2,14 +2,14 @@
   <img src="assets/branding/cobre-logo.png" alt="Logo do Cobre" width="150">
   <h1>Cobre Mobile</h1>
   <p>Player Android integrado ao ecossistema Cobre</p>
-  <p><strong>Versão 0.8.0 em desenvolvimento</strong></p>
+  <p><strong>Versão 0.9.0 — pré-release</strong></p>
 </div>
 
 Desenvolvimento principal: Bruno C S Moraes · Contribuição ao projeto: [@dilucas00](https://github.com/dilucas00).
 
 Aplicativo Android do ecossistema Cobre. Interface escura com a paleta, o símbolo e a organização visual do Cobre Desktop, adaptados para toque.
 
-## Versão em desenvolvimento: 0.8.0
+## Versão atual: 0.9.0 — pré-release
 
 - Biblioteca local com álbuns, artistas, faixas, capas e busca.
 - Pasta de biblioteca configurável pelo seletor de pastas do Android.
@@ -24,8 +24,11 @@ Aplicativo Android do ecossistema Cobre. Interface escura com a paleta, o símbo
 - Player com volume sempre visível, metadados do álbum e ações por toque longo nos álbuns.
 - Ícone Cobre incluído no APK em formatos legado e adaptativo.
 - Medição do áudio recebido do Desktop (latência inicial e bytes por segundo) enviada ao painel Cobre Server, sem confundir catálogo com stream.
+- Backup Android seletivo de playlists, favoritos, histórico e cores; não transfere credenciais, endereço/chave LAN nem permissão da pasta.
 
-A versão 0.2.0 foi validada pelo autor. A conexão LAN e a reprodução Desktop do 0.6.0 também foram confirmadas; as mudanças visuais do 0.7.0 e as métricas de stream do 0.8.0 aguardam validação no aparelho.
+A versão 0.2.0 foi validada pelo autor. A conexão LAN e a reprodução Desktop do 0.6.0 também foram confirmadas. A versão 0.9.0 foi compilada e publicada pelo GitHub Actions; backup, aparência, métricas 0.8 e atualização por cima de versões anteriores ainda precisam de validação em aparelho.
+
+**Assinatura de teste:** os APKs das execuções do GitHub Actions usam assinatura debug, que pode mudar entre versões. Se o Android avisar que a assinatura não corresponde, não desinstale o app com dados que deseja preservar; uma assinatura estável ainda precisa ser configurada para atualizações futuras sem esse bloqueio.
 
 ## Conexão
 

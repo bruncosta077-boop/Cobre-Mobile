@@ -5,7 +5,8 @@
 - Android pode restaurar banco local (playlists, favoritos e histórico) e cores de aparência pelo backup do sistema ou transferência entre aparelhos.
 - Migra preferências antigas e separa aparência das configurações de acesso local.
 - Endereço do Desktop, permissão de pasta e credenciais Cobre ID ficam fora do backup; podem precisar ser reconectados após reinstalação ou troca de aparelho.
-- Atualização normal sobre o app instalado mantém os dados; backup do Android depende de estar habilitado no aparelho.
+- Em atualização sobre o app instalado, o Android mantém os dados quando o certificado de assinatura é o mesmo. Esta build debug de CI tem certificado diferente do APK 0.8.0; não tente contornar removendo o app se precisar dos dados locais.
+- O backup do Android depende de estar habilitado; a assinatura estável de distribuição continua pendente.
 
 ## 0.8.0 — em validação
 
