@@ -37,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -86,6 +87,7 @@ class MainActivity:ComponentActivity(){
     val folderPicker=rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()){uri->if(uri!=null){runCatching{context.contentResolver.takePersistableUriPermission(uri,Intent.FLAG_GRANT_READ_URI_PERMISSION)};settings.setFolder(uri.toString());folderUri=uri.toString()}}
     var localTracks by remember{mutableStateOf<List<Track>?>(null)}; var desktopTracks by remember{mutableStateOf<List<Track>>(emptyList())}; var desktopStatus by remember{mutableStateOf("")}; var desktopCatalogResponseMs by remember{mutableStateOf<Long?>(null)}
     var desktopRefreshKey by remember{mutableIntStateOf(0)}
+    var desktopAuthorizationRevision by remember{mutableIntStateOf(0)}
     var librarySource by remember{mutableStateOf(LibrarySource.All)}
     val allTracks=localTracks?.plus(desktopTracks)
     val tracks=allTracks?.let{selectLibrarySource(it,librarySource)}
@@ -99,10 +101,10 @@ class MainActivity:ComponentActivity(){
         runCatching{accountRepo.restoreSession();sendMeasuredPresence(accountRepo,context,null);accountRepo.loadDevices()}.onSuccess{account=AccountUi(true,accountRepo.savedEmail,it,message="Conta conectada.")}.onFailure{account=AccountUi(email=accountRepo.savedEmail,message=it.message?:"Sessão expirada.",error=true)}
     }}
     LaunchedEffect(granted,folderUri){localTracks=if(granted)runCatching{library.load(folderUri?.let{Uri.parse(it)})}.getOrDefault(emptyList()) else emptyList()}
-    LaunchedEffect(settings.desktopUrl,desktopRefreshKey){
+    LaunchedEffect(settings.desktopUrl,desktopRefreshKey,desktopAuthorizationRevision){
         val address=settings.desktopUrl
         if(address.isNullOrBlank()){desktopTracks=emptyList();desktopCatalogResponseMs=null;desktopStatus=""}
-        else{desktopStatus="Conectando ao Cobre Desktop…";runCatching{desktopLibrary.load(address)}.onSuccess{remote->desktopTracks=remote.tracks;desktopCatalogResponseMs=remote.catalogResponseMs;desktopStatus="Computador conectado · ${remote.tracks.size} faixas · catálogo respondeu em ${remote.catalogResponseMs} ms"}.onFailure{desktopTracks=emptyList();desktopCatalogResponseMs=null;desktopStatus=it.message?:"Não foi possível conectar ao computador."}}
+        else{desktopStatus="Conectando ao Cobre Desktop…";runCatching{desktopLibrary.load(address,accountRepo.currentDesktopGrantToken())}.onSuccess{remote->desktopTracks=remote.tracks;desktopCatalogResponseMs=remote.catalogResponseMs;desktopStatus="Computador conectado · ${remote.tracks.size} faixas · catálogo respondeu em ${remote.catalogResponseMs} ms"}.onFailure{desktopTracks=emptyList();desktopCatalogResponseMs=null;desktopStatus=it.message?:"Não foi possível conectar ao computador."}}
     }
     LaunchedEffect(account.signedIn,desktopCatalogResponseMs){if(account.signedIn&&desktopCatalogResponseMs!=null)runCatching{sendMeasuredPresence(accountRepo,context,desktopCatalogResponseMs)}}
     LaunchedEffect(account.signedIn,desktopCatalogResponseMs){while(account.signedIn){delay(45_000);runCatching{sendMeasuredPresence(accountRepo,context,desktopCatalogResponseMs);accountRepo.loadDevices()}.onSuccess{account=account.copy(devices=it,message="Conexão ativa.",error=false)}.onFailure{account=account.copy(message=it.message?:"Conexão interrompida.",error=true)}}}
@@ -125,7 +127,7 @@ class MainActivity:ComponentActivity(){
                     }
                     Page.Queue->QueuePage(playback,player,collections)
                     Page.Collections->CollectionsPage(collections,{list->player.play(list,0)},{track->player.addToQueue(track)})
-                    Page.Account->AccountPage(accountRepo,account){account=it}
+                    Page.Account->AccountPage(accountRepo,account,settings.desktopUrl.orEmpty(),{account=it},{desktopAuthorizationRevision++})
                     Page.Settings->SettingsPage(settings,folderUri,desktopStatus,desktopTracks.size,{folderPicker.launch(folderUri?.let{Uri.parse(it)})},{folderUri?.let{old->runCatching{context.contentResolver.releasePersistableUriPermission(Uri.parse(old),Intent.FLAG_GRANT_READ_URI_PERMISSION)}};settings.setFolder(null);folderUri=null},{settings.saveDesktopUrl(it);desktopRefreshKey++},{settings.saveDesktopUrl(null);desktopRefreshKey++})
                 }
             }
@@ -267,22 +269,48 @@ private fun selectLibrarySource(tracks:List<Track>,source:LibrarySource):List<Tr
     var volume by remember{mutableFloatStateOf(audio.getStreamVolume(AudioManager.STREAM_MUSIC).toFloat()/maxVolume)}
     var scrubbing by remember{mutableStateOf(false)};var preview by remember{mutableFloatStateOf(0f)}
     val current=s.queue.getOrNull(s.currentIndex)
-    Column(Modifier.fillMaxSize().navigationBarsPadding()){
-        Row(Modifier.fillMaxWidth().height(54.dp).padding(horizontal=12.dp),verticalAlignment=Alignment.CenterVertically){IconButton(onClick=onClose){Icon(Icons.Default.KeyboardArrowDown,"Minimizar",tint=Tx)};Text("TOCANDO AGORA",color=Mu,letterSpacing=2.sp,style=MaterialTheme.typography.labelMedium,modifier=Modifier.weight(1f),textAlign=TextAlign.Center);IconButton(onClick=onQueue){Icon(Icons.Default.QueueMusic,"Fila",tint=MaterialTheme.colorScheme.primary)}}
-        Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal=26.dp),horizontalAlignment=Alignment.CenterHorizontally){
-            Spacer(Modifier.height(8.dp));Cover(current,Modifier.fillMaxWidth(.82f).aspectRatio(1f).clip(RoundedCornerShape(12.dp)));Spacer(Modifier.height(22.dp))
-            Column(Modifier.fillMaxWidth()){Text(s.title,color=Tx,style=MaterialTheme.typography.titleLarge,fontWeight=FontWeight.SemiBold,maxLines=1,overflow=TextOverflow.Ellipsis);Text(s.artist,color=Mu,style=MaterialTheme.typography.titleMedium,maxLines=1,overflow=TextOverflow.Ellipsis);Text(buildString{append(current?.album?:"Álbum desconhecido");if((current?.year?:0)>0)append(" · ${current?.year}");append(if(current?.uri?.scheme=="http")" · Computador" else " · Neste celular");if((current?.trackNumber?:0)>0)append(" · Faixa ${current?.trackNumber}")},color=Mu.copy(alpha=.8f),style=MaterialTheme.typography.bodySmall,maxLines=1,overflow=TextOverflow.Ellipsis,modifier=Modifier.padding(top=4.dp))}
-            val p=if(scrubbing)preview else s.positionMs.toFloat();Slider(value=p.coerceIn(0f,s.durationMs.coerceAtLeast(1).toFloat()),onValueChange={preview=it;scrubbing=true},onValueChangeFinished={player.seekTo(preview.toLong());scrubbing=false},valueRange=0f..s.durationMs.coerceAtLeast(1).toFloat(),colors=SliderDefaults.colors(thumbColor=MaterialTheme.colorScheme.primary,activeTrackColor=MaterialTheme.colorScheme.primary,inactiveTrackColor=Line));Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Text(time(p.toLong()),color=Mu,style=MaterialTheme.typography.labelSmall);Text("-${time((s.durationMs-p.toLong()).coerceAtLeast(0))}",color=Mu,style=MaterialTheme.typography.labelSmall)}
-            Spacer(Modifier.height(7.dp));Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){IconButton(onClick=player::toggleShuffle){Icon(Icons.Default.Shuffle,"Aleatório",tint=if(s.shuffleEnabled)MaterialTheme.colorScheme.primary else Mu)};IconButton(onClick=player::previous,modifier=Modifier.size(48.dp)){Icon(Icons.Default.SkipPrevious,"Anterior",tint=Tx,modifier=Modifier.size(30.dp))};Box(Modifier.size(60.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary).clickable{player.toggle()},contentAlignment=Alignment.Center){Icon(if(s.playing)Icons.Default.Pause else Icons.Default.PlayArrow,"Reproduzir ou pausar",tint=Color.White,modifier=Modifier.size(32.dp))};IconButton(onClick=player::next,modifier=Modifier.size(48.dp)){Icon(Icons.Default.SkipNext,"Próxima",tint=Tx,modifier=Modifier.size(30.dp))};IconButton(onClick=player::cycleRepeat){Icon(if(s.repeatMode==androidx.media3.common.Player.REPEAT_MODE_ONE)Icons.Default.RepeatOne else Icons.Default.Repeat,"Repetir",tint=if(s.repeatMode==androidx.media3.common.Player.REPEAT_MODE_OFF)Mu else MaterialTheme.colorScheme.primary)}}
-            Row(Modifier.fillMaxWidth().padding(top=12.dp),verticalAlignment=Alignment.CenterVertically){Icon(Icons.Default.VolumeDown,"Volume",tint=Mu,modifier=Modifier.size(20.dp));Slider(value=volume,onValueChange={volume=it;audio.setStreamVolume(AudioManager.STREAM_MUSIC,(it*maxVolume).toInt().coerceIn(0,maxVolume),0)},modifier=Modifier.weight(1f).padding(horizontal=10.dp),valueRange=0f..1f,colors=SliderDefaults.colors(thumbColor=MaterialTheme.colorScheme.primary,activeTrackColor=MaterialTheme.colorScheme.primary,inactiveTrackColor=Line));Text("${(volume*100).toInt()}%",color=Mu,style=MaterialTheme.typography.labelSmall,modifier=Modifier.width(38.dp),textAlign=TextAlign.End)}
-            Row(Modifier.fillMaxWidth().padding(top=10.dp,bottom=22.dp).clickable(onClick=onQueue).padding(vertical=10.dp),verticalAlignment=Alignment.CenterVertically){Icon(Icons.Default.QueueMusic,null,tint=Mu,modifier=Modifier.size(19.dp));Text("Fila · ${s.queue.size} faixas",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.weight(1f).padding(start=9.dp));Icon(Icons.Default.KeyboardArrowDown,null,tint=Mu)}
+    val source=if(current?.uri?.path?.startsWith("/v1/tracks/")==true||current?.uri?.path?.startsWith("/stream/")==true)"COMPUTADOR · REDE LOCAL" else "BIBLIOTECA DO CELULAR"
+    Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color(0xFF35261E),Bg.copy(alpha=.98f),Bg))).navigationBarsPadding()){
+        Column(Modifier.fillMaxSize()){
+            Row(Modifier.fillMaxWidth().height(58.dp).padding(horizontal=14.dp),verticalAlignment=Alignment.CenterVertically){
+                IconButton(onClick=onClose){Icon(Icons.Default.KeyboardArrowDown,"Minimizar player",tint=Tx)}
+                Column(Modifier.weight(1f),horizontalAlignment=Alignment.CenterHorizontally){Text("TOCANDO AGORA",color=Tx,letterSpacing=1.8.sp,style=MaterialTheme.typography.labelMedium);Text(source,color=Mu,letterSpacing=1.sp,style=MaterialTheme.typography.labelSmall)}
+                IconButton(onClick=onQueue){Icon(Icons.Default.QueueMusic,"Abrir fila",tint=MaterialTheme.colorScheme.primary)}
+            }
+            Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal=26.dp),horizontalAlignment=Alignment.CenterHorizontally){
+                Spacer(Modifier.height(12.dp))
+                Box(Modifier.fillMaxWidth(.86f).aspectRatio(1f).clip(RoundedCornerShape(18.dp)).background(CardBg),contentAlignment=Alignment.Center){Cover(current,Modifier.fillMaxSize())}
+                Spacer(Modifier.height(24.dp))
+                Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically){
+                    Column(Modifier.weight(1f)){Text(s.title,color=Tx,style=MaterialTheme.typography.titleLarge,fontWeight=FontWeight.Bold,maxLines=1,overflow=TextOverflow.Ellipsis);Text(s.artist,color=Mu,style=MaterialTheme.typography.titleMedium,maxLines=1,overflow=TextOverflow.Ellipsis);Text(buildString{append(current?.album?:"Álbum desconhecido");if((current?.year?:0)>0)append(" · ${current?.year}");if((current?.trackNumber?:0)>0)append(" · Faixa ${current?.trackNumber}")},color=Mu.copy(alpha=.8f),style=MaterialTheme.typography.bodySmall,maxLines=1,overflow=TextOverflow.Ellipsis,modifier=Modifier.padding(top=3.dp))}
+                    IconButton(onClick=onQueue){Icon(Icons.Default.MoreVert,"Mais opções e fila",tint=Mu)}
+                }
+                Spacer(Modifier.height(14.dp))
+                val p=if(scrubbing)preview else s.positionMs.toFloat()
+                Slider(value=p.coerceIn(0f,s.durationMs.coerceAtLeast(1).toFloat()),onValueChange={preview=it;scrubbing=true},onValueChangeFinished={player.seekTo(preview.toLong());scrubbing=false},valueRange=0f..s.durationMs.coerceAtLeast(1).toFloat(),colors=SliderDefaults.colors(thumbColor=MaterialTheme.colorScheme.primary,activeTrackColor=MaterialTheme.colorScheme.primary,inactiveTrackColor=Line))
+                Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Text(time(p.toLong()),color=Mu,style=MaterialTheme.typography.labelSmall);Text("-${time((s.durationMs-p.toLong()).coerceAtLeast(0))}",color=Mu,style=MaterialTheme.typography.labelSmall)}
+                Spacer(Modifier.height(12.dp))
+                Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){
+                    IconButton(onClick=player::toggleShuffle){Icon(Icons.Default.Shuffle,"Aleatório",tint=if(s.shuffleEnabled)MaterialTheme.colorScheme.primary else Mu)}
+                    IconButton(onClick=player::previous,modifier=Modifier.size(52.dp)){Icon(Icons.Default.SkipPrevious,"Anterior",tint=Tx,modifier=Modifier.size(31.dp))}
+                    Box(Modifier.size(66.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primary).clickable{player.toggle()},contentAlignment=Alignment.Center){Icon(if(s.playing)Icons.Default.Pause else Icons.Default.PlayArrow,"Reproduzir ou pausar",tint=Color.White,modifier=Modifier.size(34.dp))}
+                    IconButton(onClick=player::next,modifier=Modifier.size(52.dp)){Icon(Icons.Default.SkipNext,"Próxima",tint=Tx,modifier=Modifier.size(31.dp))}
+                    IconButton(onClick=player::cycleRepeat){Icon(if(s.repeatMode==androidx.media3.common.Player.REPEAT_MODE_ONE)Icons.Default.RepeatOne else Icons.Default.Repeat,"Repetir",tint=if(s.repeatMode==androidx.media3.common.Player.REPEAT_MODE_OFF)Mu else MaterialTheme.colorScheme.primary)}
+                }
+                Spacer(Modifier.height(16.dp))
+                Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(15.dp)).background(Color.White.copy(alpha=.055f)).padding(horizontal=13.dp,vertical=4.dp),verticalAlignment=Alignment.CenterVertically){Icon(Icons.Default.VolumeDown,"Volume",tint=Mu,modifier=Modifier.size(20.dp));Slider(value=volume,onValueChange={volume=it;audio.setStreamVolume(AudioManager.STREAM_MUSIC,(it*maxVolume).toInt().coerceIn(0,maxVolume),0)},modifier=Modifier.weight(1f).padding(horizontal=10.dp),valueRange=0f..1f,colors=SliderDefaults.colors(thumbColor=MaterialTheme.colorScheme.primary,activeTrackColor=MaterialTheme.colorScheme.primary,inactiveTrackColor=Line));Text("${(volume*100).toInt()}%",color=Mu,style=MaterialTheme.typography.labelSmall,modifier=Modifier.width(38.dp),textAlign=TextAlign.End)}
+                Spacer(Modifier.height(12.dp))
+                Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(13.dp)).clickable(onClick=onQueue).padding(horizontal=14.dp,vertical=12.dp),verticalAlignment=Alignment.CenterVertically){Icon(Icons.Default.QueueMusic,null,tint=MaterialTheme.colorScheme.primary,modifier=Modifier.size(19.dp));Column(Modifier.weight(1f).padding(start=10.dp)){Text("A seguir",color=Tx,style=MaterialTheme.typography.labelLarge);Text("${s.queue.size} faixas · faixa ${if(s.queue.isEmpty())0 else s.currentIndex+1}",color=Mu,style=MaterialTheme.typography.bodySmall)};Icon(Icons.Default.KeyboardArrowRight,null,tint=Mu)}
+                Spacer(Modifier.height(14.dp))
+            }
         }
     }
 }
 
 @Composable private fun Cover(track:Track?,modifier:Modifier=Modifier){
     val context=LocalContext.current;val desktop=remember{DesktopLibraryRepository()};val coverUri=track?.let(desktop::coverUri)
-    val bitmap by produceState<Bitmap?>(null,track?.uri,coverUri){value=if(track==null)null else withContext(Dispatchers.IO){runCatching{if(coverUri==null)context.contentResolver.loadThumbnail(track.uri,Size(480,480),null)else{val connection=URL(coverUri.toString()).openConnection() as HttpURLConnection;try{if(connection.responseCode==HttpURLConnection.HTTP_OK)connection.inputStream.use{BitmapFactory.decodeStream(it)}else null}finally{connection.disconnect()}}}.getOrNull()}}
+    val grantToken=CobreIdRepository(context).currentDesktopGrantToken()
+    val bitmap by produceState<Bitmap?>(null,track?.uri,coverUri,grantToken){value=if(track==null)null else withContext(Dispatchers.IO){runCatching{if(coverUri==null)context.contentResolver.loadThumbnail(track.uri,Size(480,480),null)else{val connection=URL(coverUri.toString()).openConnection() as HttpURLConnection;try{connection.instanceFollowRedirects=false;if(coverUri.path?.startsWith("/v1/")==true&&!grantToken.isNullOrBlank())connection.setRequestProperty("Authorization","Bearer $grantToken");if(connection.responseCode==HttpURLConnection.HTTP_OK)connection.inputStream.use{BitmapFactory.decodeStream(it)}else null}finally{connection.disconnect()}}}.getOrNull()}}
     Box(modifier.background(CardBg),contentAlignment=Alignment.Center){if(bitmap!=null)Image(bitmap!!.asImageBitmap(),track?.album,Modifier.fillMaxSize(),contentScale=ContentScale.Crop)else Icon(Icons.Default.MusicNote,null,tint=MaterialTheme.colorScheme.primary.copy(alpha=.75f),modifier=Modifier.size(36.dp))}
 }
 

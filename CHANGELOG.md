@@ -1,5 +1,17 @@
 # Histórico de versões — Cobre Mobile
 
+## 0.12.0 — conexão Cobre ID, áudio remoto e player reorganizado
+
+- Mobile pede aprovação por aparelho ao Desktop através do Cobre ID; o Desktop decide e a permissão do Server vale até 30 dias.
+- Biblioteca do Desktop usa as rotas protegidas de catálogo, capa e áudio. O áudio segue direto pela rede local do Desktop para o celular, com `Range` para busca na faixa; o Server autoriza, mas não armazena nem retransmite músicas.
+- Tokens de acesso duram poucos minutos, ficam cifrados com Android Keystore e são renovados enquanto a reprodução continua; ao sair da conta, os dados locais da autorização são apagados.
+- Controles no Cobre ID permitem ver a faixa do Desktop, pausar/reproduzir, avançar/voltar e ajustar seu volume.
+- Tela completa do player foi reorganizada em torno da capa, identificação da origem, progresso, controles, volume visível e acesso à fila; o visual usa a paleta escura cobre do Desktop como referência.
+- Configurações agora separam biblioteca do celular, integração com Desktop, aparência e áudio. Equalizador real de cinco bandas aplica ajustes à sessão de reprodução do Android e guarda os valores no backup.
+- Corrigida a migração de refresh tokens antigos para o armazenamento cifrado; IDs e autorizações do Desktop não entram no backup exportável.
+- Requer Cobre Desktop 3.9.0 ou posterior e Cobre Server 0.5.0-beta.9 ou posterior para o novo acesso protegido. A conexão antiga por chave LAN continua disponível como compatibilidade.
+- Build compilada localmente em debug. Ainda falta validar a autorização e uma faixa longa no aparelho, publicar a versão com certificado de distribuição estável e confirmar que os controles remotos estão disponíveis na build Desktop instalada.
+
 ## 0.11.0 — recuperação de configurações
 
 - Backup do Android passa a incluir endereço do Cobre Server, email da conta, pasta escolhida, endereço do Desktop, cores e dados locais (playlists, favoritos e histórico).
@@ -7,6 +19,7 @@
 - Uma restauração em outro aparelho pode exigir login novamente e nova permissão para a pasta, pois credenciais e concessões SAF não podem ser restauradas como texto.
 - A atualização sobre uma instalação preserva os dados quando `applicationId` e certificado de assinatura permanecem iguais. O APK de release ainda aguarda uma chave estável no GitHub; esta versão não deve ser instalada desinstalando um APK com dados importantes.
 - `assembleDebug` passou no GitHub Actions [44746930132](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/44746930132); ainda falta validar backup/restauração em aparelho físico.
+- A versão 0.11.0 não chegou a ser publicada; suas mudanças estão incluídas na 0.12.0.
 
 ## 0.10.0 — preparação da assinatura estável
 

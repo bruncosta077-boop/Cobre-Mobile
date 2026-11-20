@@ -57,6 +57,10 @@ fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,
     var desktopAddress by remember(settings.desktopUrl){mutableStateOf(settings.desktopUrl.orEmpty())}
     var showReleaseNotes by remember{mutableStateOf(false)}
     var volume by remember{mutableFloatStateOf(audio.getStreamVolume(AudioManager.STREAM_MUSIC).toFloat()*100f/maxOf(1,audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC)))}
+    val audioPrefs=remember{context.getSharedPreferences(PlaybackService.AUDIO_PREFS,Context.MODE_PRIVATE)}
+    val equalizerBands=remember{mutableStateListOf<Float>().apply{repeat(5){add(audioPrefs.getInt("eq_band_$it",0).toFloat())}}}
+    var equalizerEnabled by remember{mutableStateOf(audioPrefs.getBoolean("eq_enabled",false))}
+    var equalizerAvailable by remember{mutableStateOf(audioPrefs.getBoolean("eq_available",true))}
     var outputs by remember{mutableStateOf(audio.getDevices(AudioManager.GET_DEVICES_OUTPUTS).toList())}
     val maxVolume=audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC).coerceAtLeast(1)
     DisposableEffect(audio){
@@ -67,11 +71,16 @@ fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,
         audio.registerAudioDeviceCallback(callback,Handler(Looper.getMainLooper()))
         onDispose{audio.unregisterAudioDeviceCallback(callback)}
     }
+    DisposableEffect(audioPrefs){
+        val listener=android.content.SharedPreferences.OnSharedPreferenceChangeListener{_,key->if(key=="eq_available")equalizerAvailable=audioPrefs.getBoolean("eq_available",false)}
+        audioPrefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose{audioPrefs.unregisterOnSharedPreferenceChangeListener(listener)}
+    }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal=18.dp,vertical=14.dp),verticalArrangement=Arrangement.spacedBy(14.dp)){
         Text("Configurações",color=Tx,style=MaterialTheme.typography.headlineMedium,fontWeight=FontWeight.Bold)
         Text("Ajuste a biblioteca, a aparência e o áudio do Cobre no celular.",color=Mu)
         SettingsCard {
-            SectionHeading(Icons.Default.Folder,"Biblioteca")
+            SectionHeading(Icons.Default.Folder,"Biblioteca do celular")
             Text("Pasta de músicas",color=Tx,fontWeight=FontWeight.SemiBold,modifier=Modifier.padding(top=12.dp))
             Text(folderUri?.let(::folderLabel)?:"Todo o áudio indexado pelo Android",color=Mu,style=MaterialTheme.typography.bodySmall,maxLines=2,overflow=TextOverflow.Ellipsis,modifier=Modifier.padding(top=4.dp))
             Row(Modifier.padding(top=9.dp),horizontalArrangement=Arrangement.spacedBy(8.dp)){
@@ -79,9 +88,11 @@ fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,
                 if(folderUri!=null)TextButton(onClick=onClearFolder){Text("Mostrar tudo",color=Mu)}
             }
             Text("A biblioteca passa a mostrar somente músicas dentro da pasta escolhida.",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=5.dp))
-            Text("Biblioteca do computador",color=Tx,fontWeight=FontWeight.SemiBold,modifier=Modifier.padding(top=18.dp))
-            Text("No Cobre Desktop, abra Acesso remoto e copie o endereço completo. Os dois aparelhos precisam estar na mesma rede Wi-Fi.",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=4.dp))
-            OutlinedTextField(value=desktopAddress,onValueChange={desktopAddress=it},modifier=Modifier.fillMaxWidth().padding(top=8.dp),label={Text("Endereço do Cobre Desktop")},placeholder={Text("http://192.168.1.20:8787/?k=...")},singleLine=true,colors=fieldColors())
+        }
+        SettingsCard {
+            SectionHeading(Icons.Default.Devices,"Integração com o Desktop")
+            Text("1. Entre na mesma conta Cobre ID nos dois aparelhos e peça acesso na aba Cobre ID. 2. Aprove o pedido no Desktop. 3. Informe o endereço local abaixo. O Server autoriza; o áudio vai direto pela rede local.",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=8.dp))
+            OutlinedTextField(value=desktopAddress,onValueChange={desktopAddress=it},modifier=Modifier.fillMaxWidth().padding(top=8.dp),label={Text("Endereço local do Cobre Desktop")},placeholder={Text("http://192.168.1.20:8787")},singleLine=true,colors=fieldColors())
             if(desktopStatus.isNotBlank())Text(desktopStatus,color=if(desktopStatus.startsWith("Computador conectado"))MaterialTheme.colorScheme.primary else Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=5.dp))
             Row(horizontalArrangement=Arrangement.spacedBy(8.dp),modifier=Modifier.padding(top=5.dp)){
                 Button(onClick={onSaveDesktopUrl(desktopAddress)},enabled=desktopAddress.isNotBlank(),colors=ButtonDefaults.buttonColors(containerColor=MaterialTheme.colorScheme.primary),shape=RoundedCornerShape(22.dp)){Icon(Icons.Default.Devices,null);Spacer(Modifier.width(6.dp));Text("Conectar")}
@@ -122,14 +133,20 @@ fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,
             TextButton(onClick={runCatching{context.startActivity(Intent(Settings.ACTION_SOUND_SETTINGS))}}){Icon(Icons.Default.Settings,null,tint=MaterialTheme.colorScheme.primary);Spacer(Modifier.width(7.dp));Text("Abrir áudio do Android",color=Tx)}
         }
         SettingsCard {
-            SectionHeading(Icons.Default.AudioFile,"Recursos de áudio")
-            Text("Equalizador Cobre",color=Tx,fontWeight=FontWeight.SemiBold,modifier=Modifier.padding(top=12.dp))
-            Text("O equalizador, crossfade e os outros efeitos do Desktop serão portados depois que a saída de áudio do Android estiver medida e validada.",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=4.dp))
+            SectionHeading(Icons.Default.AudioFile,"Equalizador de 5 bandas")
+            Text("Ajuste o timbre da reprodução local e das faixas recebidas do Desktop.",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=6.dp))
+            Row(Modifier.fillMaxWidth().padding(top=8.dp),verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){Text("Equalizador",color=Tx,fontWeight=FontWeight.SemiBold);Text(if(equalizerAvailable)"Aplicado pelo mecanismo de áudio do Android" else "Este aparelho não disponibilizou o efeito de equalização",color=Mu,style=MaterialTheme.typography.bodySmall)};Switch(checked=equalizerEnabled,onCheckedChange={equalizerEnabled=it;audioPrefs.edit().putBoolean("eq_enabled",it).apply()})}
+            if(equalizerEnabled&&equalizerAvailable){
+                val labels=listOf("Subgrave","Graves","Médios","Presença","Agudos")
+                labels.forEachIndexed{index,label->Column(Modifier.fillMaxWidth().padding(top=3.dp)){Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Text(label,color=Tx,style=MaterialTheme.typography.bodySmall);Text("${if(equalizerBands[index]>0)"+" else ""}${equalizerBands[index].toInt()} dB",color=MaterialTheme.colorScheme.primary,style=MaterialTheme.typography.labelSmall)};Slider(value=equalizerBands[index],onValueChange={value->equalizerBands[index]=value;audioPrefs.edit().putInt("eq_band_$index",value.toInt()).apply()},valueRange=-12f..12f,steps=23,colors=SliderDefaults.colors(thumbColor=MaterialTheme.colorScheme.primary,activeTrackColor=MaterialTheme.colorScheme.primary,inactiveTrackColor=Line))}}
+                TextButton(onClick={for(index in 0..4){equalizerBands[index]=0f};audioPrefs.edit().putInt("eq_band_0",0).putInt("eq_band_1",0).putInt("eq_band_2",0).putInt("eq_band_3",0).putInt("eq_band_4",0).apply()}){Text("Restaurar som plano",color=MaterialTheme.colorScheme.primary)}
+            }
+            Text("A quantidade e a faixa de frequências disponíveis dependem do aparelho. O equalizador só altera o áudio reproduzido pelo Cobre.",color=Mu,style=MaterialTheme.typography.bodySmall)
         }
         SettingsCard {
             SectionHeading(Icons.Default.Refresh,"Aplicativo")
             Text("Cobre Mobile ${BuildConfig.VERSION_NAME}",color=Tx,fontWeight=FontWeight.SemiBold,modifier=Modifier.padding(top=12.dp))
-            Text("A biblioteca do computador é transmitida pela rede local; a conta Cobre ID continua cuidando da presença dos dispositivos.",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=4.dp))
+            Text("Cobre ID aprova e renova o acesso. As músicas do Desktop são transmitidas diretamente pela rede local.",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=4.dp))
             TextButton(onClick={showReleaseNotes=true}){Text("Notas da versão",color=MaterialTheme.colorScheme.primary)}
             Text("Com contribuição de dilucas00",color=Mu,style=MaterialTheme.typography.bodySmall)
         }
@@ -138,7 +155,7 @@ fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,
     if(showReleaseNotes)AlertDialog(
         onDismissRequest={showReleaseNotes=false},
         title={Text("Cobre Mobile ${BuildConfig.VERSION_NAME}")},
-        text={Text("Preparação do APK de release com assinatura estável e versão do app sincronizada nas configurações e no Cobre ID. A publicação depende da configuração segura da chave de assinatura; veja CHANGELOG.md para o estado completo.")},
+        text={Text("Cobre Mobile reúne a biblioteca do celular e do computador, com autorização Cobre ID, transmissão local, controles de reprodução e volume sempre visível. O Cobre Server aprova o acesso e não recebe os arquivos de áudio.")},
         confirmButton={TextButton(onClick={showReleaseNotes=false}){Text("Entendi")}},
     )
 }

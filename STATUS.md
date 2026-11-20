@@ -1,5 +1,14 @@
 # Cobre Mobile — status
 
+## Versão 0.12.0 — compilada em debug, aguardando validação no aparelho
+
+- Solicitação e aprovação de acesso do Mobile no Desktop via Cobre ID; consentimento duradouro e tokens de mídia curtos renovados automaticamente.
+- Catálogo, capas, áudio HTTP Range e comandos remotos usam rotas protegidas do Desktop. Server autoriza, mídia flui diretamente na rede local.
+- Player reorganizado com capa em destaque, origem, progresso, controles e volume visível; configurações de música do computador, aparência e saída de áudio ficam em grupos identificados.
+- Equalizador Android de cinco bandas implementado e preferências adicionadas ao backup seletivo.
+- `assembleDebug` compilou com sucesso nesta máquina. O teste local usou uma cópia temporária ASCII do código por limitação do Android Gradle no caminho original com acento.
+- Falta testar com Desktop 3.9.0/Server beta.9 no aparelho. A chave estável de distribuição não está cadastrada, então ainda não há atualização assinada para publicar com segurança por cima das instalações existentes.
+
 ## Versão 0.9.0 — pré-release publicada
 
 - GitHub Actions compilou e publicou o APK `Cobre-Mobile-0.9.0.apk` em [Releases](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.9.0).
@@ -7,7 +16,7 @@
 - Certificados debug 0.8.0 e 0.9.0 foram comparados e são diferentes. Não é possível instalar 0.9.0 por cima da 0.8.0; não desinstalar se houver dados locais a preservar.
 - A chave estável de distribuição continua sem configurar; APK debug não deve ser tratado como canal de atualização estável.
 
-## Versão 0.11.0 — backup de configurações em preparação
+## Versão 0.11.0 — não publicada; alterações incorporadas à 0.12.0
 
 - Backup do Android foi ampliado para endereço do Cobre Server, email, pasta e Desktop; o refresh token fica em arquivo separado protegido por Keystore e fora do backup.
 - Migração de token antigo entre preferências é feita ao abrir o app sem limpar sessão.

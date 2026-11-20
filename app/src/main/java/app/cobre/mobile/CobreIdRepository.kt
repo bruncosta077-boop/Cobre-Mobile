@@ -35,7 +35,7 @@ class CobreIdRepository(context: Context) {
         if (!prefs.contains("server_url") && legacyServer != null) settingsEditor.putString("server_url", legacyServer)
         val settingsMoved = settingsEditor.commit()
         val tokenMoved = legacyToken.isNullOrBlank() || !secretPrefs.getString("refresh_token", null).isNullOrBlank() ||
-            secretPrefs.edit().putString("refresh_token", legacyToken).commit()
+            runCatching { saveRefreshToken(legacyToken); true }.getOrDefault(false)
         if (settingsMoved && tokenMoved) legacyPrefs.edit().clear().commit()
     }
 
@@ -76,6 +76,113 @@ class CobreIdRepository(context: Context) {
         }
     }
 
+    suspend fun requestDesktopAccess(hostDeviceId: String): String = withContext(Dispatchers.IO) {
+        val result = requestBlocking(
+            "/v1/hosts/${hostDeviceId}/access-requests", "POST",
+            JSONObject().put("scopes", JSONArray(listOf("library.read", "playback.read", "playback.control", "stream"))),
+        )
+        result.getString("requestId")
+    }
+
+    /** Polls a request once; the host must approve it in Desktop before a grant is issued. */
+    suspend fun pollDesktopAccess(hostDeviceId: String, requestId: String): DesktopAccessStatus = withContext(Dispatchers.IO) {
+        val result = requestBlocking("/v1/hosts/$hostDeviceId/access-requests/$requestId", "GET", null)
+        if (result.optString("status") == "pending") return@withContext DesktopAccessStatus.Pending
+        if (result.optString("status") != "redeemed") throw CobreIdException("O Desktop retornou um estado de autorização desconhecido.")
+        val grantId = result.getString("grantId")
+        val token = result.getString("grantToken")
+        val tokenExpiresAt = result.optLong("expiresAt")
+        val consentExpiresAt = result.optLong("consentExpiresAt")
+        secretPrefs.edit().putString("desktop_host_id", hostDeviceId).putString("desktop_grant_id", grantId)
+            .putLong("desktop_grant_expires_at", consentExpiresAt).putLong("desktop_token_expires_at", tokenExpiresAt).apply()
+        saveSecret("desktop_grant_token", token)
+        DesktopAccessStatus.Approved(grantId, token, tokenExpiresAt, consentExpiresAt)
+    }
+
+    suspend fun refreshDesktopGrant(): DesktopAccessStatus.Approved = withContext(Dispatchers.IO) {
+        val host = secretPrefs.getString("desktop_host_id", null) ?: throw CobreIdException("Solicite novamente o acesso ao computador.")
+        val grant = secretPrefs.getString("desktop_grant_id", null) ?: throw CobreIdException("Solicite novamente o acesso ao computador.")
+        val result = requestBlocking("/v1/hosts/$host/access-grants/$grant/refresh", "POST", JSONObject())
+        val token = result.getString("grantToken")
+        val tokenExpiresAt = result.optLong("expiresAt")
+        val consentExpiresAt = result.optLong("consentExpiresAt")
+        secretPrefs.edit().putLong("desktop_grant_expires_at", consentExpiresAt).putLong("desktop_token_expires_at", tokenExpiresAt).apply()
+        saveSecret("desktop_grant_token", token)
+        DesktopAccessStatus.Approved(grant, token, tokenExpiresAt, consentExpiresAt)
+    }
+
+    suspend fun revokeDesktopGrant() = withContext(Dispatchers.IO) {
+        val host = secretPrefs.getString("desktop_host_id", null)
+        val grant = secretPrefs.getString("desktop_grant_id", null)
+        if (!host.isNullOrBlank() && !grant.isNullOrBlank()) {
+            requestBlocking("/v1/hosts/$host/access-grants/$grant", "DELETE", null)
+        }
+        clearDesktopGrant()
+    }
+
+    fun currentDesktopGrantToken(): String? = readSecret("desktop_grant_token")
+    fun desktopGrantId(): String? = secretPrefs.getString("desktop_grant_id", null)
+    fun desktopHostId(): String? = secretPrefs.getString("desktop_host_id", null)
+    fun desktopConsentExpiresAt(): Long = secretPrefs.getLong("desktop_grant_expires_at", 0L)
+    fun desktopTokenExpiresAt(): Long = secretPrefs.getLong("desktop_token_expires_at", 0L)
+
+    suspend fun sendDesktopCommand(origin: String, action: String, value: Double? = null) = withContext(Dispatchers.IO) {
+        if (desktopGrantId() == null) throw CobreIdException("Autorize primeiro este celular na aba Cobre ID.")
+        if (desktopTokenExpiresAt() < System.currentTimeMillis() + 60_000) refreshDesktopGrant()
+        val body = JSONObject().put("action", action)
+        if (value != null) {
+            if (!value.isFinite()) throw CobreIdException("Valor de controle inválido.")
+            if (action == "volume") body.put("value", value.coerceIn(0.0, 100.0))
+            if (action == "seek") body.put("positionSeconds", value.coerceAtLeast(0.0))
+            if (action == "play") body.put("trackId", value.toInt())
+        }
+        desktopHttpBlocking(origin, "/v1/commands", "POST", body)
+    }
+
+    suspend fun readDesktopNowPlaying(origin: String): JSONObject = withContext(Dispatchers.IO) {
+        if (desktopGrantId() == null) throw CobreIdException("Autorize primeiro este celular na aba Cobre ID.")
+        if (desktopTokenExpiresAt() < System.currentTimeMillis() + 60_000) refreshDesktopGrant()
+        desktopHttpBlocking(origin, "/v1/now-playing", "GET", null)
+    }
+
+    private fun desktopHttpBlocking(origin: String, path: String, method: String, body: JSONObject?): JSONObject {
+        val base = normalizeDesktopOrigin(origin)
+        val token = currentDesktopGrantToken() ?: throw CobreIdException("A permissão do Desktop expirou. Peça acesso novamente.")
+        val connection = (URL(base + path).openConnection() as HttpURLConnection).apply {
+            instanceFollowRedirects = false
+            requestMethod = method
+            connectTimeout = 5_000
+            readTimeout = 8_000
+            setRequestProperty("Accept", "application/json")
+            setRequestProperty("Cache-Control", "no-store")
+            setRequestProperty("Authorization", "Bearer $token")
+            if (body != null) { doOutput = true; setRequestProperty("Content-Type", "application/json; charset=utf-8") }
+        }
+        try {
+            if (body != null) connection.outputStream.use { it.write(body.toString().toByteArray(Charsets.UTF_8)) }
+            val status=connection.responseCode
+            val stream=if(status in 200..299)connection.inputStream else connection.errorStream
+            val raw=stream?.bufferedReader(Charsets.UTF_8)?.use{it.readText()}.orEmpty()
+            val result=if(raw.isBlank())JSONObject()else JSONObject(raw)
+            if(status !in 200..299)throw CobreIdException(when(status){401->"Token do Desktop expirado. Tente novamente.";403->"Esta autorização não permite esse controle.";else->result.optString("message").ifBlank{"Desktop respondeu HTTP $status."}},status)
+            return result
+        } finally { connection.disconnect() }
+    }
+
+    private fun normalizeDesktopOrigin(raw: String): String {
+        val uri=runCatching{URI(raw.trim())}.getOrElse{throw CobreIdException("Endereço do Desktop inválido.")}
+        val host=uri.host?.lowercase().orEmpty()
+        val legacyKeyOnly=uri.rawQuery?.let{it.startsWith("k=")&&it.substringAfter("k=").matches(Regex("[A-Fa-f0-9]{18,128}"))}?:true
+        if(uri.scheme!="http"||uri.userInfo!=null||!legacyKeyOnly||uri.fragment!=null||uri.path.orEmpty().isNotBlank()&&uri.path!="/"||!isPrivateHost(host))
+            throw CobreIdException("Informe o endereço HTTP local do Desktop, sem chave ou caminho.")
+        return "http://$host${if(uri.port>=0)":${uri.port}" else ""}"
+    }
+
+    fun clearDesktopGrant() {
+        secretPrefs.edit().remove("desktop_host_id").remove("desktop_grant_id").remove("desktop_grant_expires_at")
+            .remove("desktop_token_expires_at").remove("desktop_grant_token").apply()
+    }
+
     suspend fun authorizeTv(userCode: String): CobreDevice = withContext(Dispatchers.IO) {
         val normalized = userCode.trim().uppercase()
         if (!normalized.matches(Regex("[A-HJ-NP-Z2-9]{4}-[A-HJ-NP-Z2-9]{4}"))) {
@@ -112,6 +219,7 @@ class CobreIdRepository(context: Context) {
             accessToken = null
             secretPrefs.edit().remove("refresh_token").apply()
             prefs.edit().remove("email").apply()
+            clearDesktopGrant()
         }
     }
 
@@ -178,16 +286,20 @@ class CobreIdRepository(context: Context) {
         }
     }
 
-    private fun saveRefreshToken(token: String) {
+    private fun saveRefreshToken(token: String) = saveSecret("refresh_token", token)
+
+    private fun saveSecret(name: String, token: String) {
         val key = getOrCreateKey()
         val cipher = Cipher.getInstance("AES/GCM/NoPadding")
         cipher.init(Cipher.ENCRYPT_MODE, key)
         val encrypted = cipher.iv + cipher.doFinal(token.toByteArray(Charsets.UTF_8))
-        secretPrefs.edit().putString("refresh_token", Base64.encodeToString(encrypted, Base64.NO_WRAP)).apply()
+        secretPrefs.edit().putString(name, Base64.encodeToString(encrypted, Base64.NO_WRAP)).apply()
     }
 
-    private fun readRefreshToken(): String? = runCatching {
-        val stored = secretPrefs.getString("refresh_token", null) ?: return null
+    private fun readRefreshToken(): String? = readSecret("refresh_token")
+
+    private fun readSecret(name: String): String? = runCatching {
+        val stored = secretPrefs.getString(name, null) ?: return null
         val packed = Base64.decode(stored, Base64.NO_WRAP)
         val iv = packed.copyOfRange(0, 12)
         val payload = packed.copyOfRange(12, packed.size)
@@ -249,3 +361,8 @@ data class CobreDevice(
 )
 
 class CobreIdException(message: String, val statusCode: Int? = null) : Exception(message)
+
+sealed interface DesktopAccessStatus {
+    data object Pending : DesktopAccessStatus
+    data class Approved(val grantId: String, val token: String, val tokenExpiresAt: Long, val consentExpiresAt: Long) : DesktopAccessStatus
+}
