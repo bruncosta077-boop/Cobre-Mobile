@@ -5,6 +5,7 @@
 - Mobile pede aprovação por aparelho ao Desktop através do Cobre ID; o Desktop decide e a permissão do Server vale até 30 dias.
 - Biblioteca do Desktop usa as rotas protegidas de catálogo, capa e áudio. O áudio segue direto pela rede local do Desktop para o celular, com `Range` para busca na faixa; o Server autoriza, mas não armazena nem retransmite músicas.
 - Tokens de acesso duram poucos minutos, ficam cifrados com Android Keystore e são renovados enquanto a reprodução continua; ao sair da conta, os dados locais da autorização são apagados.
+- Depois de revogar o novo acesso Cobre ID, o app não volta silenciosamente ao endereço antigo por chave LAN; o pedido de autorização continua obrigatório após logout ou restauração do backup.
 - Controles no Cobre ID permitem ver a faixa do Desktop, pausar/reproduzir, avançar/voltar e ajustar seu volume.
 - Tela completa do player foi reorganizada em torno da capa, identificação da origem, progresso, controles, volume visível e acesso à fila; o visual usa a paleta escura cobre do Desktop como referência.
 - Configurações agora separam biblioteca do celular, integração com Desktop, aparência e áudio. Equalizador real de cinco bandas aplica ajustes à sessão de reprodução do Android e guarda os valores no backup.

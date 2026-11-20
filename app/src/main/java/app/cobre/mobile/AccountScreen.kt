@@ -37,6 +37,7 @@ fun AccountPage(repository:CobreIdRepository,state:AccountUi,desktopOrigin:Strin
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal=18.dp,vertical=16.dp),verticalArrangement=Arrangement.spacedBy(14.dp)){
         Text("Cobre ID",color=Color(0xFFECE6DF),style=MaterialTheme.typography.headlineMedium,fontWeight=FontWeight.Bold)
         Text("Conecte sua conta para acompanhar os dispositivos ligados ao ecossistema Cobre.",color=Color(0xFF9B938B))
+        if(state.message.isNotBlank())Text(state.message,color=if(state.error)Color(0xFFE58B78)else Color(0xFF7EB783),style=MaterialTheme.typography.bodySmall)
         Card(colors=CardDefaults.cardColors(containerColor=Color(0xFF191816)),shape=RoundedCornerShape(16.dp)){
             Column(Modifier.padding(16.dp),verticalArrangement=Arrangement.spacedBy(10.dp)){
                 Row(verticalAlignment=Alignment.CenterVertically){Icon(if(state.signedIn&&!state.error)Icons.Default.CheckCircle else Icons.Default.CloudOff,null,tint=if(state.signedIn&&!state.error)Color(0xFF7EB783)else Color(0xFF9B938B));Text(if(state.signedIn&&!state.error)"Servidor conectado" else "Conexão do servidor",color=Color(0xFFECE6DF),fontWeight=FontWeight.SemiBold,modifier=Modifier.padding(start=9.dp))}
@@ -50,11 +51,15 @@ fun AccountPage(repository:CobreIdRepository,state:AccountUi,desktopOrigin:Strin
         if(state.signedIn){
             Card(colors=CardDefaults.cardColors(containerColor=Color(0xFF191816)),shape=RoundedCornerShape(16.dp)){
                 Column(Modifier.padding(16.dp),verticalArrangement=Arrangement.spacedBy(12.dp)){
-                    Text(state.email,color=Color(0xFFECE6DF),style=MaterialTheme.typography.titleMedium,fontWeight=FontWeight.SemiBold)
+                    Text("Conta e dispositivos",color=Color(0xFFECE6DF),style=MaterialTheme.typography.titleMedium,fontWeight=FontWeight.SemiBold)
+                    Text(state.email,color=MaterialTheme.colorScheme.primary,style=MaterialTheme.typography.bodyMedium,fontWeight=FontWeight.Medium)
                     Text("Dispositivos",color=Color(0xFF9B938B),style=MaterialTheme.typography.labelLarge)
                     if(state.devices.isEmpty())Text("Ainda não há dispositivos para exibir.",color=Color(0xFF9B938B))
                     state.devices.forEach{device->Row(verticalAlignment=Alignment.CenterVertically){Icon(Icons.Default.Devices,null,tint=if(device.online)Color(0xFF7EB783)else Color(0xFF9B938B),modifier=Modifier.size(21.dp));Column(Modifier.weight(1f).padding(start=10.dp)){Text(device.name+(if(device.current)" · Este celular" else ""),color=Color(0xFFECE6DF),maxLines=1,overflow=TextOverflow.Ellipsis);Text(if(device.online)"Online" else "Offline",color=if(device.online)Color(0xFF7EB783)else Color(0xFF9B938B),style=MaterialTheme.typography.bodySmall)}}}
-                    HorizontalDivider(color=Color(0xFF302C28))
+                }
+            }
+            Card(colors=CardDefaults.cardColors(containerColor=Color(0xFF191816)),shape=RoundedCornerShape(16.dp)){
+                Column(Modifier.padding(16.dp),verticalArrangement=Arrangement.spacedBy(10.dp)){
                     Text("Biblioteca do computador",color=Color(0xFFECE6DF),style=MaterialTheme.typography.titleSmall,fontWeight=FontWeight.SemiBold)
                     Text("Peça acesso no Cobre ID. Depois, o Desktop precisa aprovar a solicitação; o áudio continua indo diretamente pela rede local.",color=Color(0xFF9B938B),style=MaterialTheme.typography.bodySmall)
                     val desktopDevices=state.devices.filter{it.type.equals("desktop",ignoreCase=true)}
@@ -83,18 +88,23 @@ fun AccountPage(repository:CobreIdRepository,state:AccountUi,desktopOrigin:Strin
                     if(repository.desktopGrantId()!=null){
                         Text("Este celular tem autorização para acessar a biblioteca do Desktop.",color=Color(0xFF7EB783),style=MaterialTheme.typography.bodySmall)
                         Text("Controles do Desktop",color=Color(0xFFECE6DF),style=MaterialTheme.typography.titleSmall,fontWeight=FontWeight.SemiBold)
+                        val canControlDesktop=desktopOrigin.isNotBlank()
+                        if(!canControlDesktop)Text("Informe o endereço local do Desktop em Configurações para habilitar os controles.",color=Color(0xFF9B938B),style=MaterialTheme.typography.bodySmall)
                         Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceEvenly,verticalAlignment=Alignment.CenterVertically){
-                            IconButton(onClick={scope.launch{runCatching{repository.sendDesktopCommand(desktopOrigin,"previous")}.onFailure{onState(state.copy(message=it.message?:"Falha no controle remoto.",error=true))}}}){Icon(Icons.Default.SkipPrevious,"Faixa anterior",tint=Color(0xFFECE6DF))}
-                            IconButton(onClick={scope.launch{runCatching{repository.sendDesktopCommand(desktopOrigin,"toggle")}.onFailure{onState(state.copy(message=it.message?:"Falha no controle remoto.",error=true))}}}){Icon(Icons.Default.PlayArrow,"Reproduzir ou pausar no Desktop",tint=MaterialTheme.colorScheme.primary)}
-                            IconButton(onClick={scope.launch{runCatching{repository.sendDesktopCommand(desktopOrigin,"next")}.onFailure{onState(state.copy(message=it.message?:"Falha no controle remoto.",error=true))}}}){Icon(Icons.Default.SkipNext,"Próxima faixa",tint=Color(0xFFECE6DF))}
-                            IconButton(onClick={scope.launch{runCatching{repository.readDesktopNowPlaying(desktopOrigin)}.onSuccess{desktopNowPlaying=listOf(it.optString("title"),it.optString("artist")).filter(String::isNotBlank).joinToString(" · ").ifBlank{"Nenhuma faixa informada"};desktopVolume=it.optDouble("volume",50.0).toFloat()}.onFailure{onState(state.copy(message=it.message?:"Não foi possível consultar o Desktop.",error=true))}}}){Icon(Icons.Default.Refresh,"Atualizar estado",tint=Color(0xFF9B938B))}
+                            IconButton(enabled=canControlDesktop,onClick={scope.launch{runCatching{repository.sendDesktopCommand(desktopOrigin,"previous")}.onFailure{onState(state.copy(message=it.message?:"Falha no controle remoto.",error=true))}}}){Icon(Icons.Default.SkipPrevious,"Faixa anterior",tint=if(canControlDesktop)Color(0xFFECE6DF)else Color(0xFF6A625A))}
+                            IconButton(enabled=canControlDesktop,onClick={scope.launch{runCatching{repository.sendDesktopCommand(desktopOrigin,"toggle")}.onFailure{onState(state.copy(message=it.message?:"Falha no controle remoto.",error=true))}}}){Icon(Icons.Default.PlayArrow,"Reproduzir ou pausar no Desktop",tint=if(canControlDesktop)MaterialTheme.colorScheme.primary else Color(0xFF6A625A))}
+                            IconButton(enabled=canControlDesktop,onClick={scope.launch{runCatching{repository.sendDesktopCommand(desktopOrigin,"next")}.onFailure{onState(state.copy(message=it.message?:"Falha no controle remoto.",error=true))}}}){Icon(Icons.Default.SkipNext,"Próxima faixa",tint=if(canControlDesktop)Color(0xFFECE6DF)else Color(0xFF6A625A))}
+                            IconButton(enabled=canControlDesktop,onClick={scope.launch{runCatching{repository.readDesktopNowPlaying(desktopOrigin)}.onSuccess{desktopNowPlaying=listOf(it.optString("title"),it.optString("artist")).filter(String::isNotBlank).joinToString(" · ").ifBlank{"Nenhuma faixa informada"};desktopVolume=it.optDouble("volume",50.0).toFloat()}.onFailure{onState(state.copy(message=it.message?:"Não foi possível consultar o Desktop.",error=true))}}}){Icon(Icons.Default.Refresh,"Atualizar estado",tint=if(canControlDesktop)Color(0xFF9B938B)else Color(0xFF6A625A))}
                         }
                         if(desktopNowPlaying.isNotBlank())Text("No computador: $desktopNowPlaying",color=Color(0xFF9B938B),style=MaterialTheme.typography.bodySmall,maxLines=2,overflow=TextOverflow.Ellipsis)
-                        Row(verticalAlignment=Alignment.CenterVertically){Icon(Icons.Default.VolumeUp,null,tint=Color(0xFF9B938B));Slider(value=desktopVolume,onValueChange={desktopVolume=it},onValueChangeFinished={scope.launch{runCatching{repository.sendDesktopCommand(desktopOrigin,"volume",desktopVolume.toDouble())}.onFailure{onState(state.copy(message=it.message?:"Falha ao ajustar volume remoto.",error=true))}}},valueRange=0f..100f,modifier=Modifier.weight(1f));Text("${desktopVolume.toInt()}%",color=Color(0xFF9B938B),style=MaterialTheme.typography.labelSmall)}
+                        Row(verticalAlignment=Alignment.CenterVertically){Icon(Icons.Default.VolumeUp,null,tint=Color(0xFF9B938B));Slider(enabled=canControlDesktop,value=desktopVolume,onValueChange={desktopVolume=it},onValueChangeFinished={scope.launch{runCatching{repository.sendDesktopCommand(desktopOrigin,"volume",desktopVolume.toDouble())}.onFailure{onState(state.copy(message=it.message?:"Falha ao ajustar volume remoto.",error=true))}}},valueRange=0f..100f,modifier=Modifier.weight(1f));Text("${desktopVolume.toInt()}%",color=Color(0xFF9B938B),style=MaterialTheme.typography.labelSmall)}
                         Text("Os controles atuam no player do Desktop; a reprodução de faixas do computador no celular continua na Biblioteca.",color=Color(0xFF9B938B),style=MaterialTheme.typography.bodySmall)
-                        TextButton(onClick={scope.launch{onState(state.copy(busy=true,message="Removendo autorização…",error=false));runCatching{repository.revokeDesktopGrant()}.onSuccess{onState(state.copy(busy=false,message="Acesso do celular revogado.",error=false))}.onFailure{onState(state.copy(busy=false,message=it.message?:"Não foi possível revogar.",error=true))}}},enabled=!state.busy){Text("Revogar acesso deste celular",color=Color(0xFFE58B78))}
+                        TextButton(onClick={scope.launch{onState(state.copy(busy=true,message="Removendo autorização…",error=false));runCatching{repository.revokeDesktopGrant()}.onSuccess{onDesktopGrantChanged();onState(state.copy(busy=false,message="Acesso do celular revogado.",error=false))}.onFailure{onState(state.copy(busy=false,message=it.message?:"Não foi possível revogar.",error=true))}}},enabled=!state.busy){Text("Revogar acesso deste celular",color=Color(0xFFE58B78))}
                     }
-                    HorizontalDivider(color=Color(0xFF302C28))
+                }
+            }
+            Card(colors=CardDefaults.cardColors(containerColor=Color(0xFF191816)),shape=RoundedCornerShape(16.dp)){
+                Column(Modifier.padding(16.dp),verticalArrangement=Arrangement.spacedBy(10.dp)){
                     Text("Autorizar Cobre TV",color=Color(0xFFECE6DF),style=MaterialTheme.typography.titleSmall,fontWeight=FontWeight.SemiBold)
                     Text("Na TV, inicie o pareamento e digite aqui o código exibido. Ele expira em poucos minutos.",color=Color(0xFF9B938B),style=MaterialTheme.typography.bodySmall)
                     OutlinedTextField(
@@ -111,9 +121,9 @@ fun AccountPage(repository:CobreIdRepository,state:AccountUi,desktopOrigin:Strin
                     }},enabled=!state.busy&&tvCode.matches(Regex("[A-HJ-NP-Z2-9]{4}-[A-HJ-NP-Z2-9]{4}")),modifier=Modifier.fillMaxWidth(),colors=ButtonDefaults.buttonColors(containerColor=MaterialTheme.colorScheme.primary,contentColor=Color.White),shape=RoundedCornerShape(24.dp)){
                         if(state.busy)CircularProgressIndicator(Modifier.size(18.dp),color=Color.White,strokeWidth=2.dp)else Text("Autorizar dispositivo")
                     }
-                    TextButton(onClick={scope.launch{onState(state.copy(busy=true));runCatching{repository.logout()};onState(AccountUi(message="Sessão encerrada."))}},enabled=!state.busy){Text("Sair da conta",color=MaterialTheme.colorScheme.primary)}
                 }
             }
+            TextButton(onClick={scope.launch{onState(state.copy(busy=true));runCatching{repository.logout()};onDesktopGrantChanged();onState(AccountUi(message="Sessão encerrada."))}},enabled=!state.busy){Text("Sair da conta",color=Color(0xFFE58B78))}
         }else{
             Card(colors=CardDefaults.cardColors(containerColor=Color(0xFF191816)),shape=RoundedCornerShape(16.dp)){
                 Column(Modifier.padding(16.dp),verticalArrangement=Arrangement.spacedBy(10.dp)){
@@ -127,7 +137,6 @@ fun AccountPage(repository:CobreIdRepository,state:AccountUi,desktopOrigin:Strin
                 }
             }
         }
-        if(state.message.isNotBlank())Text(state.message,color=if(state.error)Color(0xFFE58B78)else Color(0xFF7EB783),style=MaterialTheme.typography.bodySmall)
         Text("O Cobre Server identifica os aparelhos e autoriza o acesso. O áudio e a biblioteca passam diretamente entre Desktop e celular na mesma rede local.",color=Color(0xFF9B938B),style=MaterialTheme.typography.bodySmall)
         Spacer(Modifier.height(10.dp))
     }

@@ -37,6 +37,8 @@ class MobileSettings(context: Context) {
         private set
     var desktopUrl by mutableStateOf(accessPrefs.getString("desktop_library_url", null))
         private set
+    var secureDesktopAccessRequired by mutableStateOf(accessPrefs.getBoolean("desktop_secure_access_required", false))
+        private set
 
     fun setAccent(primary: Int, secondary: Int) {
         accentPrimary = primary
@@ -52,5 +54,10 @@ class MobileSettings(context: Context) {
     fun saveDesktopUrl(url: String?) {
         desktopUrl = url?.trim()?.takeIf(String::isNotBlank)
         accessPrefs.edit().putString("desktop_library_url", desktopUrl).apply()
+    }
+
+    fun requireSecureDesktopAccess() {
+        secureDesktopAccessRequired = true
+        accessPrefs.edit().putBoolean("desktop_secure_access_required", true).apply()
     }
 }

@@ -104,7 +104,14 @@ class MainActivity:ComponentActivity(){
     LaunchedEffect(settings.desktopUrl,desktopRefreshKey,desktopAuthorizationRevision){
         val address=settings.desktopUrl
         if(address.isNullOrBlank()){desktopTracks=emptyList();desktopCatalogResponseMs=null;desktopStatus=""}
-        else{desktopStatus="Conectando ao Cobre Desktop…";runCatching{desktopLibrary.load(address,accountRepo.currentDesktopGrantToken())}.onSuccess{remote->desktopTracks=remote.tracks;desktopCatalogResponseMs=remote.catalogResponseMs;desktopStatus="Computador conectado · ${remote.tracks.size} faixas · catálogo respondeu em ${remote.catalogResponseMs} ms"}.onFailure{desktopTracks=emptyList();desktopCatalogResponseMs=null;desktopStatus=it.message?:"Não foi possível conectar ao computador."}}
+        else{
+            val grantToken=accountRepo.currentDesktopGrantToken()
+            if(settings.secureDesktopAccessRequired&&grantToken.isNullOrBlank()){
+                desktopTracks=emptyList();desktopCatalogResponseMs=null;desktopStatus="Peça acesso Cobre ID ao Desktop para reconectar esta biblioteca."
+            }else{
+                desktopStatus="Conectando ao Cobre Desktop…";runCatching{desktopLibrary.load(address,grantToken)}.onSuccess{remote->desktopTracks=remote.tracks;desktopCatalogResponseMs=remote.catalogResponseMs;desktopStatus="Computador conectado · ${remote.tracks.size} faixas · catálogo respondeu em ${remote.catalogResponseMs} ms"}.onFailure{desktopTracks=emptyList();desktopCatalogResponseMs=null;desktopStatus=it.message?:"Não foi possível conectar ao computador."}
+            }
+        }
     }
     LaunchedEffect(account.signedIn,desktopCatalogResponseMs){if(account.signedIn&&desktopCatalogResponseMs!=null)runCatching{sendMeasuredPresence(accountRepo,context,desktopCatalogResponseMs)}}
     LaunchedEffect(account.signedIn,desktopCatalogResponseMs){while(account.signedIn){delay(45_000);runCatching{sendMeasuredPresence(accountRepo,context,desktopCatalogResponseMs);accountRepo.loadDevices()}.onSuccess{account=account.copy(devices=it,message="Conexão ativa.",error=false)}.onFailure{account=account.copy(message=it.message?:"Conexão interrompida.",error=true)}}}
@@ -127,7 +134,7 @@ class MainActivity:ComponentActivity(){
                     }
                     Page.Queue->QueuePage(playback,player,collections)
                     Page.Collections->CollectionsPage(collections,{list->player.play(list,0)},{track->player.addToQueue(track)})
-                    Page.Account->AccountPage(accountRepo,account,settings.desktopUrl.orEmpty(),{account=it},{desktopAuthorizationRevision++})
+                    Page.Account->AccountPage(accountRepo,account,settings.desktopUrl.orEmpty(),{account=it},{settings.requireSecureDesktopAccess();desktopAuthorizationRevision++})
                     Page.Settings->SettingsPage(settings,folderUri,desktopStatus,desktopTracks.size,{folderPicker.launch(folderUri?.let{Uri.parse(it)})},{folderUri?.let{old->runCatching{context.contentResolver.releasePersistableUriPermission(Uri.parse(old),Intent.FLAG_GRANT_READ_URI_PERMISSION)}};settings.setFolder(null);folderUri=null},{settings.saveDesktopUrl(it);desktopRefreshKey++},{settings.saveDesktopUrl(null);desktopRefreshKey++})
                 }
             }
