@@ -34,6 +34,8 @@ A versão 0.2.0 foi validada pelo autor. A conexão LAN e a reprodução Desktop
 
 O Mobile usa o [Cobre Server](https://github.com/bruncosta077-boop/Cobre-Server) para login, dispositivos e presença. Para abrir a biblioteca do Desktop, ative **Acesso remoto** no Cobre Desktop e cole em **Configurações → Biblioteca do computador** o endereço completo exibido pelo Desktop. Os aparelhos precisam estar na mesma rede local.
 
+O [Cobre TV](https://github.com/bruncosta077-boop/Cobre-TV) é um protótipo separado para Android TV/Google TV; ainda não compartilha autenticação, biblioteca ou reprodução com o Mobile.
+
 O áudio da biblioteca do Desktop é entregue pelo próprio computador na rede local, com requisições HTTP por partes para permitir busca na faixa. Essa conexão não passa pelo Cobre Server. Acesso pela internet e sincronização de playlists continuam pendentes; presença do Cobre ID não prova que o computador está alcançável.
 
 ## Segurança da conexão
