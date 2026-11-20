@@ -9,7 +9,7 @@
 - Revogação do acesso Cobre ID permanece efetiva no Mobile e não reabre automaticamente o modo legado com chave LAN.
 - Conta, lista de dispositivos, acesso Desktop e pareamento TV estão separados em blocos; o Mobile busca e exibe faixa/estado real dos controles do Desktop.
 - QR de pareamento do Desktop implementado: scanner sem permissão de câmera, validade de cinco minutos, nenhuma credencial no QR, solicitação de acesso Cobre ID e gravação do endereço após aprovação. Endereço manual continua disponível.
-- A compilação desta alteração ainda precisa passar no GitHub Actions; a sessão local não tem Gradle nem wrapper. QR exige Desktop 3.10.0; o fluxo de acesso protegido continua compatível com Desktop 3.9.0+.
+- `assembleDebug` passou no GitHub Actions [44791580468](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/44791580468). A sessão local não tem Gradle nem wrapper. QR exige Desktop 3.10.0; o fluxo de acesso protegido continua compatível com Desktop 3.9.0+.
 - `assembleDebug` compilou com sucesso nesta máquina. O teste local usou uma cópia temporária ASCII do código por limitação do Android Gradle no caminho original com acento.
 - Falta testar com Desktop 3.9.0/Server beta.9 no aparelho. A chave estável de distribuição não está cadastrada, então ainda não há atualização assinada para publicar com segurança por cima das instalações existentes.
 
