@@ -128,7 +128,7 @@ fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,
         }
         SettingsCard {
             SectionHeading(Icons.Default.Refresh,"Aplicativo")
-            Text("Cobre Mobile 0.7.0",color=Tx,fontWeight=FontWeight.SemiBold,modifier=Modifier.padding(top=12.dp))
+            Text("Cobre Mobile ${BuildConfig.VERSION_NAME}",color=Tx,fontWeight=FontWeight.SemiBold,modifier=Modifier.padding(top=12.dp))
             Text("A biblioteca do computador é transmitida pela rede local; a conta Cobre ID continua cuidando da presença dos dispositivos.",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=4.dp))
             TextButton(onClick={showReleaseNotes=true}){Text("Notas da versão",color=MaterialTheme.colorScheme.primary)}
             Text("Com contribuição de dilucas00",color=Mu,style=MaterialTheme.typography.bodySmall)
@@ -137,8 +137,8 @@ fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,
     }
     if(showReleaseNotes)AlertDialog(
         onDismissRequest={showReleaseNotes=false},
-        title={Text("Cobre Mobile 0.7.0")},
-        text={Text("Bibliotecas local e do Desktop separadas, visão conjunta sem duplicatas, ações nos álbuns por toque longo, player com volume visível e ajustes visuais.\n\nEsta versão ainda precisa ser validada no aparelho. Confira CHANGELOG.md para o histórico completo.")},
+        title={Text("Cobre Mobile ${BuildConfig.VERSION_NAME}")},
+        text={Text("Preparação do APK de release com assinatura estável e versão do app sincronizada nas configurações e no Cobre ID. A publicação depende da configuração segura da chave de assinatura; veja CHANGELOG.md para o estado completo.")},
         confirmButton={TextButton(onClick={showReleaseNotes=false}){Text("Entendi")}},
     )
 }

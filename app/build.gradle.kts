@@ -10,10 +10,29 @@ android {
         applicationId = "app.cobre.mobile"
         minSdk = 29          // loadThumbnail() e MediaStore moderno; ver STATUS.md
         targetSdk = 34
-        versionCode = 9
-        versionName = "0.9.0"
+        versionCode = 10
+        versionName = "0.10.0"
     }
-    buildFeatures { compose = true }
+    buildFeatures { compose = true; buildConfig = true }
+    val mobileKeystorePath = project.providers.environmentVariable("COBRE_MOBILE_KEYSTORE_PATH").orNull
+    val mobileStorePassword = project.providers.environmentVariable("COBRE_MOBILE_STORE_PASSWORD").orNull
+    val mobileKeyAlias = project.providers.environmentVariable("COBRE_MOBILE_KEY_ALIAS").orNull
+    val mobileKeyPassword = project.providers.environmentVariable("COBRE_MOBILE_KEY_PASSWORD").orNull
+    val hasStableSigning = listOf(mobileKeystorePath, mobileStorePassword, mobileKeyAlias, mobileKeyPassword).all { !it.isNullOrBlank() }
+    if (hasStableSigning) {
+        signingConfigs.create("distribution") {
+            storeFile = file(mobileKeystorePath!!)
+            storePassword = mobileStorePassword
+            keyAlias = mobileKeyAlias
+            keyPassword = mobileKeyPassword
+        }
+    }
+    buildTypes {
+        getByName("release") {
+            isMinifyEnabled = false
+            if (hasStableSigning) signingConfig = signingConfigs.getByName("distribution")
+        }
+    }
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
     kotlinOptions { jvmTarget = "17" }
 }

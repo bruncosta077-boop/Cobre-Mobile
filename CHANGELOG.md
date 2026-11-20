@@ -1,5 +1,13 @@
 # Histórico de versões — Cobre Mobile
 
+## 0.10.0 — preparação da assinatura estável
+
+- O workflow passou a separar APKs debug (testes) de APKs de release, que exigem uma chave Cobre estável por segredos do GitHub Actions.
+- Quando a chave for configurada e o APK assinado for validado, instalações com a mesma assinatura poderão atualizar por cima, preservando configurações, sessão e dados locais.
+- A troca inicial de APK debug para a chave estável pode exigir migração única. Faça uma cópia dos dados e confirme a instalação antes de remover qualquer versão que contenha dados importantes.
+- A publicação da 0.10.0 continua pendente até configurar a chave nos segredos do repositório e validar o APK assinado.
+- O backup seletivo continua sem exportar credenciais Cobre ID nem tokens.
+
 ## 0.9.0 — backup seletivo do aparelho
 
 - Android pode restaurar banco local (playlists, favoritos e histórico) e cores de aparência pelo backup do sistema ou transferência entre aparelhos.

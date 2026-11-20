@@ -2,14 +2,14 @@
   <img src="assets/branding/cobre-logo.png" alt="Logo do Cobre" width="150">
   <h1>Cobre Mobile</h1>
   <p>Player Android integrado ao ecossistema Cobre</p>
-  <p><strong>Versão 0.9.0 — pré-release</strong></p>
+  <p><strong>Versão 0.10.0 — preparação, ainda não publicada</strong></p>
 </div>
 
 Desenvolvimento principal: Bruno C S Moraes · Contribuição ao projeto: [@dilucas00](https://github.com/dilucas00).
 
 Aplicativo Android do ecossistema Cobre. Interface escura com a paleta, o símbolo e a organização visual do Cobre Desktop, adaptados para toque.
 
-## Versão atual: 0.9.0 — pré-release
+## Versão em preparação: 0.10.0 — ainda não publicada
 
 - Biblioteca local com álbuns, artistas, faixas, capas e busca.
 - Pasta de biblioteca configurável pelo seletor de pastas do Android.
@@ -25,10 +25,11 @@ Aplicativo Android do ecossistema Cobre. Interface escura com a paleta, o símbo
 - Ícone Cobre incluído no APK em formatos legado e adaptativo.
 - Medição do áudio recebido do Desktop (latência inicial e bytes por segundo) enviada ao painel Cobre Server, sem confundir catálogo com stream.
 - Backup Android seletivo de playlists, favoritos, histórico e cores; não transfere credenciais, endereço/chave LAN nem permissão da pasta.
+- O workflow está preparado para usar assinatura estável protegida nos segredos do GitHub Actions; o cadastro e a primeira validação do APK ainda estão pendentes.
 
-A versão 0.2.0 foi validada pelo autor. A conexão LAN e a reprodução Desktop do 0.6.0 também foram confirmadas. A versão 0.9.0 foi compilada e publicada pelo GitHub Actions; backup, aparência, métricas 0.8 e atualização por cima de versões anteriores ainda precisam de validação em aparelho.
+A versão 0.2.0 foi validada pelo autor. A conexão LAN e a reprodução Desktop do 0.6.0 também foram confirmadas. A versão 0.9.0 foi compilada e publicada pelo GitHub Actions. A 0.10.0 prepara a assinatura estável; é necessário testar a assinatura e a atualização por cima no aparelho antes de considerar concluída a migração.
 
-**Assinatura de teste:** os APKs das execuções do GitHub Actions usam assinatura debug, que pode mudar entre versões. Se o Android avisar que a assinatura não corresponde, não desinstale o app com dados que deseja preservar; uma assinatura estável ainda precisa ser configurada para atualizações futuras sem esse bloqueio.
+**Assinatura e atualizações:** o workflow está preparado para assinar releases com uma chave estável protegida por segredos do GitHub Actions. A chave ainda precisa ser cadastrada e o primeiro APK assinado testado; até isso acontecer, a 0.10.0 não está publicada. Depois da migração para a assinatura estável, atualizar por cima preserva os dados do app. APKs debug antigos podem exigir uma migração única; faça backup e não remova o app com dados importantes sem validar a cópia.
 
 ## Conexão
 
