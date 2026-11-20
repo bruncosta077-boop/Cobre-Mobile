@@ -31,7 +31,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 
 @Composable
-fun AccountPage(repository:CobreIdRepository,state:AccountUi,desktopOrigin:String,onState:(AccountUi)->Unit,onDesktopGrantChanged:()->Unit={}){
+fun AccountPage(repository:CobreIdRepository,state:AccountUi,desktopOrigin:String,onState:(AccountUi)->Unit,onDesktopGrantChanged:()->Unit={},onScanDesktop:()->Unit={}){
     val scope=rememberCoroutineScope();var serverUrl by remember{mutableStateOf(repository.serverUrl)};var tvCode by remember{mutableStateOf("")}
     var desktopNowPlaying by remember(desktopOrigin){mutableStateOf("")};var desktopVolume by remember(desktopOrigin){mutableFloatStateOf(50f)};var desktopPlaying by remember(desktopOrigin){mutableStateOf(false)}
     var email by remember{mutableStateOf(state.email.ifBlank{repository.savedEmail})};var password by remember{mutableStateOf("")};var create by remember{mutableStateOf(false)}
@@ -66,6 +66,9 @@ fun AccountPage(repository:CobreIdRepository,state:AccountUi,desktopOrigin:Strin
                 Column(Modifier.padding(16.dp),verticalArrangement=Arrangement.spacedBy(10.dp)){
                     Text("Biblioteca do computador",color=Color(0xFFECE6DF),style=MaterialTheme.typography.titleSmall,fontWeight=FontWeight.SemiBold)
                     Text("Peça acesso no Cobre ID. Depois, o Desktop precisa aprovar a solicitação; o áudio continua indo diretamente pela rede local.",color=Color(0xFF9B938B),style=MaterialTheme.typography.bodySmall)
+                    OutlinedButton(onClick=onScanDesktop,enabled=!state.busy,modifier=Modifier.fillMaxWidth(),shape=RoundedCornerShape(24.dp)){
+                        Icon(Icons.Default.Devices,null,tint=MaterialTheme.colorScheme.primary);Spacer(Modifier.width(8.dp));Text("Encontrar Desktop pelo QR",color=Color(0xFFECE6DF))
+                    }
                     val desktopDevices=state.devices.filter{it.type.equals("desktop",ignoreCase=true)}
                     if(desktopDevices.isEmpty())Text("Nenhum Desktop vinculado a esta conta ainda.",color=Color(0xFF9B938B),style=MaterialTheme.typography.bodySmall)
                     desktopDevices.forEach{desktop->

@@ -28,6 +28,7 @@ Aplicativo Android do ecossistema Cobre. Interface escura com a paleta, o símbo
 - Backup Android seletivo de playlists, favoritos, histórico, cores, endereço do Server, email, endereço do Desktop e URI da pasta escolhida; tokens não são incluídos, e o Android pode exigir conceder a permissão da pasta novamente após restaurar.
 - O workflow está preparado para usar assinatura estável protegida nos segredos do GitHub Actions; o cadastro e a primeira validação do APK ainda estão pendentes.
 - O Mobile pede permissão ao Desktop através do Cobre ID, acessa biblioteca/capas/áudio protegidos e renova tokens curtos enquanto toca. A permissão é aprovada no Desktop e vale até 30 dias.
+- Pareamento do Desktop por QR: o app identifica endereço e dispositivo, solicita acesso via Cobre ID e salva a conexão após a aprovação no computador. O QR expira em cinco minutos e não contém segredo; endereço manual permanece como alternativa.
 - Após revogar a permissão ou sair da conta, o endereço antigo com chave LAN não pode reabrir o acesso em silêncio; a autorização Cobre ID será exigida novamente.
 - Controles do Cobre ID podem pausar, trocar faixa, ajustar o volume e consultar a faixa em reprodução no Desktop.
 - O player foi reorganizado com capa em destaque, origem da faixa, progresso e volume sempre visível; configurações de biblioteca, aparência e áudio continuam agrupadas em cartões por finalidade.

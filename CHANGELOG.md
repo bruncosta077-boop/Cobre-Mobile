@@ -10,8 +10,10 @@
 - Tela completa do player foi reorganizada em torno da capa, identificação da origem, progresso, controles, volume visível e acesso à fila; o visual usa a paleta escura cobre do Desktop como referência.
 - Configurações agora separam biblioteca do celular, integração com Desktop, aparência e áudio. Equalizador real de cinco bandas aplica ajustes à sessão de reprodução do Android e guarda os valores no backup.
 - Cobre ID organiza conta/aparelhos, autorização Desktop e pareamento TV em seções próprias; os controles remotos mostram o estado do player do computador.
+- Pareamento do Desktop por QR: o celular lê endereço local e identidade do host, pede autorização Cobre ID e conecta a biblioteca após a aprovação no computador. O QR não carrega credenciais e expira em cinco minutos; o endereço manual segue disponível como alternativa.
+- Scanner Google Code Scanner lê QR sem pedir permissão de câmera ao app; aparelhos sem suporte aos serviços Google continuam podendo configurar o endereço manualmente e pedir acesso pelo Cobre ID.
 - Corrigida a migração de refresh tokens antigos para o armazenamento cifrado; IDs e autorizações do Desktop não entram no backup exportável.
-- Requer Cobre Desktop 3.9.0 ou posterior e Cobre Server 0.5.0-beta.9 ou posterior para o novo acesso protegido. A conexão antiga por chave LAN continua disponível como compatibilidade.
+- Requer Cobre Desktop 3.9.0 ou posterior e Cobre Server 0.5.0-beta.9 ou posterior para o acesso protegido; QR requer Desktop 3.10.0. A conexão antiga por chave LAN continua disponível como compatibilidade para instalações sem migração.
 - Build compilada localmente em debug. Ainda falta validar a autorização e uma faixa longa no aparelho, publicar a versão com certificado de distribuição estável e confirmar que os controles remotos estão disponíveis na build Desktop instalada.
 
 ## 0.11.0 — recuperação de configurações

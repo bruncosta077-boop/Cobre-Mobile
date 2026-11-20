@@ -55,6 +55,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.net.HttpURLConnection
 import java.net.URL
+import com.google.mlkit.vision.barcode.common.Barcode
+import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
+import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
 
 internal val Bg=Color(0xFF10100F); internal val Panel=Color(0xFF191816); internal val CardBg=Color(0xFF211F1D)
 internal val Line=Color(0xFF302C28); internal val Tx=Color(0xFFECE6DF); internal val Mu=Color(0xFF9B938B)
@@ -134,7 +137,38 @@ class MainActivity:ComponentActivity(){
                     }
                     Page.Queue->QueuePage(playback,player,collections)
                     Page.Collections->CollectionsPage(collections,{list->player.play(list,0)},{track->player.addToQueue(track)})
-                    Page.Account->AccountPage(accountRepo,account,settings.desktopUrl.orEmpty(),{account=it},{settings.requireSecureDesktopAccess();desktopAuthorizationRevision++})
+                    Page.Account->AccountPage(accountRepo,account,settings.desktopUrl.orEmpty(),{account=it},{settings.requireSecureDesktopAccess();desktopAuthorizationRevision++},onScanDesktop={
+                        if(!account.signedIn){account=account.copy(message="Entre no Cobre ID antes de parear o Desktop.",error=true)}
+                        else {
+                            val options=GmsBarcodeScannerOptions.Builder().setBarcodeFormats(Barcode.FORMAT_QR_CODE).build()
+                            GmsBarcodeScanning.getClient(context,options).startScan()
+                                .addOnSuccessListener { barcode ->
+                                    val raw=barcode.rawValue
+                                    if(raw.isNullOrBlank())account=account.copy(message="O QR não contém dados de pareamento.",error=true)
+                                    else scope.launch {
+                                        account=account.copy(busy=true,message="Validando QR e solicitando aprovação…",error=false)
+                                        runCatching {
+                                            val pairing=parseDesktopPairingQr(raw)
+                                            val requestId=accountRepo.requestDesktopAccess(pairing.hostId)
+                                            var approved:DesktopAccessStatus.Approved?=null
+                                            for(attempt in 0 until 42){
+                                                delay(2_000)
+                                                when(val result=accountRepo.pollDesktopAccess(pairing.hostId,requestId)){
+                                                    DesktopAccessStatus.Pending->account=account.copy(busy=true,message="Confirme o pedido no Cobre Desktop. Aguardando aprovação…",error=false)
+                                                    is DesktopAccessStatus.Approved->{approved=result;break}
+                                                }
+                                            }
+                                            approved?:throw CobreIdException("A solicitação expirou. Gere um novo QR e tente novamente.")
+                                            pairing
+                                        }.onSuccess { pairing ->
+                                            settings.saveDesktopUrl(pairing.origin);settings.requireSecureDesktopAccess();desktopRefreshKey++;desktopAuthorizationRevision++
+                                            account=account.copy(busy=false,message="Desktop pareado e biblioteca conectando. A permissão pode ser renovada por até 30 dias.",error=false)
+                                        }.onFailure { error -> account=account.copy(busy=false,message=error.message?:"Não foi possível parear o Desktop.",error=true) }
+                                    }
+                                }
+                                .addOnFailureListener { error -> account=account.copy(message=error.message?:"Não foi possível ler o QR.",error=true) }
+                        }
+                    })
                     Page.Settings->SettingsPage(settings,folderUri,desktopStatus,desktopTracks.size,{folderPicker.launch(folderUri?.let{Uri.parse(it)})},{folderUri?.let{old->runCatching{context.contentResolver.releasePersistableUriPermission(Uri.parse(old),Intent.FLAG_GRANT_READ_URI_PERMISSION)}};settings.setFolder(null);folderUri=null},{settings.saveDesktopUrl(it);desktopRefreshKey++},{settings.saveDesktopUrl(null);desktopRefreshKey++})
                 }
             }
