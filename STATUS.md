@@ -7,6 +7,7 @@
 - Player reorganizado com capa em destaque, origem, progresso, controles e volume visível; configurações de música do computador, aparência e saída de áudio ficam em grupos identificados.
 - Equalizador Android de cinco bandas implementado e preferências adicionadas ao backup seletivo.
 - Revogação do acesso Cobre ID permanece efetiva no Mobile e não reabre automaticamente o modo legado com chave LAN.
+- Conta, lista de dispositivos, acesso Desktop e pareamento TV estão separados em blocos; o Mobile busca e exibe faixa/estado real dos controles do Desktop.
 - `assembleDebug` compilou com sucesso nesta máquina. O teste local usou uma cópia temporária ASCII do código por limitação do Android Gradle no caminho original com acento.
 - Falta testar com Desktop 3.9.0/Server beta.9 no aparelho. A chave estável de distribuição não está cadastrada, então ainda não há atualização assinada para publicar com segurança por cima das instalações existentes.
 

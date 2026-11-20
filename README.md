@@ -32,6 +32,7 @@ Aplicativo Android do ecossistema Cobre. Interface escura com a paleta, o símbo
 - Controles do Cobre ID podem pausar, trocar faixa, ajustar o volume e consultar a faixa em reprodução no Desktop.
 - O player foi reorganizado com capa em destaque, origem da faixa, progresso e volume sempre visível; configurações de biblioteca, aparência e áudio continuam agrupadas em cartões por finalidade.
 - O equalizador de cinco bandas altera a sessão de reprodução do Android; suas preferências ficam incluídas no backup do app.
+- A aba Cobre ID separa estado da conta/dispositivos, autorização do Desktop e pareamento da TV; a tela também lê o estado atual do player Desktop para sincronizar os controles.
 - A transmissão de áudio continua direta na rede local entre Desktop e celular; o Cobre Server controla acesso e não retransmite nem armazena arquivos de música.
 
 A versão 0.2.0 foi validada pelo autor. A conexão LAN e a reprodução Desktop do 0.6.0 também foram confirmadas. A versão 0.9.0 foi compilada e publicada pelo GitHub Actions. A versão 0.11.0 não foi publicada; suas alterações estão incluídas na 0.12.0, que foi compilada localmente em debug e ainda requer teste no aparelho.

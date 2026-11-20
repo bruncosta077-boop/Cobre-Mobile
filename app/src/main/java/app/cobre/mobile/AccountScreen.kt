@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -32,8 +33,11 @@ import kotlinx.coroutines.delay
 @Composable
 fun AccountPage(repository:CobreIdRepository,state:AccountUi,desktopOrigin:String,onState:(AccountUi)->Unit,onDesktopGrantChanged:()->Unit={}){
     val scope=rememberCoroutineScope();var serverUrl by remember{mutableStateOf(repository.serverUrl)};var tvCode by remember{mutableStateOf("")}
-    var desktopNowPlaying by remember(desktopOrigin){mutableStateOf("")};var desktopVolume by remember(desktopOrigin){mutableFloatStateOf(50f)}
+    var desktopNowPlaying by remember(desktopOrigin){mutableStateOf("")};var desktopVolume by remember(desktopOrigin){mutableFloatStateOf(50f)};var desktopPlaying by remember(desktopOrigin){mutableStateOf(false)}
     var email by remember{mutableStateOf(state.email.ifBlank{repository.savedEmail})};var password by remember{mutableStateOf("")};var create by remember{mutableStateOf(false)}
+    LaunchedEffect(repository.desktopGrantId(),desktopOrigin){
+        if(repository.desktopGrantId()!=null&&desktopOrigin.isNotBlank())runCatching{repository.readDesktopNowPlaying(desktopOrigin)}.onSuccess{desktopNowPlaying=listOf(it.optString("title"),it.optString("artist")).filter(String::isNotBlank).joinToString(" · ").ifBlank{"Nenhuma faixa informada"};desktopVolume=it.optDouble("volume",50.0).toFloat();desktopPlaying=it.optBoolean("playing")}
+    }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal=18.dp,vertical=16.dp),verticalArrangement=Arrangement.spacedBy(14.dp)){
         Text("Cobre ID",color=Color(0xFFECE6DF),style=MaterialTheme.typography.headlineMedium,fontWeight=FontWeight.Bold)
         Text("Conecte sua conta para acompanhar os dispositivos ligados ao ecossistema Cobre.",color=Color(0xFF9B938B))
@@ -92,9 +96,9 @@ fun AccountPage(repository:CobreIdRepository,state:AccountUi,desktopOrigin:Strin
                         if(!canControlDesktop)Text("Informe o endereço local do Desktop em Configurações para habilitar os controles.",color=Color(0xFF9B938B),style=MaterialTheme.typography.bodySmall)
                         Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceEvenly,verticalAlignment=Alignment.CenterVertically){
                             IconButton(enabled=canControlDesktop,onClick={scope.launch{runCatching{repository.sendDesktopCommand(desktopOrigin,"previous")}.onFailure{onState(state.copy(message=it.message?:"Falha no controle remoto.",error=true))}}}){Icon(Icons.Default.SkipPrevious,"Faixa anterior",tint=if(canControlDesktop)Color(0xFFECE6DF)else Color(0xFF6A625A))}
-                            IconButton(enabled=canControlDesktop,onClick={scope.launch{runCatching{repository.sendDesktopCommand(desktopOrigin,"toggle")}.onFailure{onState(state.copy(message=it.message?:"Falha no controle remoto.",error=true))}}}){Icon(Icons.Default.PlayArrow,"Reproduzir ou pausar no Desktop",tint=if(canControlDesktop)MaterialTheme.colorScheme.primary else Color(0xFF6A625A))}
+                            IconButton(enabled=canControlDesktop,onClick={scope.launch{runCatching{repository.sendDesktopCommand(desktopOrigin,"toggle")}.onSuccess{desktopPlaying=!desktopPlaying}.onFailure{onState(state.copy(message=it.message?:"Falha no controle remoto.",error=true))}}}){Icon(if(desktopPlaying)Icons.Default.Pause else Icons.Default.PlayArrow,"Reproduzir ou pausar no Desktop",tint=if(canControlDesktop)MaterialTheme.colorScheme.primary else Color(0xFF6A625A))}
                             IconButton(enabled=canControlDesktop,onClick={scope.launch{runCatching{repository.sendDesktopCommand(desktopOrigin,"next")}.onFailure{onState(state.copy(message=it.message?:"Falha no controle remoto.",error=true))}}}){Icon(Icons.Default.SkipNext,"Próxima faixa",tint=if(canControlDesktop)Color(0xFFECE6DF)else Color(0xFF6A625A))}
-                            IconButton(enabled=canControlDesktop,onClick={scope.launch{runCatching{repository.readDesktopNowPlaying(desktopOrigin)}.onSuccess{desktopNowPlaying=listOf(it.optString("title"),it.optString("artist")).filter(String::isNotBlank).joinToString(" · ").ifBlank{"Nenhuma faixa informada"};desktopVolume=it.optDouble("volume",50.0).toFloat()}.onFailure{onState(state.copy(message=it.message?:"Não foi possível consultar o Desktop.",error=true))}}}){Icon(Icons.Default.Refresh,"Atualizar estado",tint=if(canControlDesktop)Color(0xFF9B938B)else Color(0xFF6A625A))}
+                            IconButton(enabled=canControlDesktop,onClick={scope.launch{runCatching{repository.readDesktopNowPlaying(desktopOrigin)}.onSuccess{desktopNowPlaying=listOf(it.optString("title"),it.optString("artist")).filter(String::isNotBlank).joinToString(" · ").ifBlank{"Nenhuma faixa informada"};desktopVolume=it.optDouble("volume",50.0).toFloat();desktopPlaying=it.optBoolean("playing")}.onFailure{onState(state.copy(message=it.message?:"Não foi possível consultar o Desktop.",error=true))}}}){Icon(Icons.Default.Refresh,"Atualizar estado",tint=if(canControlDesktop)Color(0xFF9B938B)else Color(0xFF6A625A))}
                         }
                         if(desktopNowPlaying.isNotBlank())Text("No computador: $desktopNowPlaying",color=Color(0xFF9B938B),style=MaterialTheme.typography.bodySmall,maxLines=2,overflow=TextOverflow.Ellipsis)
                         Row(verticalAlignment=Alignment.CenterVertically){Icon(Icons.Default.VolumeUp,null,tint=Color(0xFF9B938B));Slider(enabled=canControlDesktop,value=desktopVolume,onValueChange={desktopVolume=it},onValueChangeFinished={scope.launch{runCatching{repository.sendDesktopCommand(desktopOrigin,"volume",desktopVolume.toDouble())}.onFailure{onState(state.copy(message=it.message?:"Falha ao ajustar volume remoto.",error=true))}}},valueRange=0f..100f,modifier=Modifier.weight(1f));Text("${desktopVolume.toInt()}%",color=Color(0xFF9B938B),style=MaterialTheme.typography.labelSmall)}
