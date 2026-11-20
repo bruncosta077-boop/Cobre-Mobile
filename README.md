@@ -9,7 +9,9 @@ Desenvolvimento principal: Bruno C S Moraes · Contribuição ao projeto: [@dilu
 
 Aplicativo Android do ecossistema Cobre. Interface escura com a paleta, o símbolo e a organização visual do Cobre Desktop, adaptados para toque.
 
-## Versão em preparação: 0.12.0 — ainda não publicada
+## Pré-release 0.12.0
+
+[Baixar o APK assinado](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.12.0). Esta versão é distribuída para instalação manual e não está na Play Store.
 
 - Biblioteca local com álbuns, artistas, faixas, capas e busca.
 - Pasta de biblioteca configurável pelo seletor de pastas do Android.
@@ -26,7 +28,7 @@ Aplicativo Android do ecossistema Cobre. Interface escura com a paleta, o símbo
 - Ícone Cobre incluído no APK em formatos legado e adaptativo.
 - Medição do áudio recebido do Desktop (latência inicial e bytes por segundo) enviada ao painel Cobre Server, sem confundir catálogo com stream.
 - Backup Android seletivo de playlists, favoritos, histórico, cores, endereço do Server, email, endereço do Desktop e URI da pasta escolhida; tokens não são incluídos, e o Android pode exigir conceder a permissão da pasta novamente após restaurar.
-- O workflow está preparado para usar assinatura estável protegida nos segredos do GitHub Actions; o cadastro e a primeira validação do APK ainda estão pendentes.
+- O APK 0.12.0 usa a chave estável de distribuição armazenada nos segredos do GitHub Actions. A primeira instalação pode exigir uma migração se o app atual foi instalado com assinatura de depuração.
 - O Mobile pede permissão ao Desktop através do Cobre ID, acessa biblioteca/capas/áudio protegidos e renova tokens curtos enquanto toca. A permissão é aprovada no Desktop e vale até 30 dias.
 - Pareamento do Desktop por QR: o app identifica endereço e dispositivo, solicita acesso via Cobre ID e salva a conexão após a aprovação no computador. O QR expira em cinco minutos e não contém segredo; endereço manual permanece como alternativa.
 - Após revogar a permissão ou sair da conta, o endereço antigo com chave LAN não pode reabrir o acesso em silêncio; a autorização Cobre ID será exigida novamente.
@@ -36,13 +38,13 @@ Aplicativo Android do ecossistema Cobre. Interface escura com a paleta, o símbo
 - A aba Cobre ID separa estado da conta/dispositivos, autorização do Desktop e pareamento da TV; a tela também lê o estado atual do player Desktop para sincronizar os controles.
 - A transmissão de áudio continua direta na rede local entre Desktop e celular; o Cobre Server controla acesso e não retransmite nem armazena arquivos de música.
 
-A versão 0.2.0 foi validada pelo autor. A conexão LAN e a reprodução Desktop do 0.6.0 também foram confirmadas. A versão 0.9.0 foi compilada e publicada pelo GitHub Actions. A versão 0.11.0 não foi publicada; suas alterações estão incluídas na 0.12.0, que foi compilada localmente em debug e ainda requer teste no aparelho.
+A versão 0.2.0 foi validada pelo autor. A conexão LAN e a reprodução Desktop do 0.6.0 também foram confirmadas. A versão 0.9.0 foi publicada como debug. A versão 0.11.0 não foi publicada; suas alterações estão incluídas na 0.12.0, publicada como pré-release assinada e ainda aguardando validação desta build no aparelho.
 
-**Assinatura e atualizações:** o workflow está preparado para assinar releases com uma chave estável protegida por segredos do GitHub Actions. A chave ainda precisa ser cadastrada e o primeiro APK assinado testado; até isso acontecer, a 0.12.0 não está publicada. Atualizações por cima preservam os dados se `applicationId` e certificado forem os mesmos. APKs debug antigos podem exigir uma migração única; faça backup e não remova o app com dados importantes sem validar a cópia.
+**Assinatura e atualizações:** a 0.12.0 inicia o canal de assinatura estável. APKs de depuração anteriores têm outro certificado e não atualizam por cima: se o Android rejeitar a instalação, use a exportação de backup do app, desinstale a versão antiga e então instale a 0.12.0. Depois dessa migração, versões assinadas pela mesma chave atualizam por cima e preservam os dados.
 
 ## Conexão
 
-O Mobile usa o [Cobre Server](https://github.com/bruncosta077-boop/Cobre-Server/releases/tag/v0.5.0-beta.9) para login, dispositivos e presença. Para o novo acesso protegido, entre na mesma conta Cobre ID no Desktop e no Mobile, peça acesso na aba **Cobre ID** e aprove no Desktop. Em **Configurações → Biblioteca do computador**, informe o endereço local do Desktop. Os aparelhos precisam estar na mesma rede local.
+O Mobile usa o [Cobre Server](https://github.com/bruncosta077-boop/Cobre-Server/releases/tag/v0.5.0-beta.10) para login, dispositivos e presença. Para o novo acesso protegido, entre na mesma conta Cobre ID no Desktop e no Mobile, escaneie o QR em **Cobre ID** e aprove no Desktop. O Cobre Desktop 3.10.0 ou posterior precisa estar na mesma rede local; o endereço pode ser informado manualmente como alternativa.
 
 O [Cobre TV](https://github.com/bruncosta077-boop/Cobre-TV) segue como protótipo separado para Android TV/Google TV: já solicita e resgata código de pareamento Cobre ID, mas ainda não carrega biblioteca real nem reproduz áudio.
 

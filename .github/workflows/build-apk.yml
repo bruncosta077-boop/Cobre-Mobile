@@ -79,6 +79,8 @@ jobs:
       contents: write
       actions: read
     steps:
+      - uses: actions/checkout@v7
+
       - uses: actions/download-artifact@v7
         with:
           name: cobre-mobile-release-apk
@@ -89,16 +91,27 @@ jobs:
           version="${GITHUB_REF_NAME#mobile-v}"
           mv release/app-release.apk "release/Cobre-Mobile-${version}.apk"
 
+      - name: Preparar notas desta versão
+        shell: bash
+        run: |
+          python - <<'PY'
+          import os, re
+          version = os.environ['GITHUB_REF_NAME'].removeprefix('mobile-v')
+          changelog = open('CHANGELOG.md', encoding='utf-8').read()
+          match = re.search(r'^##\s+' + re.escape(version) + r'[^\n]*\n(.*?)(?=^##\s|\Z)', changelog, re.M | re.S)
+          if not match:
+              raise SystemExit(f'Notas da versão {version} não encontradas em CHANGELOG.md')
+          notes = match.group(1).strip()
+          notes += '\n\nAPK pré-release assinado pelo canal estável de distribuição do Cobre Mobile.'
+          notes += '\n\n**Migração única:** esta é a primeira versão com a chave estável. APKs anteriores assinados pelo modo de depuração podem exigir exportar o backup do app, desinstalar a versão antiga e instalar esta. Após migrar, as próximas versões com esta chave atualizam por cima e preservam os dados.'
+          open('release-notes.md', 'w', encoding='utf-8').write(notes + '\n')
+          PY
+
       - name: Publicar APK para instalação Android
         uses: softprops/action-gh-release@v2
         with:
           name: Cobre Mobile ${{ github.ref_name }}
           tag_name: ${{ github.ref_name }}
           prerelease: true
-          body: |
-            APK de teste do Cobre Mobile, compilado pelo GitHub Actions.
-
-            Baixe o arquivo APK anexado no Android e toque nele para instalar. O Android pode pedir autorização para instalar apps desta origem.
-
-            Esta é uma compilação de desenvolvimento, não uma versão da Play Store. A validação da reprodução e das medições de stream deve ser feita no aparelho.
+          body_path: release-notes.md
           files: release/Cobre-Mobile-*.apk
