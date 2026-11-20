@@ -1,5 +1,12 @@
 # Histórico de versões — Cobre Mobile
 
+## 0.9.0 — backup seletivo do aparelho
+
+- Android pode restaurar banco local (playlists, favoritos e histórico) e cores de aparência pelo backup do sistema ou transferência entre aparelhos.
+- Migra preferências antigas e separa aparência das configurações de acesso local.
+- Endereço do Desktop, permissão de pasta e credenciais Cobre ID ficam fora do backup; podem precisar ser reconectados após reinstalação ou troca de aparelho.
+- Atualização normal sobre o app instalado mantém os dados; backup do Android depende de estar habilitado no aparelho.
+
 ## 0.8.0 — em validação
 
 - A reprodução de faixas do Desktop mede latência até o primeiro bloco e taxa de bytes recebidos no próprio Mobile.

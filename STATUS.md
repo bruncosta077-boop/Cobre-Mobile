@@ -54,3 +54,9 @@ Estatísticas, letras, correção de metadados, créditos de encarte, equalizado
 ## Limites da integração atual
 
 Cobre ID autentica e envia presença, mas não anuncia o endpoint LAN do Desktop. O áudio atual usa o servidor HTTP local do Desktop; ambos os aparelhos precisam estar na mesma rede. O Cobre Server ainda não faz relay de áudio nem sincroniza dados.
+
+## Versão 0.9.0 — backup seletivo
+
+- Backup Android inclui o banco local e cores, sem salvar token Cobre ID, chave/endereço LAN do Desktop ou permissão de pasta.
+- Migração das configurações antigas ao abrir a nova versão.
+- Precisa validar instalação por cima da versão existente e restauração do backup num aparelho real.

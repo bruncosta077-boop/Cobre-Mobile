@@ -60,3 +60,5 @@ gradle assembleDebug
 ```
 
 O projeto não declara uma licença de redistribuição. Consulte o autor antes de reutilizar ou redistribuir o código.
+
+Atualização normal preserva os dados do app. O backup do Android pode restaurar playlists, favoritos, histórico e cores; por segurança, faça login no Cobre ID e reconecte o Desktop/pasta após migrar para outro aparelho. A restauração depende do backup do Android estar habilitado.

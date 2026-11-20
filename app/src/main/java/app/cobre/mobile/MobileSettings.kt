@@ -7,29 +7,50 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 
 class MobileSettings(context: Context) {
-    private val prefs = context.applicationContext.getSharedPreferences("cobre-mobile-settings", Context.MODE_PRIVATE)
-    var accentPrimary by mutableIntStateOf(prefs.getInt("accent_primary", 0xFFC9773F.toInt()))
+    private val appContext = context.applicationContext
+    private val appearancePrefs = appContext.getSharedPreferences("cobre-mobile-appearance", Context.MODE_PRIVATE)
+    private val accessPrefs = appContext.getSharedPreferences("cobre-mobile-local-access", Context.MODE_PRIVATE)
+    init {
+        val legacy = appContext.getSharedPreferences("cobre-mobile-settings", Context.MODE_PRIVATE)
+        if (legacy.contains("accent_primary") && !appearancePrefs.contains("accent_primary")) {
+            appearancePrefs.edit()
+                .putInt("accent_primary", legacy.getInt("accent_primary", 0xFFC9773F.toInt()))
+                .putInt("accent_secondary", legacy.getInt("accent_secondary", 0xFFE6A06A.toInt()))
+                .commit()
+        }
+        val access = accessPrefs.edit()
+        var hasAccessMigration = false
+        if (legacy.contains("library_folder") && !accessPrefs.contains("library_folder")) {
+            access.putString("library_folder", legacy.getString("library_folder", null)); hasAccessMigration = true
+        }
+        if (legacy.contains("desktop_library_url") && !accessPrefs.contains("desktop_library_url")) {
+            access.putString("desktop_library_url", legacy.getString("desktop_library_url", null)); hasAccessMigration = true
+        }
+        if (hasAccessMigration) access.commit()
+        if (legacy.all.isNotEmpty()) legacy.edit().clear().commit()
+    }
+    var accentPrimary by mutableIntStateOf(appearancePrefs.getInt("accent_primary", 0xFFC9773F.toInt()))
         private set
-    var accentSecondary by mutableIntStateOf(prefs.getInt("accent_secondary", 0xFFE6A06A.toInt()))
+    var accentSecondary by mutableIntStateOf(appearancePrefs.getInt("accent_secondary", 0xFFE6A06A.toInt()))
         private set
-    var folderUri by mutableStateOf(prefs.getString("library_folder", null))
+    var folderUri by mutableStateOf(accessPrefs.getString("library_folder", null))
         private set
-    var desktopUrl by mutableStateOf(prefs.getString("desktop_library_url", null))
+    var desktopUrl by mutableStateOf(accessPrefs.getString("desktop_library_url", null))
         private set
 
     fun setAccent(primary: Int, secondary: Int) {
         accentPrimary = primary
         accentSecondary = secondary
-        prefs.edit().putInt("accent_primary", primary).putInt("accent_secondary", secondary).apply()
+        appearancePrefs.edit().putInt("accent_primary", primary).putInt("accent_secondary", secondary).apply()
     }
 
     fun setFolder(uri: String?) {
         folderUri = uri
-        prefs.edit().putString("library_folder", uri).apply()
+        accessPrefs.edit().putString("library_folder", uri).apply()
     }
 
     fun saveDesktopUrl(url: String?) {
         desktopUrl = url?.trim()?.takeIf(String::isNotBlank)
-        prefs.edit().putString("desktop_library_url", desktopUrl).apply()
+        accessPrefs.edit().putString("desktop_library_url", desktopUrl).apply()
     }
 }

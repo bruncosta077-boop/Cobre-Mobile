@@ -64,7 +64,7 @@ class CobreIdRepository(context: Context) {
         streamLatencyMs: Long? = null,
         streamBytesPerSecond: Long? = null,
     ) = withContext(Dispatchers.IO) {
-        val meta = JSONObject().put("platform", "Android").put("appVersion", "0.8.0")
+        val meta = JSONObject().put("platform", "Android").put("appVersion", "0.9.0")
         catalogResponseMs?.takeIf { it in 0..120_000 }?.let { meta.put("catalogResponseMs", it) }
         streamLatencyMs?.takeIf { it in 0..120_000 }?.let { meta.put("streamLatencyMs", it) }
         streamBytesPerSecond?.takeIf { it in 0..1_000_000_000 }?.let { meta.put("streamBytesPerSecond", it) }
