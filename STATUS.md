@@ -38,6 +38,7 @@ No aparelho, o autor confirmou login Cobre ID, leitura das músicas, reproduçã
 
 - Media3 mede latência até o primeiro bloco e taxa recebida durante streams HTTP do Desktop; arquivos locais não entram na medição.
 - Medidas recentes são enviadas no heartbeat Cobre ID e exibidas no diagnóstico do Cobre Server.
+- O pipeline de APK publica um arquivo instalável direto em Releases nas tags `mobile-v*`; a build de desenvolvimento ainda aguarda validação no telefone.
 - A leitura expira após dois minutos sem atividade. Não representa a rede até o Server e não habilita transmissão pela internet.
 - Próxima validação: tocar uma faixa do Desktop por mais de 5 segundos, conferir a taxa no painel Server e testar pausa, retomada, busca e próxima faixa.
 

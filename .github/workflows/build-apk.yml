@@ -4,6 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
+    tags: ['mobile-v*']
 
 permissions:
   contents: read
@@ -31,3 +32,35 @@ jobs:
           name: cobre-mobile-debug-apk
           path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
+
+  publish-apk:
+    if: startsWith(github.ref, 'refs/tags/mobile-v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/download-artifact@v7
+        with:
+          name: cobre-mobile-debug-apk
+          path: release
+
+      - name: Preparar arquivo instalável
+        run: |
+          version="${GITHUB_REF_NAME#mobile-v}"
+          mv release/app-debug.apk "release/Cobre-Mobile-${version}.apk"
+
+      - name: Publicar APK para instalação Android
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Cobre Mobile ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
+          prerelease: true
+          body: |
+            APK de teste do Cobre Mobile, compilado pelo GitHub Actions.
+
+            Baixe o arquivo APK anexado no Android e toque nele para instalar. O Android pode pedir autorização para instalar apps desta origem.
+
+            Esta é uma compilação de desenvolvimento, não uma versão da Play Store. A validação da reprodução e das medições de stream deve ser feita no aparelho.
+          files: release/Cobre-Mobile-*.apk

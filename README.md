@@ -43,9 +43,11 @@ Estatísticas, letras sincronizadas, edição de metadados, créditos de encarte
 
 ## Gerar APK de teste
 
-1. Abra **Actions** neste repositório.
-2. Selecione **Build APK** e clique em **Run workflow**.
-3. Baixe o artefato `cobre-mobile-debug-apk` e extraia o APK.
+O APK é o instalador padrão do Android. Baixe o arquivo em [Releases](https://github.com/bruncosta077-boop/Cobre-Mobile/releases), abra-o no celular e confirme a instalação. O Android pode pedir permissão para instalar apps baixados pelo navegador.
+
+As versões de desenvolvimento são compiladas pelo GitHub Actions; tags `mobile-v*` publicam o APK diretamente em Releases. O pacote atual é de teste e não é distribuído pela Play Store.
+
+Para gerar uma compilação de teste manualmente, abra **Actions**, selecione **Build APK**, clique em **Run workflow** e baixe o artefato `cobre-mobile-debug-apk`.
 
 O workflow também roda ao enviar alterações para `main`. O APK é de depuração e não está assinado para a Play Store.
 

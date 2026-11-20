@@ -5,6 +5,7 @@
 - A reprodução de faixas do Desktop mede latência até o primeiro bloco e taxa de bytes recebidos no próprio Mobile.
 - O Mobile envia medições recentes no heartbeat Cobre ID; o painel do Server passa a exibir taxa/latência reais, separadas da latência do catálogo.
 - As medições expiram após dois minutos sem atividade de stream e não incluem faixas locais.
+- O GitHub Actions prepara um APK instalável e, em tags `mobile-v*`, publica o arquivo diretamente em Releases.
 - O áudio ainda é entregue diretamente pelo Desktop na mesma rede local; Cobre ID não retransmite mídia nem habilita acesso pela internet.
 - Requer build e validação no aparelho; métricas precisam ser conferidas durante uma faixa do Desktop.
 
