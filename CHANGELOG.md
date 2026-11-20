@@ -1,5 +1,12 @@
 # Histórico de versões — Cobre Mobile
 
+## 0.11.0 — recuperação de configurações
+
+- Backup do Android passa a incluir endereço do Cobre Server, email da conta, pasta escolhida, endereço do Desktop, cores e dados locais (playlists, favoritos e histórico).
+- Token de renovação foi movido para preferências separadas, cifradas com Android Keystore e explicitamente excluídas do backup; tokens antigos são migrados automaticamente sem encerrar a sessão na atualização.
+- Uma restauração em outro aparelho pode exigir login novamente e nova permissão para a pasta, pois credenciais e concessões SAF não podem ser restauradas como texto.
+- A atualização sobre uma instalação preserva os dados quando `applicationId` e certificado de assinatura permanecem iguais. O APK de release ainda aguarda uma chave estável no GitHub; esta versão não deve ser instalada desinstalando um APK com dados importantes.
+
 ## 0.10.0 — preparação da assinatura estável
 
 - Adiciona à conta Cobre ID a aprovação de códigos de pareamento de TV; o código é enviado autenticado ao Cobre Server e, após aprovação, o Mobile atualiza a lista de dispositivos vinculados.

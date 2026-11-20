@@ -19,8 +19,20 @@ import javax.crypto.spec.GCMParameterSpec
 
 /** Client for the currently implemented Cobre Server account, presence and device endpoints. */
 class CobreIdRepository(context: Context) {
-    private val prefs = context.applicationContext.getSharedPreferences("cobre-id", Context.MODE_PRIVATE)
+    private val appContext = context.applicationContext
+    private val prefs = appContext.getSharedPreferences("cobre-id", Context.MODE_PRIVATE)
+    private val secretPrefs = appContext.getSharedPreferences("cobre-id-secrets", Context.MODE_PRIVATE)
     private var accessToken: String? = null
+
+    init {
+        // Move the encrypted refresh token out of the preferences eligible for Android backup.
+        val legacyToken = prefs.getString("refresh_token", null)
+        if (!legacyToken.isNullOrBlank()) {
+            val moved = !secretPrefs.getString("refresh_token", null).isNullOrBlank() ||
+                secretPrefs.edit().putString("refresh_token", legacyToken).commit()
+            if (moved) prefs.edit().remove("refresh_token").commit()
+        }
+    }
 
     val serverUrl: String get() = prefs.getString("server_url", "").orEmpty()
     val savedEmail: String get() = prefs.getString("email", "").orEmpty()
@@ -93,7 +105,8 @@ class CobreIdRepository(context: Context) {
     suspend fun logout() = withContext(Dispatchers.IO) {
         try { requestBlocking("/v1/logout", "POST", JSONObject()) } finally {
             accessToken = null
-            prefs.edit().remove("refresh_token").remove("email").apply()
+            secretPrefs.edit().remove("refresh_token").apply()
+            prefs.edit().remove("email").apply()
         }
     }
 
@@ -110,7 +123,8 @@ class CobreIdRepository(context: Context) {
         } catch (error: Exception) {
             accessToken = null
             if (error is CobreIdException && error.statusCode == 401) {
-                prefs.edit().remove("refresh_token").remove("email").apply()
+                secretPrefs.edit().remove("refresh_token").apply()
+                prefs.edit().remove("email").apply()
             }
             throw error
         }
@@ -164,11 +178,11 @@ class CobreIdRepository(context: Context) {
         val cipher = Cipher.getInstance("AES/GCM/NoPadding")
         cipher.init(Cipher.ENCRYPT_MODE, key)
         val encrypted = cipher.iv + cipher.doFinal(token.toByteArray(Charsets.UTF_8))
-        prefs.edit().putString("refresh_token", Base64.encodeToString(encrypted, Base64.NO_WRAP)).apply()
+        secretPrefs.edit().putString("refresh_token", Base64.encodeToString(encrypted, Base64.NO_WRAP)).apply()
     }
 
     private fun readRefreshToken(): String? = runCatching {
-        val stored = prefs.getString("refresh_token", null) ?: return null
+        val stored = secretPrefs.getString("refresh_token", null) ?: return null
         val packed = Base64.decode(stored, Base64.NO_WRAP)
         val iv = packed.copyOfRange(0, 12)
         val payload = packed.copyOfRange(12, packed.size)

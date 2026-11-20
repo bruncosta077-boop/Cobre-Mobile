@@ -2,14 +2,14 @@
   <img src="assets/branding/cobre-logo.png" alt="Logo do Cobre" width="150">
   <h1>Cobre Mobile</h1>
   <p>Player Android integrado ao ecossistema Cobre</p>
-  <p><strong>Versão 0.10.0 — preparação, ainda não publicada</strong></p>
+  <p><strong>Versão 0.11.0 — backup de configurações, ainda não publicada</strong></p>
 </div>
 
 Desenvolvimento principal: Bruno C S Moraes · Contribuição ao projeto: [@dilucas00](https://github.com/dilucas00).
 
 Aplicativo Android do ecossistema Cobre. Interface escura com a paleta, o símbolo e a organização visual do Cobre Desktop, adaptados para toque.
 
-## Versão em preparação: 0.10.0 — ainda não publicada
+## Versão em preparação: 0.11.0 — ainda não publicada
 
 - Biblioteca local com álbuns, artistas, faixas, capas e busca.
 - Pasta de biblioteca configurável pelo seletor de pastas do Android.
@@ -25,18 +25,18 @@ Aplicativo Android do ecossistema Cobre. Interface escura com a paleta, o símbo
 - Player com volume sempre visível, metadados do álbum e ações por toque longo nos álbuns.
 - Ícone Cobre incluído no APK em formatos legado e adaptativo.
 - Medição do áudio recebido do Desktop (latência inicial e bytes por segundo) enviada ao painel Cobre Server, sem confundir catálogo com stream.
-- Backup Android seletivo de playlists, favoritos, histórico e cores; não transfere credenciais, endereço/chave LAN nem permissão da pasta.
+- Backup Android seletivo de playlists, favoritos, histórico, cores, endereço do Server, email, endereço do Desktop e URI da pasta escolhida; tokens não são incluídos, e o Android pode exigir conceder a permissão da pasta novamente após restaurar.
 - O workflow está preparado para usar assinatura estável protegida nos segredos do GitHub Actions; o cadastro e a primeira validação do APK ainda estão pendentes.
 
-A versão 0.2.0 foi validada pelo autor. A conexão LAN e a reprodução Desktop do 0.6.0 também foram confirmadas. A versão 0.9.0 foi compilada e publicada pelo GitHub Actions. A 0.10.0 prepara a assinatura estável; é necessário testar a assinatura e a atualização por cima no aparelho antes de considerar concluída a migração.
+A versão 0.2.0 foi validada pelo autor. A conexão LAN e a reprodução Desktop do 0.6.0 também foram confirmadas. A versão 0.9.0 foi compilada e publicada pelo GitHub Actions. A versão 0.11.0 está em preparação; não há APK assinado de distribuição até configurar e validar a chave estável.
 
-**Assinatura e atualizações:** o workflow está preparado para assinar releases com uma chave estável protegida por segredos do GitHub Actions. A chave ainda precisa ser cadastrada e o primeiro APK assinado testado; até isso acontecer, a 0.10.0 não está publicada. Depois da migração para a assinatura estável, atualizar por cima preserva os dados do app. APKs debug antigos podem exigir uma migração única; faça backup e não remova o app com dados importantes sem validar a cópia.
+**Assinatura e atualizações:** o workflow está preparado para assinar releases com uma chave estável protegida por segredos do GitHub Actions. A chave ainda precisa ser cadastrada e o primeiro APK assinado testado; até isso acontecer, a 0.11.0 não está publicada. Atualizações por cima preservam os dados se `applicationId` e certificado forem os mesmos. APKs debug antigos podem exigir uma migração única; faça backup e não remova o app com dados importantes sem validar a cópia.
 
 ## Conexão
 
 O Mobile usa o [Cobre Server](https://github.com/bruncosta077-boop/Cobre-Server) para login, dispositivos e presença. Para abrir a biblioteca do Desktop, ative **Acesso remoto** no Cobre Desktop e cole em **Configurações → Biblioteca do computador** o endereço completo exibido pelo Desktop. Os aparelhos precisam estar na mesma rede local.
 
-O [Cobre TV](https://github.com/bruncosta077-boop/Cobre-TV) segue como protótipo separado para Android TV/Google TV: ainda não solicita nem resgata o código de pareamento e não compartilha biblioteca ou reprodução. A aprovação no Mobile já conversa com os endpoints Cobre ID do Server, aguardando a integração do fluxo na TV.
+O [Cobre TV](https://github.com/bruncosta077-boop/Cobre-TV) segue como protótipo separado para Android TV/Google TV: já solicita e resgata código de pareamento Cobre ID, mas ainda não carrega biblioteca real nem reproduz áudio.
 
 O áudio da biblioteca do Desktop é entregue pelo próprio computador na rede local, com requisições HTTP por partes para permitir busca na faixa. Essa conexão não passa pelo Cobre Server. Acesso pela internet e sincronização de playlists continuam pendentes; presença do Cobre ID não prova que o computador está alcançável.
 

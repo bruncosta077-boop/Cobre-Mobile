@@ -3,9 +3,16 @@
 ## Versão 0.9.0 — pré-release publicada
 
 - GitHub Actions compilou e publicou o APK `Cobre-Mobile-0.9.0.apk` em [Releases](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.9.0).
-- Backup seletivo habilitado para banco local e cores; Cobre ID, chave/endereço Desktop e permissão de pasta ficam excluídos.
+- Backup seletivo inicial habilitado para banco local e cores.
 - Certificados debug 0.8.0 e 0.9.0 foram comparados e são diferentes. Não é possível instalar 0.9.0 por cima da 0.8.0; não desinstalar se houver dados locais a preservar.
-- A versão 0.10.0 prepara o workflow para assinatura estável, mas ainda não foi publicada: falta cadastrar a chave nos segredos do repositório e validar o APK assinado. Depois, testar atualização por cima no aparelho. Backup/restauração também precisa de validação real.
+- A chave estável de distribuição continua sem configurar; APK debug não deve ser tratado como canal de atualização estável.
+
+## Versão 0.11.0 — backup de configurações em preparação
+
+- Backup do Android foi ampliado para endereço do Cobre Server, email, pasta e Desktop; o refresh token fica em arquivo separado protegido por Keystore e fora do backup.
+- Migração de token antigo entre preferências é feita ao abrir o app sem limpar sessão.
+- Ainda precisa passar no build de CI e ser validado em aparelho. Restaurações podem exigir novo login e nova autorização SAF da pasta.
+- A assinatura estável de distribuição e a migração segura de APKs debug continuam pendentes.
 
 ## Versão 0.2.0 — validada pelo autor
 
