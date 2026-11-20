@@ -14,7 +14,8 @@
 - Scanner Google Code Scanner lê QR sem pedir permissão de câmera ao app; aparelhos sem suporte aos serviços Google continuam podendo configurar o endereço manualmente e pedir acesso pelo Cobre ID.
 - Corrigida a migração de refresh tokens antigos para o armazenamento cifrado; IDs e autorizações do Desktop não entram no backup exportável.
 - Requer Cobre Desktop 3.9.0 ou posterior e Cobre Server 0.5.0-beta.9 ou posterior para o acesso protegido; QR requer Desktop 3.10.0. A conexão antiga por chave LAN continua disponível como compatibilidade para instalações sem migração.
-- `assembleDebug` passou no GitHub Actions [44791580468](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/44791580468). Esta é a primeira versão assinada pela chave estável de distribuição; APKs antigos de debug podem exigir migração única antes da instalação.
+- APK assinado `Cobre-Mobile-0.12.0.apk` publicado em [Releases](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.12.0). O GitHub Actions compilou o release e aprovou `apksigner verify` no [run 44796230905](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/44796230905).
+- Esta é a primeira versão assinada pela chave estável de distribuição; APKs antigos de debug podem exigir exportar o backup, desinstalar a versão antiga e fazer uma migração única antes da instalação.
 - A versão é pré-release e ainda requer validação de reprodução longa e controles no aparelho com Desktop 3.10.0 e Cobre Server atualizado.
 
 ## 0.11.0 — recuperação de configurações

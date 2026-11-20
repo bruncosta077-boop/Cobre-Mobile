@@ -1,6 +1,12 @@
 # Cobre Mobile — status
 
-## Versão 0.12.0 — compilada em debug, aguardando validação no aparelho
+## Versão 0.12.0 — pré-release assinada publicada
+
+- APK disponível em [Cobre Mobile 0.12.0](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.12.0): `Cobre-Mobile-0.12.0.apk`.
+- GitHub Actions compilou o APK de release, confirmou a assinatura com `apksigner verify` e publicou o arquivo no [run 44796230905](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/44796230905).
+- Chave estável de distribuição configurada nos segredos do repositório. Cópia local protegida pelo Windows em `C:\Users\Bruno\Documents\Cobre-Mobile-Signing`; manter essa chave é necessário para assinar futuras atualizações.
+- APKs antigos de debug podem exigir migração única: exportar o backup do app, desinstalar a instalação incompatível e instalar este APK. Depois da migração, versões com a mesma chave atualizam por cima.
+- Continua pré-release: falta validação física desta build 0.12.0 no aparelho, incluindo QR, aprovação Desktop, stream prolongado, controles e restauração do backup.
 
 - Solicitação e aprovação de acesso do Mobile no Desktop via Cobre ID; consentimento duradouro e tokens de mídia curtos renovados automaticamente.
 - Catálogo, capas, áudio HTTP Range e comandos remotos usam rotas protegidas do Desktop. Server autoriza, mídia flui diretamente na rede local.
@@ -9,9 +15,7 @@
 - Revogação do acesso Cobre ID permanece efetiva no Mobile e não reabre automaticamente o modo legado com chave LAN.
 - Conta, lista de dispositivos, acesso Desktop e pareamento TV estão separados em blocos; o Mobile busca e exibe faixa/estado real dos controles do Desktop.
 - QR de pareamento do Desktop implementado: scanner sem permissão de câmera, validade de cinco minutos, nenhuma credencial no QR, solicitação de acesso Cobre ID e gravação do endereço após aprovação. Endereço manual continua disponível.
-- `assembleDebug` passou no GitHub Actions [44791580468](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/44791580468). A sessão local não tem Gradle nem wrapper. QR exige Desktop 3.10.0; o fluxo de acesso protegido continua compatível com Desktop 3.9.0+.
-- `assembleDebug` compilou com sucesso nesta máquina. O teste local usou uma cópia temporária ASCII do código por limitação do Android Gradle no caminho original com acento.
-- Falta testar com Desktop 3.9.0/Server beta.9 no aparelho. A chave estável de distribuição não está cadastrada, então ainda não há atualização assinada para publicar com segurança por cima das instalações existentes.
+- O QR requer Cobre Desktop 3.10.0; o acesso protegido sem QR continua compatível com Desktop 3.9.0 ou posterior.
 
 ## Versão 0.9.0 — pré-release publicada
 
