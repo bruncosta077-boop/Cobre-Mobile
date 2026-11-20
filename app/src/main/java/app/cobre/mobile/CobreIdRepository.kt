@@ -59,6 +59,22 @@ class CobreIdRepository(context: Context) {
         }
     }
 
+    suspend fun authorizeTv(userCode: String): CobreDevice = withContext(Dispatchers.IO) {
+        val normalized = userCode.trim().uppercase()
+        if (!normalized.matches(Regex("[A-HJ-NP-Z2-9]{4}-[A-HJ-NP-Z2-9]{4}"))) {
+            throw CobreIdException("Digite o código de 8 caracteres mostrado na TV.")
+        }
+        val response = requestBlocking(
+            "/v1/device/authorize", "POST",
+            JSONObject().put("userCode", normalized).put("approve", true),
+        )
+        val device = response.optJSONObject("device") ?: throw CobreIdException("O servidor não confirmou o dispositivo autorizado.")
+        CobreDevice(
+            id = device.optString("id"), name = device.optString("name", "Cobre TV"),
+            type = device.optString("type", "tv"), online = false, current = false, lastSeen = 0L,
+        )
+    }
+
     suspend fun sendPresence(
         catalogResponseMs: Long? = null,
         streamLatencyMs: Long? = null,

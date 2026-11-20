@@ -2,6 +2,8 @@
 
 ## 0.10.0 — preparação da assinatura estável
 
+- Adiciona à conta Cobre ID a aprovação de códigos de pareamento de TV; o código é enviado autenticado ao Cobre Server e, após aprovação, o Mobile atualiza a lista de dispositivos vinculados.
+- Valida o formato curto do código antes do envio e apresenta erros/expiração sem criar registros locais falsos.
 - O workflow passou a separar APKs debug (testes) de APKs de release, que exigem uma chave Cobre estável por segredos do GitHub Actions.
 - Quando a chave for configurada e o APK assinado for validado, instalações com a mesma assinatura poderão atualizar por cima, preservando configurações, sessão e dados locais.
 - A troca inicial de APK debug para a chave estável pode exigir migração única. Faça uma cópia dos dados e confirme a instalação antes de remover qualquer versão que contenha dados importantes.

@@ -26,7 +26,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun AccountPage(repository:CobreIdRepository,state:AccountUi,onState:(AccountUi)->Unit){
-    val scope=rememberCoroutineScope();var serverUrl by remember{mutableStateOf(repository.serverUrl)}
+    val scope=rememberCoroutineScope();var serverUrl by remember{mutableStateOf(repository.serverUrl)};var tvCode by remember{mutableStateOf("")}
     var email by remember{mutableStateOf(state.email.ifBlank{repository.savedEmail})};var password by remember{mutableStateOf("")};var create by remember{mutableStateOf(false)}
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal=18.dp,vertical=16.dp),verticalArrangement=Arrangement.spacedBy(14.dp)){
         Text("Cobre ID",color=Color(0xFFECE6DF),style=MaterialTheme.typography.headlineMedium,fontWeight=FontWeight.Bold)
@@ -48,6 +48,23 @@ fun AccountPage(repository:CobreIdRepository,state:AccountUi,onState:(AccountUi)
                     Text("Dispositivos",color=Color(0xFF9B938B),style=MaterialTheme.typography.labelLarge)
                     if(state.devices.isEmpty())Text("Ainda não há dispositivos para exibir.",color=Color(0xFF9B938B))
                     state.devices.forEach{device->Row(verticalAlignment=Alignment.CenterVertically){Icon(Icons.Default.Devices,null,tint=if(device.online)Color(0xFF7EB783)else Color(0xFF9B938B),modifier=Modifier.size(21.dp));Column(Modifier.weight(1f).padding(start=10.dp)){Text(device.name+(if(device.current)" · Este celular" else ""),color=Color(0xFFECE6DF),maxLines=1,overflow=TextOverflow.Ellipsis);Text(if(device.online)"Online" else "Offline",color=if(device.online)Color(0xFF7EB783)else Color(0xFF9B938B),style=MaterialTheme.typography.bodySmall)}}}
+                    HorizontalDivider(color=Color(0xFF302C28))
+                    Text("Autorizar Cobre TV",color=Color(0xFFECE6DF),style=MaterialTheme.typography.titleSmall,fontWeight=FontWeight.SemiBold)
+                    Text("Na TV, inicie o pareamento e digite aqui o código exibido. Ele expira em poucos minutos.",color=Color(0xFF9B938B),style=MaterialTheme.typography.bodySmall)
+                    OutlinedTextField(
+                        value=tvCode,
+                        onValueChange={value->tvCode=value.uppercase().filter{it.isLetterOrDigit()||it=='-'}.take(9)},
+                        modifier=Modifier.fillMaxWidth(),label={Text("Código da TV")},placeholder={Text("ABCD-EFGH")},singleLine=true,
+                        keyboardOptions=KeyboardOptions(keyboardType=KeyboardType.Ascii),colors=accountFieldColors(),
+                    )
+                    Button(onClick={scope.launch{
+                        onState(state.copy(busy=true,message="Autorizando TV…",error=false))
+                        runCatching{val device=repository.authorizeTv(tvCode);val devices=repository.loadDevices();device to devices}
+                            .onSuccess{(device,devices)->tvCode="";onState(state.copy(busy=false,devices=devices,message="${device.name} autorizada na sua conta.",error=false))}
+                            .onFailure{onState(state.copy(busy=false,message=it.message?:"Não foi possível autorizar a TV.",error=true))}
+                    }},enabled=!state.busy&&tvCode.matches(Regex("[A-HJ-NP-Z2-9]{4}-[A-HJ-NP-Z2-9]{4}")),modifier=Modifier.fillMaxWidth(),colors=ButtonDefaults.buttonColors(containerColor=MaterialTheme.colorScheme.primary,contentColor=Color.White),shape=RoundedCornerShape(24.dp)){
+                        if(state.busy)CircularProgressIndicator(Modifier.size(18.dp),color=Color.White,strokeWidth=2.dp)else Text("Autorizar dispositivo")
+                    }
                     TextButton(onClick={scope.launch{onState(state.copy(busy=true));runCatching{repository.logout()};onState(AccountUi(message="Sessão encerrada."))}},enabled=!state.busy){Text("Sair da conta",color=MaterialTheme.colorScheme.primary)}
                 }
             }
