@@ -28,14 +28,21 @@ No aparelho, o autor confirmou login Cobre ID, leitura das músicas, reproduçã
 - O autor confirmou que a conexão com a biblioteca do Desktop funcionou bem.
 - A tela informa quantidade de faixas e tempo de resposta do catálogo; isso não mede a taxa contínua do áudio.
 
-## Versão 0.7.0 — em desenvolvimento
+## Versão 0.7.0 — em validação
 
 - Alternância entre celular, computador e biblioteca conjunta; elimina faixas duplicadas na visão conjunta.
 - Player reorganizado com volume visível e informações de álbum, ano, origem e faixa.
 - Toque longo em álbum abre ações rápidas; paletas ajustadas para tons mais suaves.
 
+## Versão 0.8.0 — em desenvolvimento
+
+- Media3 mede latência até o primeiro bloco e taxa recebida durante streams HTTP do Desktop; arquivos locais não entram na medição.
+- Medidas recentes são enviadas no heartbeat Cobre ID e exibidas no diagnóstico do Cobre Server.
+- A leitura expira após dois minutos sem atividade. Não representa a rede até o Server e não habilita transmissão pela internet.
+- Próxima validação: tocar uma faixa do Desktop por mais de 5 segundos, conferir a taxa no painel Server e testar pausa, retomada, busca e próxima faixa.
+
 ### Próxima validação
-1. Gerar e instalar o APK 0.7.0 pelo GitHub Actions.
+1. Gerar e instalar o APK 0.8.0 pelo GitHub Actions.
 2. Conferir no aparelho as fontes separadas e a visão conjunta, as ações por toque longo, volume, aparência do player e paletas.
 3. Favoritos e playlists permanecem armazenados localmente; sincronizá-los com o servidor é etapa posterior.
 

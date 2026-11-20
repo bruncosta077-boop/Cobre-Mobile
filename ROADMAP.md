@@ -16,7 +16,7 @@
 
 ## Próximo passo
 
-Compilar e validar o 0.7.0 no aparelho. Depois, avançar a paridade local prioritária:
+Compilar e validar o 0.8.0 no aparelho, em especial as medições durante stream. Depois, avançar a paridade local prioritária:
 
 1. Avaliações e restauração da fila após reiniciar o app.
 2. Letras locais e sincronizadas; artista do álbum, disco e total de faixas por tags.
@@ -26,6 +26,8 @@ Compilar e validar o 0.7.0 no aparelho. Depois, avançar a paridade local priori
 ## Streaming e sincronização: ordem técnica
 
 O teste local vai usar o endpoint de acesso remoto existente no Desktop, com token e suporte a Range. Para atravessar redes diferentes/CGNAT, será preciso avaliar relay (por exemplo WebRTC) e HTTPS.
+
+O 0.8.0 acrescenta observabilidade do trecho LAN (taxa recebida e latência inicial informadas pelo Mobile). Isso não implementa relay; o Cobre Server continua fora do caminho dos bytes de áudio.
 
 Depois, registrar no Cobre Server a disponibilidade do Desktop e desenhar a sincronização de playlists, favoritos, histórico e preferências com IDs estáveis e regras de conflito. Presença de Cobre ID não equivale a streaming.
 

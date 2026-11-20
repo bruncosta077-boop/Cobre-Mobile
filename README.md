@@ -2,14 +2,14 @@
   <img src="assets/branding/cobre-logo.png" alt="Logo do Cobre" width="150">
   <h1>Cobre Mobile</h1>
   <p>Player Android integrado ao ecossistema Cobre</p>
-  <p><strong>Versão 0.7.0 em desenvolvimento</strong></p>
+  <p><strong>Versão 0.8.0 em desenvolvimento</strong></p>
 </div>
 
 Desenvolvimento principal: Bruno C S Moraes · Contribuição ao projeto: [@dilucas00](https://github.com/dilucas00).
 
 Aplicativo Android do ecossistema Cobre. Interface escura com a paleta, o símbolo e a organização visual do Cobre Desktop, adaptados para toque.
 
-## Versão em desenvolvimento: 0.7.0
+## Versão em desenvolvimento: 0.8.0
 
 - Biblioteca local com álbuns, artistas, faixas, capas e busca.
 - Pasta de biblioteca configurável pelo seletor de pastas do Android.
@@ -23,8 +23,9 @@ Aplicativo Android do ecossistema Cobre. Interface escura com a paleta, o símbo
 - Filtro entre biblioteca do celular, biblioteca do computador ou visão conjunta sem faixas repetidas.
 - Player com volume sempre visível, metadados do álbum e ações por toque longo nos álbuns.
 - Ícone Cobre incluído no APK em formatos legado e adaptativo.
+- Medição do áudio recebido do Desktop (latência inicial e bytes por segundo) enviada ao painel Cobre Server, sem confundir catálogo com stream.
 
-A versão 0.2.0 foi validada pelo autor. A conexão LAN e a reprodução Desktop do 0.6.0 também foram confirmadas; as mudanças visuais e de organização do 0.7.0 aguardam validação no aparelho.
+A versão 0.2.0 foi validada pelo autor. A conexão LAN e a reprodução Desktop do 0.6.0 também foram confirmadas; as mudanças visuais do 0.7.0 e as métricas de stream do 0.8.0 aguardam validação no aparelho.
 
 ## Conexão
 

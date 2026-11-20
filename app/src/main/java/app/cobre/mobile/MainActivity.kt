@@ -96,7 +96,7 @@ class MainActivity:ComponentActivity(){
     val playback by player.state.collectAsState(); var account by remember{mutableStateOf(AccountUi(email=accountRepo.savedEmail))}; val scope=rememberCoroutineScope()
     LaunchedEffect(Unit){if(!granted)askAudio.launch(permission); if(accountRepo.hasSavedSession&&accountRepo.serverUrl.isNotBlank()){
         account=account.copy(busy=true,message="Reconectando ao Cobre ID…")
-        runCatching{accountRepo.restoreSession();accountRepo.sendPresence();accountRepo.loadDevices()}.onSuccess{account=AccountUi(true,accountRepo.savedEmail,it,message="Conta conectada.")}.onFailure{account=AccountUi(email=accountRepo.savedEmail,message=it.message?:"Sessão expirada.",error=true)}
+        runCatching{accountRepo.restoreSession();sendMeasuredPresence(accountRepo,context,null);accountRepo.loadDevices()}.onSuccess{account=AccountUi(true,accountRepo.savedEmail,it,message="Conta conectada.")}.onFailure{account=AccountUi(email=accountRepo.savedEmail,message=it.message?:"Sessão expirada.",error=true)}
     }}
     LaunchedEffect(granted,folderUri){localTracks=if(granted)runCatching{library.load(folderUri?.let{Uri.parse(it)})}.getOrDefault(emptyList()) else emptyList()}
     LaunchedEffect(settings.desktopUrl,desktopRefreshKey){
@@ -104,8 +104,8 @@ class MainActivity:ComponentActivity(){
         if(address.isNullOrBlank()){desktopTracks=emptyList();desktopCatalogResponseMs=null;desktopStatus=""}
         else{desktopStatus="Conectando ao Cobre Desktop…";runCatching{desktopLibrary.load(address)}.onSuccess{remote->desktopTracks=remote.tracks;desktopCatalogResponseMs=remote.catalogResponseMs;desktopStatus="Computador conectado · ${remote.tracks.size} faixas · catálogo respondeu em ${remote.catalogResponseMs} ms"}.onFailure{desktopTracks=emptyList();desktopCatalogResponseMs=null;desktopStatus=it.message?:"Não foi possível conectar ao computador."}}
     }
-    LaunchedEffect(account.signedIn,desktopCatalogResponseMs){if(account.signedIn&&desktopCatalogResponseMs!=null)runCatching{accountRepo.sendPresence(desktopCatalogResponseMs)}}
-    LaunchedEffect(account.signedIn,desktopCatalogResponseMs){while(account.signedIn){delay(45_000);runCatching{accountRepo.sendPresence(desktopCatalogResponseMs);accountRepo.loadDevices()}.onSuccess{account=account.copy(devices=it,message="Conexão ativa.",error=false)}.onFailure{account=account.copy(message=it.message?:"Conexão interrompida.",error=true)}}}
+    LaunchedEffect(account.signedIn,desktopCatalogResponseMs){if(account.signedIn&&desktopCatalogResponseMs!=null)runCatching{sendMeasuredPresence(accountRepo,context,desktopCatalogResponseMs)}}
+    LaunchedEffect(account.signedIn,desktopCatalogResponseMs){while(account.signedIn){delay(45_000);runCatching{sendMeasuredPresence(accountRepo,context,desktopCatalogResponseMs);accountRepo.loadDevices()}.onSuccess{account=account.copy(devices=it,message="Conexão ativa.",error=false)}.onFailure{account=account.copy(message=it.message?:"Conexão interrompida.",error=true)}}}
     LaunchedEffect(playback.playing,fullPlayer){while(playback.playing&&fullPlayer){delay(450);player.refreshPosition()}}
     LaunchedEffect(playback.currentIndex,playback.queue){playback.queue.getOrNull(playback.currentIndex)?.let(collections::recordPlayed)}
     Column(Modifier.fillMaxSize().background(Bg).statusBarsPadding()){
@@ -139,6 +139,11 @@ class MainActivity:ComponentActivity(){
             }
         }
     }
+}
+
+private suspend fun sendMeasuredPresence(repository:CobreIdRepository,context:android.content.Context,catalogResponseMs:Long?){
+    val metrics=StreamMetrics.recent(context)
+    repository.sendPresence(catalogResponseMs,metrics?.latencyMs,metrics?.bytesPerSecond)
 }
 
 @Composable private fun Header(page:Page,search:Boolean,query:String,onQuery:(String)->Unit,onSearch:()->Unit,onRefresh:()->Unit){

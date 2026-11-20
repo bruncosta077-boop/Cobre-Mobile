@@ -1,5 +1,13 @@
 # Histórico de versões — Cobre Mobile
 
+## 0.8.0 — em validação
+
+- A reprodução de faixas do Desktop mede latência até o primeiro bloco e taxa de bytes recebidos no próprio Mobile.
+- O Mobile envia medições recentes no heartbeat Cobre ID; o painel do Server passa a exibir taxa/latência reais, separadas da latência do catálogo.
+- As medições expiram após dois minutos sem atividade de stream e não incluem faixas locais.
+- O áudio ainda é entregue diretamente pelo Desktop na mesma rede local; Cobre ID não retransmite mídia nem habilita acesso pela internet.
+- Requer build e validação no aparelho; métricas precisam ser conferidas durante uma faixa do Desktop.
+
 ## 0.7.0 — em validação
 
 - Visão de biblioteca separa músicas do celular e do Desktop, com deduplicação na visão conjunta.
