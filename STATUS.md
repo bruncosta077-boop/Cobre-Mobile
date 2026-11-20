@@ -11,7 +11,7 @@
 
 - Backup do Android foi ampliado para endereço do Cobre Server, email, pasta e Desktop; o refresh token fica em arquivo separado protegido por Keystore e fora do backup.
 - Migração de token antigo entre preferências é feita ao abrir o app sem limpar sessão.
-- Ainda precisa passar no build de CI e ser validado em aparelho. Restaurações podem exigir novo login e nova autorização SAF da pasta.
+- Build debug passou no GitHub Actions [44746930132](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/44746930132); restauração ainda não foi validada em aparelho. Pode exigir novo login e nova autorização SAF da pasta.
 - A assinatura estável de distribuição e a migração segura de APKs debug continuam pendentes.
 
 ## Versão 0.2.0 — validada pelo autor

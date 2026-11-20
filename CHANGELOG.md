@@ -6,6 +6,7 @@
 - Preferências exportáveis e token cifrado agora ficam em arquivos separados; tokens antigos são migrados automaticamente sem encerrar a sessão na atualização, e o arquivo legado misto fica excluído do backup.
 - Uma restauração em outro aparelho pode exigir login novamente e nova permissão para a pasta, pois credenciais e concessões SAF não podem ser restauradas como texto.
 - A atualização sobre uma instalação preserva os dados quando `applicationId` e certificado de assinatura permanecem iguais. O APK de release ainda aguarda uma chave estável no GitHub; esta versão não deve ser instalada desinstalando um APK com dados importantes.
+- `assembleDebug` passou no GitHub Actions [44746930132](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/44746930132); ainda falta validar backup/restauração em aparelho físico.
 
 ## 0.10.0 — preparação da assinatura estável
 
