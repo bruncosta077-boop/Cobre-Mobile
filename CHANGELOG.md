@@ -5,7 +5,7 @@
 - A descoberta anuncia apenas a identidade do Desktop e as versões de protocolo; não carrega autorização. O Mobile ainda pede acesso pelo Cobre ID e o Desktop precisa aprovar.
 - QR e endereço manual continuam como alternativas. O token curto segue protegido no dispositivo e é enviado no cabeçalho ao Desktop; o áudio continua direto pela rede local.
 - `:app:assembleDebug`, `:app:lintDebug`, `:app:assembleRelease` e `:app:lintVitalRelease` passaram localmente. O APK local não foi assinado com a chave de distribuição. A descoberta ainda requer validação física em várias redes/roteadores; o Android NSD reporta depreciações de API compatíveis, sem falhas de lint.
-- Esta alteração ainda não está publicada; é uma versão de desenvolvimento até o workflow assinar e publicar o APK.
+- APK assinado e checksum SHA-256 publicados em [Cobre Mobile 0.15.0](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.15.0); build e publicação passaram no [GitHub Actions](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/44946606790). A descoberta ainda precisa ser validada pelo autor em celular físico e em diferentes redes.
 
 ## 0.14.0 — bibliotecas mais claras no uso diário
 

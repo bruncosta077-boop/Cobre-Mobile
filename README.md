@@ -9,13 +9,9 @@ Desenvolvimento principal: Bruno C S Moraes · Contribuição ao projeto: [@dilu
 
 Aplicativo Android do ecossistema Cobre. Interface escura com a paleta, o símbolo e a organização visual do Cobre Desktop, adaptados para toque.
 
-## Desenvolvimento 0.15.0
+## Última versão publicada: 0.15.0
 
-Esta versão adiciona descoberta local do Desktop; ela ainda precisa ser compilada, assinada e publicada pelo GitHub Actions antes de poder ser instalada como atualização.
-
-## Última versão publicada: 0.14.0
-
-APK assinado publicado em [Cobre Mobile 0.14.0](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.14.0), acompanhado por checksum SHA-256. A compilação, verificação da assinatura e publicação passaram no [GitHub Actions](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/44940790889). A instalação é manual e não usa a Play Store.
+APK assinado e checksum SHA-256 disponíveis em [Cobre Mobile 0.15.0](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.15.0). Build, verificação da assinatura e publicação passaram no [GitHub Actions](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/44946606790). A release é pré-release; a instalação é manual e não usa a Play Store.
 
 O app verifica novas versões ao abrir e em **Configurações → Aplicativo**. Quando encontra uma atualização, baixa e valida o APK assinado e abre a instalação do Android; o sistema pede autorização para instalar e confirmação final. As notas da versão aparecem antes e depois da atualização.
 
