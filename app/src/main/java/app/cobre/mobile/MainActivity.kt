@@ -224,6 +224,27 @@ class MainActivity:ComponentActivity(){
                                 }
                                 .addOnFailureListener { error -> account=account.copy(message=error.message?:"Não foi possível ler o QR.",error=true) }
                         }
+                    },onDiscoveredDesktop={desktop->
+                        if(!account.signedIn){account=account.copy(message="Entre no Cobre ID antes de conectar o computador.",error=true)}
+                        else scope.launch {
+                            account=account.copy(busy=true,message="Solicitando acesso a ${desktop.name}…",error=false)
+                            runCatching {
+                                val request=accountRepo.requestDesktopAccess(desktop.hostId)
+                                var approved:DesktopAccessStatus.Approved?=null
+                                val deadline=SystemClock.elapsedRealtime()+request.expiresInSeconds*1_000L
+                                while(SystemClock.elapsedRealtime()<deadline){
+                                    delay(2_000)
+                                    when(val result=accountRepo.pollDesktopAccess(desktop.hostId,request.requestId)){
+                                        DesktopAccessStatus.Pending->account=account.copy(busy=true,message="No Desktop: abra Conta Cobre e aprove o pedido desta rede.",error=false)
+                                        is DesktopAccessStatus.Approved->{approved=result;break}
+                                    }
+                                }
+                                approved?:throw CobreIdException("O pedido expirou. Tente encontrar o computador novamente.")
+                            }.onSuccess {
+                                settings.saveDesktopUrl(desktop.origin);settings.requireSecureDesktopAccess();desktopRefreshKey++;desktopAuthorizationRevision++
+                                account=account.copy(busy=false,message="${desktop.name} pareado. A biblioteca está conectando.",error=false)
+                            }.onFailure { error->account=account.copy(busy=false,message=error.message?:"Não foi possível conectar ao computador.",error=true) }
+                        }
                     })
                     Page.Settings->SettingsPage(settings,folderUri,desktopStatus,desktopTracks.size,updateInfo?.let{"Atualização ${it.version} disponível."}?:updateStatus,updateBusy,updateProgress,updateFile!=null,{folderPicker.launch(folderUri?.let{Uri.parse(it)})},{folderUri?.let{old->runCatching{context.contentResolver.releasePersistableUriPermission(Uri.parse(old),Intent.FLAG_GRANT_READ_URI_PERMISSION)}};settings.setFolder(null);folderUri=null},{page=Page.Account;search=false},{desktopRefreshKey++},{checkForMobileUpdate(true)},{downloadOrInstallUpdate()})
                 }

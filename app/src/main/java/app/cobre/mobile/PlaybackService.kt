@@ -29,6 +29,7 @@ import kotlin.math.abs
 import kotlin.math.ln
 
 /** Reprodução em segundo plano, notificação, tela de bloqueio e controles do sistema (MediaSession). */
+@androidx.annotation.OptIn(markerClass = [UnstableApi::class])
 class PlaybackService : MediaSessionService() {
     private var session: MediaSession? = null
     private val metricsLock = Any()

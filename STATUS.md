@@ -1,5 +1,11 @@
 # Cobre Mobile — status
 
+## Versão em desenvolvimento 0.15.0 — descoberta local do Desktop
+
+- Adicionada busca mDNS na tela Conexões; achados ainda exigem autorização Cobre ID aprovada no Desktop.
+- QR continua disponível e o token não faz parte do anúncio de rede.
+- `:app:assembleDebug`, `:app:lintDebug`, `:app:assembleRelease` e `:app:lintVitalRelease` passaram no ambiente local; o APK local não foi assinado com a chave de distribuição. Publicação e validação em celular físico pendentes.
+
 ## Versão 0.14.0 — refinamento da biblioteca
 
 - Filtros de origem mostram ícones e totais de faixas para Celular, Computador e Tudo.

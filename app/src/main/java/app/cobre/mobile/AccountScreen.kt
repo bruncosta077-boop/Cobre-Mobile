@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.SkipNext
 import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material.icons.filled.VolumeUp
@@ -30,6 +31,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.launch
 
 private val AccountCard = Color(0xFF191816)
@@ -48,8 +50,11 @@ fun AccountPage(
     onState: (AccountUi) -> Unit,
     onDesktopGrantChanged: () -> Unit = {},
     onScanDesktop: () -> Unit = {},
+    onDiscoveredDesktop: (DiscoveredDesktop) -> Unit = {},
 ) {
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val desktopDiscovery = remember(context) { DesktopDiscovery(context) }
     var serverUrl by remember { mutableStateOf(repository.serverUrl) }
     var showServerEditor by remember { mutableStateOf(repository.serverUrl.isBlank()) }
     var tvCode by remember { mutableStateOf("") }
@@ -61,6 +66,21 @@ fun AccountPage(
     var email by remember { mutableStateOf(state.email.ifBlank { repository.savedEmail }) }
     var password by remember { mutableStateOf("") }
     var create by remember { mutableStateOf(false) }
+    var showDesktopDiscovery by remember { mutableStateOf(false) }
+    var discoveredDesktops by remember { mutableStateOf(emptyList<DiscoveredDesktop>()) }
+    var discoveryMessage by remember { mutableStateOf("Buscando Cobre Desktop nesta rede…") }
+
+    DisposableEffect(showDesktopDiscovery) {
+        if (showDesktopDiscovery) {
+            discoveredDesktops = emptyList()
+            discoveryMessage = "Buscando Cobre Desktop nesta rede…"
+            desktopDiscovery.start(
+                onChanged = { discoveredDesktops = it },
+                onError = { discoveryMessage = it },
+            )
+        } else desktopDiscovery.stop()
+        onDispose { desktopDiscovery.stop() }
+    }
 
     LaunchedEffect(repository.desktopGrantId(), desktopOrigin) {
         if (repository.desktopGrantId() != null && desktopOrigin.isNotBlank()) {
@@ -224,6 +244,16 @@ fun AccountPage(
                         Spacer(Modifier.width(8.dp))
                         Text(if (repository.desktopGrantId() == null) "Conectar computador pelo QR" else "Refazer conexão pelo QR")
                     }
+                    OutlinedButton(
+                        onClick = { showDesktopDiscovery = true },
+                        enabled = !state.busy,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(24.dp),
+                    ) {
+                        Icon(Icons.Default.Search, null)
+                        Spacer(Modifier.width(8.dp))
+                        Text("Encontrar na rede local")
+                    }
 
                     if (repository.desktopGrantId() != null) {
                         HorizontalDivider(color = Color(0xFF302C28))
@@ -339,6 +369,31 @@ fun AccountPage(
         }
         Text("O Cobre Server confirma a permissão. Biblioteca e áudio seguem diretamente do computador para o celular na rede local.", color = AccountMuted, style = MaterialTheme.typography.bodySmall)
         Spacer(Modifier.height(10.dp))
+    }
+
+    if (showDesktopDiscovery) {
+        AlertDialog(
+            onDismissRequest = { showDesktopDiscovery = false },
+            title = { Text("Computadores na rede") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text("A descoberta mostra apenas computadores Cobre próximos. O acesso ainda precisa ser aprovado no Desktop.", color = AccountMuted)
+                    if (discoveredDesktops.isEmpty()) Text(discoveryMessage, color = AccountMuted)
+                    discoveredDesktops.forEach { desktop ->
+                        OutlinedButton(
+                            onClick = { showDesktopDiscovery = false; onDiscoveredDesktop(desktop) },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Column(Modifier.fillMaxWidth()) {
+                                Text(desktop.name, color = AccountText, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                Text(desktop.origin, color = AccountMuted, style = MaterialTheme.typography.bodySmall)
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = { showDesktopDiscovery = false }) { Text("Fechar") } },
+        )
     }
 }
 

@@ -1,4 +1,12 @@
 # Histórico de versões — Cobre Mobile
+## 0.15.0 — encontrar o Desktop na rede local
+
+- A tela Conexões pode localizar automaticamente o Cobre Desktop na mesma rede, sem digitar seu endereço ou escanear QR.
+- A descoberta anuncia apenas a identidade do Desktop e as versões de protocolo; não carrega autorização. O Mobile ainda pede acesso pelo Cobre ID e o Desktop precisa aprovar.
+- QR e endereço manual continuam como alternativas. O token curto segue protegido no dispositivo e é enviado no cabeçalho ao Desktop; o áudio continua direto pela rede local.
+- `:app:assembleDebug`, `:app:lintDebug`, `:app:assembleRelease` e `:app:lintVitalRelease` passaram localmente. O APK local não foi assinado com a chave de distribuição. A descoberta ainda requer validação física em várias redes/roteadores; o Android NSD reporta depreciações de API compatíveis, sem falhas de lint.
+- Esta alteração ainda não está publicada; é uma versão de desenvolvimento até o workflow assinar e publicar o APK.
+
 ## 0.14.0 — bibliotecas mais claras no uso diário
 
 - Os filtros **Tudo**, **Celular** e **Computador** agora mostram a quantidade de faixas e usam controles maiores e mais claros para toque.
