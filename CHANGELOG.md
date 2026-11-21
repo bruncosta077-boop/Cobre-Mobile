@@ -6,7 +6,7 @@
 - Controles remotos usam a mesma renovação e tentam novamente somente após uma resposta 401. Respostas 403, problemas de rede e falhas do Cobre Server continuam explícitos e não são mascarados.
 - A restauração inicial da sessão Cobre ID termina antes de uma renovação da concessão, evitando concorrência no refresh token ao abrir o app.
 - Validação local concluída: `:app:assembleDebug`, `:app:lintDebug`, `:app:assembleRelease` e `:app:lintVitalRelease` passaram. O lint reporta 24 avisos não bloqueantes já presentes no app, principalmente APIs Android/ícones depreciados; o APK local de release é unsigned.
-- A publicação depende do GitHub Actions gerar e verificar o APK com a chave estável de distribuição.
+- APK assinado com a chave estável, validação de assinatura e publicação passaram no [GitHub Actions](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/44951035326); APK e checksum estão na [release 0.17.0](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.17.0).
 
 ## 0.16.0 — medições recentes de áudio
 
