@@ -2,7 +2,7 @@
   <img src="assets/branding/cobre-logo.png" alt="Logo do Cobre" width="150">
   <h1>Cobre Mobile</h1>
   <p>Player Android integrado ao ecossistema Cobre</p>
-  <p><strong>Versão 0.15.0 — descoberta automática do Desktop</strong></p>
+  <p><strong>Versão 0.16.0 — métricas de stream mais precisas</strong></p>
 </div>
 
 Desenvolvimento principal: Bruno C S Moraes · Contribuição ao projeto: [@dilucas00](https://github.com/dilucas00).

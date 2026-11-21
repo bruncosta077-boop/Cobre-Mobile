@@ -286,7 +286,7 @@ class MainActivity:ComponentActivity(){
 
 private suspend fun sendMeasuredPresence(repository:CobreIdRepository,context:android.content.Context,catalogResponseMs:Long?){
     val metrics=StreamMetrics.recent(context)
-    repository.sendPresence(catalogResponseMs,metrics?.latencyMs,metrics?.bytesPerSecond)
+    repository.sendPresence(catalogResponseMs,metrics?.latencyMs,metrics?.bytesPerSecond,metrics?.ageMs)
 }
 
 @Composable private fun Header(page:Page,search:Boolean,query:String,onQuery:(String)->Unit,onSearch:()->Unit,onRefresh:()->Unit){

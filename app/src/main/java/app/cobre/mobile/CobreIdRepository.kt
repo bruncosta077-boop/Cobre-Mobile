@@ -208,11 +208,13 @@ class CobreIdRepository(context: Context) {
         catalogResponseMs: Long? = null,
         streamLatencyMs: Long? = null,
         streamBytesPerSecond: Long? = null,
+        streamAgeMs: Long? = null,
     ) = withContext(Dispatchers.IO) {
         val meta = JSONObject().put("platform", "Android").put("appVersion", BuildConfig.VERSION_NAME)
         catalogResponseMs?.takeIf { it in 0..120_000 }?.let { meta.put("catalogResponseMs", it) }
         streamLatencyMs?.takeIf { it in 0..120_000 }?.let { meta.put("streamLatencyMs", it) }
         streamBytesPerSecond?.takeIf { it in 0..1_000_000_000 }?.let { meta.put("streamBytesPerSecond", it) }
+        streamAgeMs?.takeIf { it in 0..120_000 }?.let { meta.put("streamAgeMs", it) }
         requestBlocking(
             "/v1/presence", "POST",
             JSONObject().put("meta", meta),

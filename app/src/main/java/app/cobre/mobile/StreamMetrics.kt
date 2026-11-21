@@ -4,7 +4,7 @@ import android.content.Context
 import android.os.SystemClock
 
 /** Measurements are generated only for audio received from the Desktop LAN stream. */
-data class StreamMetrics(val latencyMs: Long, val bytesPerSecond: Long) {
+data class StreamMetrics(val latencyMs: Long, val bytesPerSecond: Long, val ageMs: Long) {
     companion object {
         fun recent(context: Context): StreamMetrics? {
             val prefs = context.applicationContext.getSharedPreferences(PlaybackService.METRICS_PREFS, Context.MODE_PRIVATE)
@@ -14,7 +14,7 @@ data class StreamMetrics(val latencyMs: Long, val bytesPerSecond: Long) {
             val latency = prefs.getLong("streamLatencyMs", -1L)
             val rate = prefs.getLong("streamBytesPerSecond", -1L)
             if (latency !in 0..120_000 || rate <= 0) return null
-            return StreamMetrics(latency, rate)
+            return StreamMetrics(latency, rate, age)
         }
     }
 }

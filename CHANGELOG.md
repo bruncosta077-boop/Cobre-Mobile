@@ -1,4 +1,10 @@
 # Histórico de versões — Cobre Mobile
+## 0.16.0 — medições recentes de áudio
+
+- A presença Cobre ID agora informa a idade da última amostra do stream, permitindo ao Cobre Server distinguir uma medição recente de uma taxa antiga.
+- Métricas continuam limitadas a latência inicial e bytes por segundo recebidos diretamente do Desktop; nenhum nome, caminho ou conteúdo de faixa é enviado.
+- Validação local concluída: `:app:assembleDebug`, `:app:lintDebug`, `:app:assembleRelease` e `:app:lintVitalRelease` passaram. A publicação depende da assinatura estável no GitHub Actions.
+
 ## 0.15.0 — encontrar o Desktop na rede local
 
 - A tela Conexões pode localizar automaticamente o Cobre Desktop na mesma rede, sem digitar seu endereço ou escanear QR.
