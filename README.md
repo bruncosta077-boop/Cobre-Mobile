@@ -11,7 +11,7 @@ Aplicativo Android do ecossistema Cobre. Interface escura com a paleta, o símbo
 
 ## Pré-release 0.13.0
 
-APK assinado aguardando publicação pelo GitHub Actions. Esta versão será distribuída para instalação manual e não estará na Play Store.
+APK assinado disponível em [Cobre Mobile 0.13.0](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.13.0). Esta versão é distribuída para instalação manual e não está na Play Store.
 
 O app verifica novas versões ao abrir e em **Configurações → Aplicativo**. Quando encontra uma atualização, baixa e valida o APK assinado e abre a instalação do Android; o sistema pede autorização para instalar e confirmação final. As notas da versão aparecem antes e depois da atualização.
 

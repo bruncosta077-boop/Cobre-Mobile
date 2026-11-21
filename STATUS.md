@@ -8,8 +8,9 @@
 - Cabeçalho e organização das configurações ajustados à identidade cobre do Desktop; detalhes avançados de saída de áudio ficam recolhidos.
 - Atualizador verifica versões ao abrir, permite busca manual, baixa APK de release, confere hash (quando a API do GitHub o informa), pacote, versão e certificado antes de entregar a instalação ao Android.
 - O Android solicita permissão para instalar apps desta origem e confirmação final; as notas ficam guardadas e aparecem após a primeira abertura da nova versão.
-- assembleRelease compilou localmente. A análise lintVital foi excluída porque excedeu o tempo razoável neste ambiente; o workflow do GitHub valida o APK assinado.
-- Requer Cobre Desktop 3.12.0 para receber códigos de erro detalhados. Publicação depende do build assinado no GitHub Actions.
+- APK assinado publicado em [Cobre Mobile 0.13.0](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.13.0), com checksum SHA-256.
+- O workflow [44924814319](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/44924814319) concluiu o build e confirmou assinatura do APK via apksigner. A compilação local passou; a análise lintVital ficou a cargo do workflow.
+- Requer Cobre Desktop 3.12.0 para receber códigos de erro detalhados.
 
 ## Versão 0.12.0 — pré-release assinada publicada
 

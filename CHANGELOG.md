@@ -11,7 +11,8 @@
 - O app verifica novas versões ao abrir, permite busca manual, baixa o APK assinado e valida pacote, versão e certificado antes de abrir o instalador Android.
 - As notas da versão aparecem na oferta e, após a atualização instalada pelo app, na primeira abertura. O Android ainda exige confirmar a instalação.
 - Requer Cobre Desktop 3.12.0 ou posterior para diagnóstico detalhado de erros de autorização; Cobre Server atualizado continua necessário para emitir e renovar a permissão.
-- Versão Android 0.13.0 (código 14). O APK local foi compilado sem assinatura; o APK assinado depende do workflow do GitHub Actions.
+- APK assinado publicado como pré-release: [Cobre-Mobile-0.13.0.apk](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.13.0), acompanhado por checksum SHA-256.
+- GitHub Actions concluiu o build, verificou a assinatura com apksigner e publicou o release no [run 44924814319](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/44924814319). A compilação local foi unsigned; o APK público usa a chave estável do canal de distribuição.
 
 ## 0.12.1 — espera de aprovação ajustada
 
