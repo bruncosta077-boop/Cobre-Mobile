@@ -5,7 +5,7 @@
 - A biblioteca combinada continua removendo duplicatas e deixa essa regra visível na própria tela.
 - O estado do Desktop aparece junto do filtro de origem, com um atalho para Conexões quando é preciso conectar ou conferir o acesso.
 - Mantidos o fluxo Cobre ID/QR, as permissões, a reprodução direta na rede local e o comportamento do player.
-- Build local de release compilada e aprovada na análise `lintVitalRelease`; a publicação assinada e a conferência do APK ficam a cargo do GitHub Actions.
+- Build local de release compilada e aprovada na análise `lintVitalRelease`. GitHub Actions compilou, verificou a assinatura e publicou o APK com checksum SHA-256 em [Cobre Mobile 0.14.0](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.14.0); falta validação desta versão no aparelho pelo autor.
 
 ## 0.13.1 — diagnóstico de conexão com o Cobre Server
 

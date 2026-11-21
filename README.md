@@ -11,7 +11,7 @@ Aplicativo Android do ecossistema Cobre. Interface escura com a paleta, o símbo
 
 ## Pré-release 0.14.0
 
-APK assinado será publicado em [Cobre Mobile 0.14.0](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.14.0) após o GitHub Actions validar a assinatura. A instalação é manual e não usa a Play Store.
+APK assinado publicado em [Cobre Mobile 0.14.0](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.14.0), acompanhado por checksum SHA-256. A compilação, verificação da assinatura e publicação passaram no [GitHub Actions](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/44940790889). A instalação é manual e não usa a Play Store.
 
 O app verifica novas versões ao abrir e em **Configurações → Aplicativo**. Quando encontra uma atualização, baixa e valida o APK assinado e abre a instalação do Android; o sistema pede autorização para instalar e confirmação final. As notas da versão aparecem antes e depois da atualização.
 

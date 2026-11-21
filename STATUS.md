@@ -6,7 +6,7 @@
 - A tela deixa visíveis a remoção de duplicatas na visão Tudo e a presença/ausência da biblioteca do Desktop.
 - Atalho direto para Conexões quando o computador precisa ser pareado ou conferido.
 - Mantidos o pareamento Cobre ID/QR e o fluxo atual de reprodução.
-- `assembleRelease` e `lintVitalRelease` passaram localmente. A release assinada será verificada pelo GitHub Actions; falta validação desta versão no aparelho pelo autor.
+- `assembleRelease` e `lintVitalRelease` passaram localmente. GitHub Actions compilou, verificou a assinatura e publicou o APK em [Cobre Mobile 0.14.0](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.14.0); falta validação desta versão no aparelho pelo autor.
 
 ## Versão 0.13.1 — diagnóstico de conexão
 
