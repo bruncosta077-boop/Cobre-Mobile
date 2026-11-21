@@ -1,4 +1,11 @@
 # Histórico de versões — Cobre Mobile
+## 0.14.0 — bibliotecas mais claras no uso diário
+
+- Os filtros **Tudo**, **Celular** e **Computador** agora mostram a quantidade de faixas e usam controles maiores e mais claros para toque.
+- A biblioteca combinada continua removendo duplicatas e deixa essa regra visível na própria tela.
+- O estado do Desktop aparece junto do filtro de origem, com um atalho para Conexões quando é preciso conectar ou conferir o acesso.
+- Mantidos o fluxo Cobre ID/QR, as permissões, a reprodução direta na rede local e o comportamento do player.
+- Build local de release compilada e aprovada na análise `lintVitalRelease`; a publicação assinada e a conferência do APK ficam a cargo do GitHub Actions.
 
 ## 0.13.1 — diagnóstico de conexão com o Cobre Server
 

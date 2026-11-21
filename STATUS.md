@@ -1,5 +1,17 @@
 # Cobre Mobile — status
 
+## Versão 0.14.0 — refinamento da biblioteca
+
+- Filtros de origem mostram ícones e totais de faixas para Celular, Computador e Tudo.
+- A tela deixa visíveis a remoção de duplicatas na visão Tudo e a presença/ausência da biblioteca do Desktop.
+- Atalho direto para Conexões quando o computador precisa ser pareado ou conferido.
+- Mantidos o pareamento Cobre ID/QR e o fluxo atual de reprodução.
+- `assembleRelease` e `lintVitalRelease` passaram localmente. A release assinada será verificada pelo GitHub Actions; falta validação desta versão no aparelho pelo autor.
+
+## Versão 0.13.1 — diagnóstico de conexão
+
+- Mensagens de timeout, conexão recusada e endereço inválido foram convertidas em instruções de rede e disponibilidade do Server.
+
 ## Versão 0.13.0 — conexão simplificada e biblioteca Desktop
 
 - Uma conexão única por Cobre ID + QR; endereço e concessão salvos automaticamente após a aprovação no Desktop.
@@ -103,3 +115,7 @@ Cobre ID autentica e envia presença, mas não anuncia o endpoint LAN do Desktop
 - Backup Android inclui o banco local e cores, sem salvar token Cobre ID, chave/endereço LAN do Desktop ou permissão de pasta.
 - Migração das configurações antigas ao abrir a nova versão.
 - Precisa validar instalação por cima da versão existente e restauração do backup num aparelho real.
+
+## Anotado para a próxima evolução
+
+- Perfil editável no Mobile: exibir a conta Cobre ID com mais contexto e definir um nome de perfil/aparelho. A edição sincronizada entre Desktop, Mobile e TV depende de uma API de perfil no Cobre ID; não simular como se já estivesse sincronizada.
