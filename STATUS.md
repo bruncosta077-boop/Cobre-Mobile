@@ -1,5 +1,16 @@
 # Cobre Mobile — status
 
+## Versão 0.13.0 — conexão simplificada e biblioteca Desktop
+
+- Uma conexão única por Cobre ID + QR; endereço e concessão salvos automaticamente após a aprovação no Desktop.
+- Tela Conexões reúne conta, estado do Desktop, QR, dispositivos e controles. Configurações apontam para esse mesmo fluxo.
+- Erros HTTP 401/403/503 agora orientam para corrigir autorização, permissão ou disponibilidade do Server.
+- Cabeçalho e organização das configurações ajustados à identidade cobre do Desktop; detalhes avançados de saída de áudio ficam recolhidos.
+- Atualizador verifica versões ao abrir, permite busca manual, baixa APK de release, confere hash (quando a API do GitHub o informa), pacote, versão e certificado antes de entregar a instalação ao Android.
+- O Android solicita permissão para instalar apps desta origem e confirmação final; as notas ficam guardadas e aparecem após a primeira abertura da nova versão.
+- assembleRelease compilou localmente. A análise lintVital foi excluída porque excedeu o tempo razoável neste ambiente; o workflow do GitHub valida o APK assinado.
+- Requer Cobre Desktop 3.12.0 para receber códigos de erro detalhados. Publicação depende do build assinado no GitHub Actions.
+
 ## Versão 0.12.0 — pré-release assinada publicada
 
 - APK disponível em [Cobre Mobile 0.12.0](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.12.0): `Cobre-Mobile-0.12.0.apk`.

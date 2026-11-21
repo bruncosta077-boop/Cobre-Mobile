@@ -35,8 +35,13 @@ class DesktopLibraryRepository {
             if (status != HttpURLConnection.HTTP_OK) {
                 val detail = connection.errorStream?.bufferedReader()?.use { it.readText() }.orEmpty()
                 throw IllegalStateException(when(status) {
-                    HttpURLConnection.HTTP_UNAUTHORIZED -> "A permissão do computador expirou. Atualize o acesso Cobre ID."
-                    HttpURLConnection.HTTP_FORBIDDEN -> "O Cobre ID não autorizou a leitura da biblioteca."
+                    HttpURLConnection.HTTP_UNAUTHORIZED -> if (detail.contains("invalid_host_grant") || detail.contains("host_grant_revoked")) "A autorização do computador expirou ou foi removida. Reconecte pelo QR e aprove o novo pedido no Desktop." else "A permissão do computador expirou. Reconecte pelo QR e aprove o novo pedido no Desktop."
+                    HttpURLConnection.HTTP_FORBIDDEN -> "Esta permissão não inclui a biblioteca. Reconecte pelo QR e aprove o novo pedido no Desktop."
+                    HttpURLConnection.HTTP_UNAVAILABLE -> when {
+                        detail.contains("cobre_id_unreachable") -> "O Desktop não alcança o Cobre Server. Confira se o Server está aberto e se o Desktop está conectado à mesma Conta Cobre ID."
+                        detail.contains("cobre_id_unavailable") || detail.contains("authorization_unavailable") -> "O Desktop não conseguiu validar o acesso no Cobre Server. Abra Conta Cobre no Desktop e confirme que aparece conectado; depois reconecte pelo QR."
+                        else -> "O serviço de autorização do Desktop está indisponível. Confira o Cobre Server e tente novamente."
+                    }
                     else -> "Desktop respondeu HTTP $status ${detail.take(100)}".trim()
                 })
             }

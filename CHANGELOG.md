@@ -1,5 +1,18 @@
 # Histórico de versões — Cobre Mobile
 
+## 0.13.0 — conexão simplificada e interface reorganizada
+
+- A conexão com o Desktop agora tem um único caminho: entrar no Cobre ID, ler o QR no computador e aprovar o pedido no próprio Desktop.
+- Removida a configuração manual duplicada do endereço do Desktop; o endereço local e a autorização são salvos após o pareamento.
+- A biblioteca mostra os erros de autorização separadamente: acesso vencido/revogado, permissão sem escopo e Cobre Server indisponível deixam de aparecer como o mesmo erro genérico.
+- A tela de Conexões reúne estado da conta, biblioteca do computador, pareamento QR, dispositivos e controles remotos numa sequência única.
+- Configurações e cabeçalho foram reorganizados com a paleta cobre, hierarquia visual e linguagem mais próximas do Desktop atual.
+- A tela da biblioteca e as configurações agora direcionam para o mesmo pareamento QR quando a biblioteca Desktop está ausente ou precisa de nova autorização.
+- O app verifica novas versões ao abrir, permite busca manual, baixa o APK assinado e valida pacote, versão e certificado antes de abrir o instalador Android.
+- As notas da versão aparecem na oferta e, após a atualização instalada pelo app, na primeira abertura. O Android ainda exige confirmar a instalação.
+- Requer Cobre Desktop 3.12.0 ou posterior para diagnóstico detalhado de erros de autorização; Cobre Server atualizado continua necessário para emitir e renovar a permissão.
+- Versão Android 0.13.0 (código 14). O APK local foi compilado sem assinatura; o APK assinado depende do workflow do GitHub Actions.
+
 ## 0.12.1 — espera de aprovação ajustada
 
 - O prazo de espera acompanha o `expiresIn` informado pelo Cobre Server, em vez de parar após 84 segundos.

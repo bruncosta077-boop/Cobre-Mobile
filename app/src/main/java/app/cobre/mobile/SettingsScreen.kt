@@ -21,8 +21,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AudioFile
 import androidx.compose.material.icons.filled.Devices
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Folder
 import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.VolumeUp
@@ -51,11 +54,11 @@ private val desktopAccents=listOf(
 )
 
 @Composable
-fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,desktopTrackCount:Int,onPickFolder:()->Unit,onClearFolder:()->Unit,onSaveDesktopUrl:(String)->Unit,onDisconnectDesktop:()->Unit){
+fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,desktopTrackCount:Int,updateStatus:String,updateBusy:Boolean,updateProgress:Int,updateReady:Boolean,onPickFolder:()->Unit,onClearFolder:()->Unit,onOpenAccount:()->Unit,onRetryDesktop:()->Unit,onCheckUpdates:()->Unit,onInstallUpdate:()->Unit){
     val context=LocalContext.current
     val audio=context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-    var desktopAddress by remember(settings.desktopUrl){mutableStateOf(settings.desktopUrl.orEmpty())}
     var showReleaseNotes by remember{mutableStateOf(false)}
+    var showOutputDetails by remember{mutableStateOf(false)}
     var volume by remember{mutableFloatStateOf(audio.getStreamVolume(AudioManager.STREAM_MUSIC).toFloat()*100f/maxOf(1,audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC)))}
     val audioPrefs=remember{context.getSharedPreferences(PlaybackService.AUDIO_PREFS,Context.MODE_PRIVATE)}
     val equalizerBands=remember{mutableStateListOf<Float>().apply{repeat(5){add(audioPrefs.getInt("eq_band_$it",0).toFloat())}}}
@@ -90,15 +93,24 @@ fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,
             Text("A biblioteca passa a mostrar somente músicas dentro da pasta escolhida.",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=5.dp))
         }
         SettingsCard {
-            SectionHeading(Icons.Default.Devices,"Integração com o Desktop")
-            Text("1. Entre na mesma conta Cobre ID nos dois aparelhos e peça acesso na aba Cobre ID. 2. Aprove o pedido no Desktop. 3. Informe o endereço local abaixo. O Server autoriza; o áudio vai direto pela rede local.",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=8.dp))
-            OutlinedTextField(value=desktopAddress,onValueChange={desktopAddress=it},modifier=Modifier.fillMaxWidth().padding(top=8.dp),label={Text("Endereço local do Cobre Desktop")},placeholder={Text("http://192.168.1.20:8787")},singleLine=true,colors=fieldColors())
-            if(desktopStatus.isNotBlank())Text(desktopStatus,color=if(desktopStatus.startsWith("Computador conectado"))MaterialTheme.colorScheme.primary else Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=5.dp))
-            Row(horizontalArrangement=Arrangement.spacedBy(8.dp),modifier=Modifier.padding(top=5.dp)){
-                Button(onClick={onSaveDesktopUrl(desktopAddress)},enabled=desktopAddress.isNotBlank(),colors=ButtonDefaults.buttonColors(containerColor=MaterialTheme.colorScheme.primary),shape=RoundedCornerShape(22.dp)){Icon(Icons.Default.Devices,null);Spacer(Modifier.width(6.dp));Text("Conectar")}
-                if(settings.desktopUrl!=null)TextButton(onClick={desktopAddress="";onDisconnectDesktop()}){Text("Desconectar",color=Mu)}
+            SectionHeading(Icons.Default.Devices,"Conexão")
+            val connected=desktopStatus.startsWith("Computador conectado")
+            val hasError=desktopStatus.contains("HTTP")||desktopStatus.contains("não foi")||desktopStatus.contains("não alcança")||desktopStatus.contains("expirou")||desktopStatus.contains("não conseguiu")||desktopStatus.contains("indisponível")||desktopStatus.contains("Peça acesso")
+            val statusText=when {
+                connected -> "$desktopTrackCount faixas disponíveis na biblioteca"
+                desktopStatus.startsWith("Conectando") -> "Conectando ao Desktop…"
+                desktopStatus.isNotBlank() -> desktopStatus
+                settings.desktopUrl.isNullOrBlank() -> "Nenhum computador conectado"
+                else -> "Conexão salva · toque para verificar"
             }
-            if(desktopTrackCount>0)Text("As ${desktopTrackCount} faixas do computador aparecem junto com a biblioteca local.",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=3.dp))
+            Row(Modifier.fillMaxWidth().padding(top=10.dp),verticalAlignment=Alignment.CenterVertically){
+                Box(Modifier.size(9.dp).clip(CircleShape).background(if(connected)Color(0xFF7EB783)else if(hasError)Color(0xFFE58B78)else Mu))
+                Text(statusText,color=if(connected)Color(0xFF7EB783)else Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(start=9.dp).weight(1f),maxLines=4,overflow=TextOverflow.Ellipsis)
+            }
+            Button(onClick=if(settings.desktopUrl.isNullOrBlank()||hasError)onOpenAccount else onRetryDesktop,modifier=Modifier.fillMaxWidth().padding(top=8.dp),colors=ButtonDefaults.buttonColors(containerColor=MaterialTheme.colorScheme.primary),shape=RoundedCornerShape(22.dp)){
+                Icon(if(settings.desktopUrl.isNullOrBlank()||hasError)Icons.Default.QrCodeScanner else Icons.Default.Refresh,null);Spacer(Modifier.width(8.dp));Text(when{settings.desktopUrl.isNullOrBlank()->"Conectar pelo QR";hasError->"Refazer conexão pelo QR";else->"Atualizar biblioteca"})
+            }
+            Text("Use o mesmo Cobre ID do computador. Leia o QR uma vez e aprove no Desktop; endereço e acesso ficam salvos neste celular.",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=4.dp))
         }
         SettingsCard {
             SectionHeading(Icons.Default.Palette,"Aparência")
@@ -121,7 +133,12 @@ fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,
             val outputRate=audio.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE)?:"Não informado"
             val buffer=audio.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER)?:"Não informado"
             Text("Mixer padrão do Android: $outputRate Hz · buffer $buffer quadros",color=Mu,style=MaterialTheme.typography.bodySmall)
-            Text("Saídas de áudio disponíveis",color=Tx,fontWeight=FontWeight.SemiBold,modifier=Modifier.padding(top=12.dp))
+            TextButton(onClick={showOutputDetails=!showOutputDetails},modifier=Modifier.fillMaxWidth()){
+                Icon(if(showOutputDetails)Icons.Default.ExpandLess else Icons.Default.ExpandMore,null,tint=MaterialTheme.colorScheme.primary)
+                Text(if(showOutputDetails)"Ocultar detalhes da saída" else "Saída de áudio e opções",color=Tx)
+            }
+            if(showOutputDetails){
+            Text("Saídas de áudio disponíveis",color=Tx,fontWeight=FontWeight.SemiBold,modifier=Modifier.padding(top=8.dp))
             if(outputs.isEmpty())Text("Nenhuma saída informada pelo Android.",color=Mu,style=MaterialTheme.typography.bodySmall)
             outputs.forEachIndexed{index,device->
                 Column(Modifier.fillMaxWidth().padding(vertical=7.dp)){
@@ -131,6 +148,7 @@ fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,
             }
             Text("O Android escolhe a rota ativa quando você conecta um fone, Bluetooth ou USB; esta tela mostra as saídas disponíveis.",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=4.dp))
             TextButton(onClick={runCatching{context.startActivity(Intent(Settings.ACTION_SOUND_SETTINGS))}}){Icon(Icons.Default.Settings,null,tint=MaterialTheme.colorScheme.primary);Spacer(Modifier.width(7.dp));Text("Abrir áudio do Android",color=Tx)}
+            }
         }
         SettingsCard {
             SectionHeading(Icons.Default.AudioFile,"Equalizador de 5 bandas")
@@ -147,7 +165,17 @@ fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,
             SectionHeading(Icons.Default.Refresh,"Aplicativo")
             Text("Cobre Mobile ${BuildConfig.VERSION_NAME}",color=Tx,fontWeight=FontWeight.SemiBold,modifier=Modifier.padding(top=12.dp))
             Text("Cobre ID aprova e renova o acesso. As músicas do Desktop são transmitidas diretamente pela rede local.",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=4.dp))
-            TextButton(onClick={showReleaseNotes=true}){Text("Notas da versão",color=MaterialTheme.colorScheme.primary)}
+            Text(updateStatus,color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=8.dp))
+            if(updateBusy)LinearProgressIndicator(progress={updateProgress/100f},modifier=Modifier.fillMaxWidth())
+            Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp)){
+                OutlinedButton(onClick=onCheckUpdates,enabled=!updateBusy,modifier=Modifier.weight(1f),shape=RoundedCornerShape(22.dp)){
+                    Icon(Icons.Default.Refresh,null,tint=MaterialTheme.colorScheme.primary);Spacer(Modifier.width(6.dp));Text("Verificar",color=Tx)
+                }
+                Button(onClick=onInstallUpdate,enabled=!updateBusy&&(updateStatus.startsWith("Atualização")||updateReady),modifier=Modifier.weight(1f),colors=ButtonDefaults.buttonColors(containerColor=MaterialTheme.colorScheme.primary),shape=RoundedCornerShape(22.dp)){
+                    Text(if(updateBusy)"Aguarde…" else if(updateReady)"Instalar" else "Baixar e instalar")
+                }
+            }
+            TextButton(onClick={showReleaseNotes=true}){Text("Sobre o Cobre Mobile",color=MaterialTheme.colorScheme.primary)}
             Text("Com contribuição de dilucas00",color=Mu,style=MaterialTheme.typography.bodySmall)
         }
         Spacer(Modifier.height(10.dp))

@@ -101,6 +101,7 @@ jobs:
         run: |
           version="${GITHUB_REF_NAME#mobile-v}"
           mv release/app-release.apk "release/Cobre-Mobile-${version}.apk"
+          sha256sum "release/Cobre-Mobile-${version}.apk" > "release/Cobre-Mobile-${version}.apk.sha256"
 
       - name: Preparar notas desta versão
         shell: bash
@@ -114,7 +115,8 @@ jobs:
               raise SystemExit(f'Notas da versão {version} não encontradas em CHANGELOG.md')
           notes = match.group(1).strip()
           notes += '\n\nAPK pré-release assinado pelo canal estável de distribuição do Cobre Mobile.'
-          notes += '\n\n**Migração única:** esta é a primeira versão com a chave estável. APKs anteriores assinados pelo modo de depuração podem exigir exportar o backup do app, desinstalar a versão antiga e instalar esta. Após migrar, as próximas versões com esta chave atualizam por cima e preservam os dados.'
+          if version == '0.12.0':
+              notes += '\n\n**Migração única:** esta é a primeira versão com a chave estável. APKs anteriores assinados pelo modo de depuração podem exigir exportar o backup do app, desinstalar a versão antiga e instalar esta. Após migrar, as próximas versões com esta chave atualizam por cima e preservam os dados.'
           open('release-notes.md', 'w', encoding='utf-8').write(notes + '\n')
           PY
 
@@ -125,4 +127,6 @@ jobs:
           tag_name: ${{ github.ref_name }}
           prerelease: true
           body_path: release-notes.md
-          files: release/Cobre-Mobile-*.apk
+          files: |
+            release/Cobre-Mobile-*.apk
+            release/Cobre-Mobile-*.apk.sha256

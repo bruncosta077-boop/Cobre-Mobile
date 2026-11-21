@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.media.AudioManager
 import android.content.pm.PackageManager
+import android.content.ActivityNotFoundException
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Build
@@ -54,6 +55,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
 import com.google.mlkit.vision.barcode.common.Barcode
@@ -100,6 +102,53 @@ class MainActivity:ComponentActivity(){
     var page by remember{mutableStateOf(Page.Library)}; var tab by remember{mutableStateOf(LibraryTab.Albums)}
     var album by remember{mutableStateOf<Album?>(null)}; var artist by remember{mutableStateOf<Artist?>(null)}; var fullPlayer by remember{mutableStateOf(false)}
     val playback by player.state.collectAsState(); var account by remember{mutableStateOf(AccountUi(email=accountRepo.savedEmail))}; val scope=rememberCoroutineScope()
+    val updateManager=remember{AppUpdateManager(context)}
+    var updateInfo by remember{mutableStateOf<MobileUpdate?>(null)}
+    var updateFile by remember{mutableStateOf<File?>(null)}
+    var updateStatus by remember{mutableStateOf("Verificando atualizações automaticamente…")}
+    var updateBusy by remember{mutableStateOf(false)}
+    var updateProgress by remember{mutableIntStateOf(0)}
+    var showUpdatePrompt by remember{mutableStateOf(false)}
+    var installedReleaseNotes by remember{mutableStateOf(updateManager.takeNotesForCurrentVersion())}
+    val installPermissionLauncher=rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()){
+        val apk=updateFile
+        if(updateManager.canInstallPackages()&&apk!=null)runCatching{context.startActivity(updateManager.installerIntent(apk))}.onFailure{updateStatus=it.message?:"Não foi possível abrir o instalador do Android."}
+        else updateStatus="Permita instalações do Cobre nas configurações do Android e toque em Instalar novamente."
+    }
+    fun installUpdate(){
+        val apk=updateFile ?: return
+        if(!updateManager.canInstallPackages())installPermissionLauncher.launch(updateManager.permissionSettingsIntent())
+        else runCatching{context.startActivity(updateManager.installerIntent(apk))}.onFailure{
+            updateStatus=if(it is ActivityNotFoundException)"Não há instalador de pacotes disponível neste aparelho." else it.message?:"Não foi possível abrir o instalador do Android."
+        }
+    }
+    fun checkForMobileUpdate(force:Boolean){
+        scope.launch{
+            updateBusy=true
+            updateStatus="Verificando atualizações…"
+            runCatching{updateManager.checkForUpdate(force)}.onSuccess{latest->
+                updateInfo=latest
+                updateStatus=if(latest==null)"Cobre Mobile está atualizado." else "Versão ${latest.version} disponível."
+                if(latest!=null)showUpdatePrompt=true
+            }.onFailure{updateStatus=it.message?:"Não foi possível verificar atualizações."}
+            updateBusy=false
+        }
+    }
+    fun downloadOrInstallUpdate(){
+        val latest=updateInfo?:return
+        val existing=updateFile
+        if(existing!=null){installUpdate();return}
+        scope.launch{
+            updateBusy=true;updateProgress=0;updateStatus="Baixando atualização…"
+            runCatching{updateManager.downloadAndVerify(latest){updateProgress=it}}.onSuccess{apk->
+                updateFile=apk
+                updateManager.savePendingNotes(latest)
+                updateStatus="Download verificado. Toque em Instalar para concluir."
+            }.onFailure{updateStatus=it.message?:"Não foi possível baixar a atualização."}
+            updateBusy=false
+        }
+    }
+    LaunchedEffect(Unit){checkForMobileUpdate(false)}
     LaunchedEffect(Unit){if(!granted)askAudio.launch(permission); if(accountRepo.hasSavedSession&&accountRepo.serverUrl.isNotBlank()){
         account=account.copy(busy=true,message="Reconectando ao Cobre ID…")
         runCatching{accountRepo.restoreSession();sendMeasuredPresence(accountRepo,context,null);accountRepo.loadDevices()}.onSuccess{account=AccountUi(true,accountRepo.savedEmail,it,message="Conta conectada.")}.onFailure{account=AccountUi(email=accountRepo.savedEmail,message=it.message?:"Sessão expirada.",error=true)}
@@ -131,14 +180,14 @@ class MainActivity:ComponentActivity(){
                         localTracks==null->Loading()
                         tracks.isNullOrEmpty()&&desktopStatus.startsWith("Conectando")->Loading("Conectando ao Cobre Desktop…")
                         tracks.isNullOrEmpty()&&!granted->EmptyState(Icons.Default.LibraryMusic,"Sua música começa aqui","Conecte ao computador ou permita acesso ao áudio para usar a biblioteca deste aparelho."){askAudio.launch(permission)}
-                        else->LibraryPage(tracks.orEmpty(),library,collections,tab,query,album,artist,librarySource,{librarySource=it},{tab=it;album=null;artist=null},{album=it},{artist=it},{album=null;artist=null},{list,index->
+                        else->LibraryPage(tracks.orEmpty(),library,collections,tab,query,album,artist,librarySource,desktopStatus,{page=Page.Account;search=false},{librarySource=it},{tab=it;album=null;artist=null},{album=it},{artist=it},{album=null;artist=null},{list,index->
                             if(Build.VERSION.SDK_INT>=33&&ContextCompat.checkSelfPermission(context,Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED)askNotifications.launch(Manifest.permission.POST_NOTIFICATIONS)
                             player.play(list,index)
                         },player::addToQueue)
                     }
                     Page.Queue->QueuePage(playback,player,collections)
                     Page.Collections->CollectionsPage(collections,{list->player.play(list,0)},{track->player.addToQueue(track)})
-                    Page.Account->AccountPage(accountRepo,account,settings.desktopUrl.orEmpty(),{account=it},{settings.requireSecureDesktopAccess();desktopAuthorizationRevision++},onScanDesktop={
+                    Page.Account->AccountPage(accountRepo,account,settings.desktopUrl.orEmpty(),desktopStatus,desktopTracks.size,{account=it},{settings.requireSecureDesktopAccess();desktopAuthorizationRevision++},onScanDesktop={
                         if(!account.signedIn){account=account.copy(message="Entre no Cobre ID antes de parear o Desktop.",error=true)}
                         else {
                             val options=GmsBarcodeScannerOptions.Builder().setBarcodeFormats(Barcode.FORMAT_QR_CODE).build()
@@ -171,7 +220,7 @@ class MainActivity:ComponentActivity(){
                                 .addOnFailureListener { error -> account=account.copy(message=error.message?:"Não foi possível ler o QR.",error=true) }
                         }
                     })
-                    Page.Settings->SettingsPage(settings,folderUri,desktopStatus,desktopTracks.size,{folderPicker.launch(folderUri?.let{Uri.parse(it)})},{folderUri?.let{old->runCatching{context.contentResolver.releasePersistableUriPermission(Uri.parse(old),Intent.FLAG_GRANT_READ_URI_PERMISSION)}};settings.setFolder(null);folderUri=null},{settings.saveDesktopUrl(it);desktopRefreshKey++},{settings.saveDesktopUrl(null);desktopRefreshKey++})
+                    Page.Settings->SettingsPage(settings,folderUri,desktopStatus,desktopTracks.size,updateInfo?.let{"Atualização ${it.version} disponível."}?:updateStatus,updateBusy,updateProgress,updateFile!=null,{folderPicker.launch(folderUri?.let{Uri.parse(it)})},{folderUri?.let{old->runCatching{context.contentResolver.releasePersistableUriPermission(Uri.parse(old),Intent.FLAG_GRANT_READ_URI_PERMISSION)}};settings.setFolder(null);folderUri=null},{page=Page.Account;search=false},{desktopRefreshKey++},{checkForMobileUpdate(true)},{downloadOrInstallUpdate()})
                 }
             }
             if(playback.hasItem) MiniPlayer(playback,player){fullPlayer=true}
@@ -184,6 +233,29 @@ class MainActivity:ComponentActivity(){
             }
         }
     }
+    if(showUpdatePrompt&&updateInfo!=null){
+        val latest=updateInfo!!
+        AlertDialog(
+            onDismissRequest={if(!updateBusy)showUpdatePrompt=false},
+            title={Text("Atualização disponível · ${latest.version}")},
+            text={Column(verticalArrangement=Arrangement.spacedBy(10.dp)){
+                Text(latest.notes.ifBlank{"Há uma nova versão do Cobre Mobile."},color=Tx,maxLines=12,overflow=TextOverflow.Ellipsis)
+                if(updateBusy&&updateFile==null){LinearProgressIndicator(progress={updateProgress/100f},modifier=Modifier.fillMaxWidth());Text("Baixando e validando o APK… $updateProgress%",color=Mu,style=MaterialTheme.typography.bodySmall)}
+                Text(updateStatus,color=Mu,style=MaterialTheme.typography.bodySmall)
+                Text("O Android pedirá confirmação antes de instalar. O Cobre verifica a assinatura e mantém os dados do app.",color=Mu,style=MaterialTheme.typography.bodySmall)
+            }},
+            confirmButton={TextButton(onClick={if(updateFile==null)downloadOrInstallUpdate()else installUpdate()},enabled=!updateBusy){Text(if(updateFile==null)"Baixar atualização" else "Instalar",color=MaterialTheme.colorScheme.primary)}},
+            dismissButton={TextButton(onClick={showUpdatePrompt=false},enabled=!updateBusy){Text("Mais tarde",color=Mu)}},
+        )
+    }
+    installedReleaseNotes?.let{notes->
+        AlertDialog(
+            onDismissRequest={installedReleaseNotes=null},
+            title={Text("Cobre Mobile atualizado · ${BuildConfig.VERSION_NAME}")},
+            text={Text(notes,color=Tx,maxLines=16,overflow=TextOverflow.Ellipsis)},
+            confirmButton={TextButton(onClick={installedReleaseNotes=null}){Text("Entendi",color=MaterialTheme.colorScheme.primary)}},
+        )
+    }
 }
 
 private suspend fun sendMeasuredPresence(repository:CobreIdRepository,context:android.content.Context,catalogResponseMs:Long?){
@@ -193,24 +265,24 @@ private suspend fun sendMeasuredPresence(repository:CobreIdRepository,context:an
 
 @Composable private fun Header(page:Page,search:Boolean,query:String,onQuery:(String)->Unit,onSearch:()->Unit,onRefresh:()->Unit){
     Column {
-        Row(Modifier.fillMaxWidth().height(62.dp).padding(horizontal=18.dp),verticalAlignment=Alignment.CenterVertically){
-            Image(painterResource(R.drawable.ic_cobre_logo),"Cobre",Modifier.size(38.dp).clip(RoundedCornerShape(11.dp)))
-            Column(Modifier.weight(1f).padding(start=10.dp)){Text("COBRE",color=Tx,fontSize=18.sp,letterSpacing=3.sp,fontWeight=FontWeight.Bold);Text(when(page){Page.Library->"BIBLIOTECA";Page.Queue->"A SEGUIR";Page.Collections->"MINHA COLEÇÃO";Page.Account->"COBRE ID";Page.Settings->"CONFIGURAÇÕES"},color=Mu,fontSize=10.sp,letterSpacing=1.5.sp)}
-            if(page==Page.Library){IconButton(onClick=onSearch){Icon(if(search)Icons.Default.Close else Icons.Default.Search,"Buscar",tint=Tx)};IconButton(onClick=onRefresh){Icon(Icons.Default.Refresh,"Atualizar biblioteca",tint=Mu)}}
+        Row(Modifier.fillMaxWidth().height(68.dp).padding(horizontal=18.dp),verticalAlignment=Alignment.CenterVertically){
+            Image(painterResource(R.drawable.ic_cobre_logo),"Cobre",Modifier.size(42.dp).clip(RoundedCornerShape(13.dp)))
+            Column(Modifier.weight(1f).padding(start=12.dp)){Text("Cobre",color=Tx,fontSize=20.sp,letterSpacing=.2.sp,fontWeight=FontWeight.Bold);Text(when(page){Page.Library->"Biblioteca";Page.Queue->"A seguir";Page.Collections->"Minha coleção";Page.Account->"Conexões";Page.Settings->"Configurações"},color=Mu,fontSize=12.sp)}
+            if(page==Page.Library){IconButton(onClick=onSearch){Icon(if(search)Icons.Default.Close else Icons.Default.Search,"Buscar",tint=Tx)};IconButton(onClick=onRefresh){Icon(Icons.Default.Refresh,"Atualizar biblioteca",tint=MaterialTheme.colorScheme.primary)}}
         }
         if(page==Page.Library&&search) OutlinedTextField(query,onQuery,Modifier.fillMaxWidth().padding(horizontal=16.dp,vertical=4.dp),placeholder={Text("Buscar faixa, álbum ou artista",color=Mu)},leadingIcon={Icon(Icons.Default.Search,null,tint=MaterialTheme.colorScheme.primary)},singleLine=true,shape=RoundedCornerShape(18.dp),colors=fieldColors())
         Spacer(Modifier.fillMaxWidth().height(1.dp).background(Line))
     }
 }
 
-@Composable private fun LibraryPage(tracks:List<Track>,library:LocalLibrary,collections:LibraryCollections,tab:LibraryTab,query:String,album:Album?,artist:Artist?,source:LibrarySource,onSource:(LibrarySource)->Unit,onTab:(LibraryTab)->Unit,onAlbum:(Album)->Unit,onArtist:(Artist)->Unit,onBack:()->Unit,onPlay:(List<Track>,Int)->Unit,onQueue:(Track)->Unit){
+@Composable private fun LibraryPage(tracks:List<Track>,library:LocalLibrary,collections:LibraryCollections,tab:LibraryTab,query:String,album:Album?,artist:Artist?,source:LibrarySource,desktopStatus:String,onOpenConnections:()->Unit,onSource:(LibrarySource)->Unit,onTab:(LibraryTab)->Unit,onAlbum:(Album)->Unit,onArtist:(Artist)->Unit,onBack:()->Unit,onPlay:(List<Track>,Int)->Unit,onQueue:(Track)->Unit){
     if(album!=null){AlbumPage(album,onBack,onPlay,onQueue);return}
     if(artist!=null){Column{Row(Modifier.fillMaxWidth().padding(16.dp),verticalAlignment=Alignment.CenterVertically){IconButton(onClick=onBack){Icon(Icons.Default.ArrowBack,"Voltar",tint=MaterialTheme.colorScheme.primary)};Column{Text(artist.name,color=Tx,style=MaterialTheme.typography.titleLarge);Text("${artist.albums.size} álbuns · ${artist.tracks.size} faixas",color=Mu,style=MaterialTheme.typography.bodySmall)}};AlbumGrid(artist.albums,onAlbum,{onPlay(it,0)},{albumTracks->albumTracks.forEach(onQueue)})};return}
     val q=query.trim().lowercase();val filtered=remember(tracks,q){if(q.isBlank())tracks else tracks.filter{it.title.lowercase().contains(q)||it.artist.lowercase().contains(q)||it.albumArtist.lowercase().contains(q)||it.album.lowercase().contains(q)}}
     Column(Modifier.fillMaxSize()){
         Row(Modifier.fillMaxWidth().padding(start=14.dp,end=14.dp,top=7.dp,bottom=2.dp),horizontalArrangement=Arrangement.spacedBy(7.dp)){LibrarySource.entries.forEach{item->val selected=item==source;Text(item.label,color=if(selected)Tx else Mu,fontWeight=if(selected)FontWeight.SemiBold else FontWeight.Normal,modifier=Modifier.clip(CircleShape).background(if(selected)CardBg else Color.Transparent).clickable{onSource(item)}.padding(horizontal=13.dp,vertical=8.dp))}}
         Row(Modifier.fillMaxWidth().padding(horizontal=14.dp,vertical=7.dp),verticalAlignment=Alignment.CenterVertically){LibraryTab.entries.forEach{item->val selected=item==tab;Text(when(item){LibraryTab.Albums->"Álbuns";LibraryTab.Artists->"Artistas";LibraryTab.Tracks->"Faixas"},color=if(selected)Tx else Mu,fontWeight=if(selected)FontWeight.SemiBold else FontWeight.Normal,modifier=Modifier.clip(CircleShape).background(if(selected)CardBg else Color.Transparent).clickable{onTab(item)}.padding(horizontal=14.dp,vertical=9.dp))};Spacer(Modifier.weight(1f));Text("${filtered.size} faixas",color=Mu,style=MaterialTheme.typography.labelSmall)}
-        when{filtered.isEmpty()->EmptyState(Icons.Default.LibraryMusic,if(q.isBlank())"Sua biblioteca está vazia" else "Nada encontrado",if(q.isBlank())"Adicione músicas ao aparelho e atualize a biblioteca." else "Tente outro nome de faixa, álbum ou artista.")
+        when{filtered.isEmpty()->EmptyState(Icons.Default.LibraryMusic,if(q.isBlank())"Sua biblioteca está vazia" else "Nada encontrado",if(q.isBlank()&&desktopStatus.isNotBlank()&&!desktopStatus.startsWith("Computador conectado"))desktopStatus else if(q.isBlank())"Conecte o computador para acessar sua coleção, ou escolha uma pasta local nas configurações." else "Tente outro nome de faixa, álbum ou artista.",actionLabel="Conectar computador",action=onOpenConnections)
             tab==LibraryTab.Albums->AlbumGrid(library.albums(filtered),onAlbum,{onPlay(it,0)},{albumTracks->albumTracks.forEach(onQueue)})
             tab==LibraryTab.Artists->ArtistList(library.artists(filtered),onArtist)
             else->TrackList(filtered,{i->onPlay(filtered,i)},onQueue,collections)}
@@ -357,7 +429,7 @@ private fun selectLibrarySource(tracks:List<Track>,source:LibrarySource):List<Tr
     Box(modifier.background(CardBg),contentAlignment=Alignment.Center){if(bitmap!=null)Image(bitmap!!.asImageBitmap(),track?.album,Modifier.fillMaxSize(),contentScale=ContentScale.Crop)else Icon(Icons.Default.MusicNote,null,tint=MaterialTheme.colorScheme.primary.copy(alpha=.75f),modifier=Modifier.size(36.dp))}
 }
 
-@Composable private fun EmptyState(icon:ImageVector,title:String,message:String,action:(()->Unit)?=null){Column(Modifier.fillMaxSize().padding(28.dp),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.Center){Icon(icon,null,tint=MaterialTheme.colorScheme.primary,modifier=Modifier.size(42.dp));Spacer(Modifier.height(14.dp));Text(title,color=Tx,style=MaterialTheme.typography.titleLarge,fontWeight=FontWeight.SemiBold);Spacer(Modifier.height(6.dp));Text(message,color=Mu,textAlign=TextAlign.Center);if(action!=null){Spacer(Modifier.height(16.dp));Button(onClick=action,colors=ButtonDefaults.buttonColors(containerColor=MaterialTheme.colorScheme.primary),shape=RoundedCornerShape(24.dp)){Text("Permitir acesso")}}}}
+@Composable private fun EmptyState(icon:ImageVector,title:String,message:String,actionLabel:String="Permitir acesso",action:(()->Unit)?=null){Column(Modifier.fillMaxSize().padding(28.dp),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.Center){Icon(icon,null,tint=MaterialTheme.colorScheme.primary,modifier=Modifier.size(42.dp));Spacer(Modifier.height(14.dp));Text(title,color=Tx,style=MaterialTheme.typography.titleLarge,fontWeight=FontWeight.SemiBold);Spacer(Modifier.height(6.dp));Text(message,color=Mu,textAlign=TextAlign.Center);if(action!=null){Spacer(Modifier.height(16.dp));Button(onClick=action,colors=ButtonDefaults.buttonColors(containerColor=MaterialTheme.colorScheme.primary),shape=RoundedCornerShape(24.dp)){Text(actionLabel)}}}}
 @Composable private fun Loading(message:String="Lendo sua biblioteca…"){Box(Modifier.fillMaxSize(),contentAlignment=Alignment.Center){Column(horizontalAlignment=Alignment.CenterHorizontally){CircularProgressIndicator(color=MaterialTheme.colorScheme.primary);Spacer(Modifier.height(14.dp));Text(message,color=Mu)}}}
 @Composable private fun navColors()=NavigationBarItemDefaults.colors(selectedIconColor=MaterialTheme.colorScheme.primary,selectedTextColor=MaterialTheme.colorScheme.primary,indicatorColor=MaterialTheme.colorScheme.primary.copy(alpha=.15f),unselectedIconColor=Mu,unselectedTextColor=Mu)
 @Composable internal fun fieldColors()=OutlinedTextFieldDefaults.colors(focusedBorderColor=MaterialTheme.colorScheme.primary,unfocusedBorderColor=Line,focusedLabelColor=MaterialTheme.colorScheme.primary,unfocusedLabelColor=Mu,focusedTextColor=Tx,unfocusedTextColor=Tx,cursorColor=MaterialTheme.colorScheme.primary)
