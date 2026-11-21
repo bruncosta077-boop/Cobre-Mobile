@@ -3,7 +3,7 @@
 
 - A presença Cobre ID agora informa a idade da última amostra do stream, permitindo ao Cobre Server distinguir uma medição recente de uma taxa antiga.
 - Métricas continuam limitadas a latência inicial e bytes por segundo recebidos diretamente do Desktop; nenhum nome, caminho ou conteúdo de faixa é enviado.
-- Validação local concluída: `:app:assembleDebug`, `:app:lintDebug`, `:app:assembleRelease` e `:app:lintVitalRelease` passaram. A publicação depende da assinatura estável no GitHub Actions.
+- Validação local concluída: `:app:assembleDebug`, `:app:lintDebug`, `:app:assembleRelease` e `:app:lintVitalRelease` passaram. APK assinado, verificação da assinatura e publicação passaram no [GitHub Actions](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/44949187555); pacote e checksum estão na [release 0.16.0](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.16.0).
 
 ## 0.15.0 — encontrar o Desktop na rede local
 

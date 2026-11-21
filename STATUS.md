@@ -1,9 +1,9 @@
 # Cobre Mobile — status
 
-## Versão em desenvolvimento 0.16.0 — idade das medições de áudio
+## Versão publicada 0.16.0 — idade das medições de áudio
 
 - A presença Cobre ID inclui a idade da amostra de áudio, sem enviar metadados da faixa.
-- Compilação debug/release e lint debug/release passaram localmente. O GitHub Actions ainda precisa gerar e validar o APK com a assinatura estável; 0.15.0 continua sendo a release pública até isso terminar.
+- Compilação debug/release e lint debug/release passaram localmente; o GitHub Actions assinou, verificou e publicou o APK e seu checksum. É uma pré-release instalável por cima da 0.15.0.
 
 ## Versão 0.15.0 — descoberta local do Desktop
 
