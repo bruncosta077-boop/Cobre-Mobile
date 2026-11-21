@@ -18,6 +18,8 @@ import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 
 /** Client for the currently implemented Cobre Server account, presence and device endpoints. */
+data class DesktopAccessRequest(val requestId: String, val expiresInSeconds: Int)
+
 class CobreIdRepository(context: Context) {
     private val appContext = context.applicationContext
     private val legacyPrefs = appContext.getSharedPreferences("cobre-id", Context.MODE_PRIVATE)
@@ -76,12 +78,12 @@ class CobreIdRepository(context: Context) {
         }
     }
 
-    suspend fun requestDesktopAccess(hostDeviceId: String): String = withContext(Dispatchers.IO) {
+    suspend fun requestDesktopAccess(hostDeviceId: String): DesktopAccessRequest = withContext(Dispatchers.IO) {
         val result = requestBlocking(
             "/v1/hosts/${hostDeviceId}/access-requests", "POST",
             JSONObject().put("scopes", JSONArray(listOf("library.read", "playback.read", "playback.control", "stream"))),
         )
-        result.getString("requestId")
+        DesktopAccessRequest(result.getString("requestId"), result.optInt("expiresIn", 90).coerceIn(15, 600))
     }
 
     /** Polls a request once; the host must approve it in Desktop before a grant is issued. */

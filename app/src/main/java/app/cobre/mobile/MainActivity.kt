@@ -9,6 +9,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Build
 import android.os.Bundle
+import android.os.SystemClock
 import android.util.Size
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -149,16 +150,17 @@ class MainActivity:ComponentActivity(){
                                         account=account.copy(busy=true,message="Validando QR e solicitando aprovação…",error=false)
                                         runCatching {
                                             val pairing=parseDesktopPairingQr(raw)
-                                            val requestId=accountRepo.requestDesktopAccess(pairing.hostId)
+                                            val request=accountRepo.requestDesktopAccess(pairing.hostId)
                                             var approved:DesktopAccessStatus.Approved?=null
-                                            for(attempt in 0 until 42){
+                                            val deadline=SystemClock.elapsedRealtime()+request.expiresInSeconds*1_000L
+                                            while(SystemClock.elapsedRealtime()<deadline){
                                                 delay(2_000)
-                                                when(val result=accountRepo.pollDesktopAccess(pairing.hostId,requestId)){
-                                                    DesktopAccessStatus.Pending->account=account.copy(busy=true,message="Confirme o pedido no Cobre Desktop. Aguardando aprovação…",error=false)
+                                                when(val result=accountRepo.pollDesktopAccess(pairing.hostId,request.requestId)){
+                                                    DesktopAccessStatus.Pending->account=account.copy(busy=true,message="No Desktop: Configurações → Conta Cobre → Permitir. Pedido válido por até ${request.expiresInSeconds/60} min.",error=false)
                                                     is DesktopAccessStatus.Approved->{approved=result;break}
                                                 }
                                             }
-                                            approved?:throw CobreIdException("A solicitação expirou. Gere um novo QR e tente novamente.")
+                                            approved?:throw CobreIdException("O pedido expirou. Aprove no Desktop dentro do prazo e leia o QR novamente.")
                                             pairing
                                         }.onSuccess { pairing ->
                                             settings.saveDesktopUrl(pairing.origin);settings.requireSecureDesktopAccess();desktopRefreshKey++;desktopAuthorizationRevision++

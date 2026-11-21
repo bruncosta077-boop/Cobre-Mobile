@@ -1,5 +1,12 @@
 # Histórico de versões — Cobre Mobile
 
+## 0.12.1 — espera de aprovação ajustada
+
+- O prazo de espera acompanha o `expiresIn` informado pelo Cobre Server, em vez de parar após 84 segundos.
+- O fluxo manual e o pareamento por QR indicam exatamente onde aprovar: Cobre Desktop → Configurações → Conta Cobre → Permitir.
+- A solicitação fica válida por até cinco minutos no Server, dando tempo para abrir o Desktop e aprovar; após isso, o app informa que é necessário tentar novamente.
+- O tempo de espera vem do prazo retornado pelo Server; requer Cobre Server 0.5.0-beta.12 ou posterior para usar o prazo ampliado de cinco minutos.
+
 ## 0.12.0 — conexão Cobre ID, áudio remoto e player reorganizado
 
 - Mobile pede aprovação por aparelho ao Desktop através do Cobre ID; o Desktop decide e a permissão do Server vale até 30 dias.

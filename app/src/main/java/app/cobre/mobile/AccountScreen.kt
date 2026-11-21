@@ -1,5 +1,6 @@
 package app.cobre.mobile
 
+import android.os.SystemClock
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -75,16 +76,17 @@ fun AccountPage(repository:CobreIdRepository,state:AccountUi,desktopOrigin:Strin
                         Button(onClick={scope.launch{
                             onState(state.copy(busy=true,message="Solicitando aprovação ao Desktop…",error=false))
                             runCatching {
-                                val requestId=repository.requestDesktopAccess(desktop.id)
+                                val request=repository.requestDesktopAccess(desktop.id)
                                 var approved:DesktopAccessStatus.Approved?=null
-                                for(attempt in 0 until 42){
+                                val deadline=SystemClock.elapsedRealtime()+request.expiresInSeconds*1_000L
+                                while(SystemClock.elapsedRealtime()<deadline){
                                     delay(2_000)
-                                    when(val result=repository.pollDesktopAccess(desktop.id,requestId)){
-                                        DesktopAccessStatus.Pending->onState(state.copy(busy=true,message="Aprove no Cobre Desktop. Aguardando resposta…",error=false))
+                                    when(val result=repository.pollDesktopAccess(desktop.id,request.requestId)){
+                                        DesktopAccessStatus.Pending->onState(state.copy(busy=true,message="No Desktop: Configurações → Conta Cobre → Permitir. Pedido válido por até ${request.expiresInSeconds/60} min.",error=false))
                                         is DesktopAccessStatus.Approved->{approved=result;break}
                                     }
                                 }
-                                approved?:throw CobreIdException("A solicitação expirou. Tente novamente com o Desktop aberto.")
+                                approved?:throw CobreIdException("O pedido expirou. No Desktop, abra Configurações → Conta Cobre e aprove dentro do prazo; depois tente novamente.")
                             }.onSuccess{access->onDesktopGrantChanged();onState(state.copy(busy=false,message="Acesso aprovado. Permissão renovável por até 30 dias; o token é atualizado automaticamente.",error=false))}
                                 .onFailure{onState(state.copy(busy=false,message=it.message?:"Não foi possível pedir acesso.",error=true))}
                         }},enabled=!state.busy&&desktop.online,modifier=Modifier.fillMaxWidth(),colors=ButtonDefaults.buttonColors(containerColor=Color(0xFF302C28)),shape=RoundedCornerShape(24.dp)){
