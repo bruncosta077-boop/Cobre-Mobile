@@ -1,5 +1,10 @@
 # Histórico de versões — Cobre Mobile
 
+## 0.13.1 — diagnóstico de conexão com o Cobre Server
+
+- Falhas de tempo limite, conexão recusada e endereço inválido agora mostram instruções claras, sem a mensagem bruta do Android.
+- A tela informa que o Server deve permanecer aberto ou minimizado na área de notificação, e orienta a conferir a mesma rede Wi-Fi e o Firewall do Windows.
+
 ## 0.13.0 — conexão simplificada e interface reorganizada
 
 - A conexão com o Desktop agora tem um único caminho: entrar no Cobre ID, ler o QR no computador e aprovar o pedido no próprio Desktop.

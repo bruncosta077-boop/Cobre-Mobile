@@ -9,6 +9,9 @@ import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
 import java.net.HttpURLConnection
+import java.net.ConnectException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
 import java.net.URI
 import java.net.URL
 import java.security.KeyStore
@@ -282,7 +285,13 @@ class CobreIdRepository(context: Context) {
         } catch (error: CobreIdException) {
             throw error
         } catch (error: Exception) {
-            throw CobreIdException(error.message?.takeIf(String::isNotBlank) ?: "Não foi possível alcançar o servidor.")
+            val message = when (error) {
+                is SocketTimeoutException -> "O celular não recebeu resposta de $base. Deixe o Cobre Server aberto ou na área de notificação, confirme que os dois aparelhos estão na mesma rede Wi-Fi e confira a permissão do Firewall do Windows para a rede particular."
+                is ConnectException -> "Não foi possível conectar ao Cobre Server em $base. Abra o Cobre Server no computador e confirme se o serviço está ativo."
+                is UnknownHostException -> "Não encontrei o endereço do Cobre Server em $base. Confira o endereço nas configurações de conexão."
+                else -> error.message?.takeIf(String::isNotBlank) ?: "Não foi possível alcançar o Cobre Server."
+            }
+            throw CobreIdException(message)
         } finally {
             connection.disconnect()
         }

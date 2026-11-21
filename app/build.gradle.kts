@@ -10,8 +10,8 @@ android {
         applicationId = "app.cobre.mobile"
         minSdk = 29          // loadThumbnail() e MediaStore moderno; ver STATUS.md
         targetSdk = 34
-        versionCode = 14
-        versionName = "0.13.0"
+        versionCode = 15
+        versionName = "0.13.1"
     }
     buildFeatures { compose = true; buildConfig = true }
     val mobileKeystorePath = project.providers.environmentVariable("COBRE_MOBILE_KEYSTORE_PATH").orNull
