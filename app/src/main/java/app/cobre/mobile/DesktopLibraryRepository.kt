@@ -10,6 +10,7 @@ import java.net.URL
 
 /** Reads the Desktop's existing LAN library endpoint and produces streamable Media3 items. */
 data class DesktopLibrarySnapshot(val tracks: List<Track>, val catalogResponseMs: Long)
+class DesktopLibraryException(message: String, val statusCode: Int) : IllegalStateException(message)
 
 class DesktopLibraryRepository {
     suspend fun load(address: String, grantToken: String? = null): DesktopLibrarySnapshot = withContext(Dispatchers.IO) {
@@ -34,7 +35,7 @@ class DesktopLibraryRepository {
             val status = connection.responseCode
             if (status != HttpURLConnection.HTTP_OK) {
                 val detail = connection.errorStream?.bufferedReader()?.use { it.readText() }.orEmpty()
-                throw IllegalStateException(when(status) {
+                throw DesktopLibraryException(when(status) {
                     HttpURLConnection.HTTP_UNAUTHORIZED -> if (detail.contains("invalid_host_grant") || detail.contains("host_grant_revoked")) "A autorização do computador expirou ou foi removida. Reconecte pelo QR e aprove o novo pedido no Desktop." else "A permissão do computador expirou. Reconecte pelo QR e aprove o novo pedido no Desktop."
                     HttpURLConnection.HTTP_FORBIDDEN -> "Esta permissão não inclui a biblioteca. Reconecte pelo QR e aprove o novo pedido no Desktop."
                     HttpURLConnection.HTTP_UNAVAILABLE -> when {
@@ -43,7 +44,7 @@ class DesktopLibraryRepository {
                         else -> "O serviço de autorização do Desktop está indisponível. Confira o Cobre Server e tente novamente."
                     }
                     else -> "Desktop respondeu HTTP $status ${detail.take(100)}".trim()
-                })
+                }, status)
             }
             val tracks = org.json.JSONObject(connection.inputStream.bufferedReader().use { it.readText() }).optJSONArray("tracks")
                 ?: throw IllegalStateException("O Desktop retornou um catálogo inválido.")

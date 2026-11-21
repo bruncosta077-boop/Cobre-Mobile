@@ -107,6 +107,7 @@ class MainActivity:ComponentActivity(){
     var page by remember{mutableStateOf(Page.Library)}; var tab by remember{mutableStateOf(LibraryTab.Albums)}
     var album by remember{mutableStateOf<Album?>(null)}; var artist by remember{mutableStateOf<Artist?>(null)}; var fullPlayer by remember{mutableStateOf(false)}
     val playback by player.state.collectAsState(); var account by remember{mutableStateOf(AccountUi(email=accountRepo.savedEmail))}; val scope=rememberCoroutineScope()
+    var accountSessionReady by remember{mutableStateOf(!accountRepo.hasSavedSession||accountRepo.serverUrl.isBlank())}
     val updateManager=remember{AppUpdateManager(context)}
     var updateInfo by remember{mutableStateOf<MobileUpdate?>(null)}
     var updateFile by remember{mutableStateOf<File?>(null)}
@@ -154,12 +155,19 @@ class MainActivity:ComponentActivity(){
         }
     }
     LaunchedEffect(Unit){checkForMobileUpdate(false)}
-    LaunchedEffect(Unit){if(!granted)askAudio.launch(permission); if(accountRepo.hasSavedSession&&accountRepo.serverUrl.isNotBlank()){
-        account=account.copy(busy=true,message="Reconectando ao Cobre ID…")
-        runCatching{accountRepo.restoreSession();sendMeasuredPresence(accountRepo,context,null);accountRepo.loadDevices()}.onSuccess{account=AccountUi(true,accountRepo.savedEmail,it,message="Conta conectada.")}.onFailure{account=AccountUi(email=accountRepo.savedEmail,message=it.message?:"Sessão expirada.",error=true)}
-    }}
+    LaunchedEffect(Unit){
+        if(!granted)askAudio.launch(permission)
+        if(accountRepo.hasSavedSession&&accountRepo.serverUrl.isNotBlank()){
+            account=account.copy(busy=true,message="Reconectando ao Cobre ID…")
+            runCatching{accountRepo.restoreSession();sendMeasuredPresence(accountRepo,context,null);accountRepo.loadDevices()}
+                .onSuccess{account=AccountUi(true,accountRepo.savedEmail,it,message="Conta conectada.")}
+                .onFailure{account=AccountUi(email=accountRepo.savedEmail,message=it.message?:"Sessão expirada.",error=true)}
+        }
+        accountSessionReady=true
+    }
     LaunchedEffect(granted,folderUri){localTracks=if(granted)runCatching{library.load(folderUri?.let{Uri.parse(it)})}.getOrDefault(emptyList()) else emptyList()}
-    LaunchedEffect(settings.desktopUrl,desktopRefreshKey,desktopAuthorizationRevision){
+    LaunchedEffect(settings.desktopUrl,desktopRefreshKey,desktopAuthorizationRevision,accountSessionReady){
+        if(!accountSessionReady)return@LaunchedEffect
         val address=settings.desktopUrl
         if(address.isNullOrBlank()){desktopTracks=emptyList();desktopCatalogResponseMs=null;desktopStatus=""}
         else{
@@ -167,7 +175,14 @@ class MainActivity:ComponentActivity(){
             if(settings.secureDesktopAccessRequired&&grantToken.isNullOrBlank()){
                 desktopTracks=emptyList();desktopCatalogResponseMs=null;desktopStatus="Peça acesso Cobre ID ao Desktop para reconectar esta biblioteca."
             }else{
-                desktopStatus="Conectando ao Cobre Desktop…";runCatching{desktopLibrary.load(address,grantToken)}.onSuccess{remote->desktopTracks=remote.tracks;desktopCatalogResponseMs=remote.catalogResponseMs;desktopStatus="Computador conectado · ${remote.tracks.size} faixas · catálogo respondeu em ${remote.catalogResponseMs} ms"}.onFailure{desktopTracks=emptyList();desktopCatalogResponseMs=null;desktopStatus=it.message?:"Não foi possível conectar ao computador."}
+                desktopStatus="Conectando ao Cobre Desktop…";runCatching{
+                    val validToken=if(accountRepo.desktopGrantId()!=null)accountRepo.ensureDesktopGrantToken()else grantToken
+                    try{desktopLibrary.load(address,validToken)}catch(error:DesktopLibraryException){
+                        if(error.statusCode!=401||accountRepo.desktopGrantId()==null)throw error
+                        val renewed=accountRepo.refreshDesktopGrant()
+                        desktopLibrary.loadAuthorized(address,renewed.token)
+                    }
+                }.onSuccess{remote->desktopTracks=remote.tracks;desktopCatalogResponseMs=remote.catalogResponseMs;desktopStatus="Computador conectado · ${remote.tracks.size} faixas · catálogo respondeu em ${remote.catalogResponseMs} ms"}.onFailure{desktopTracks=emptyList();desktopCatalogResponseMs=null;desktopStatus=it.message?:"Não foi possível conectar ao computador."}
             }
         }
     }

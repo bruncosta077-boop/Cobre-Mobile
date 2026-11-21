@@ -1,4 +1,13 @@
 # Histórico de versões — Cobre Mobile
+## 0.17.0 — renovar acesso expirado sem refazer o QR
+
+- Antes de carregar a biblioteca, o Mobile verifica a validade da concessão e pede uma nova ao Cobre Server quando ela está perto de expirar.
+- Se o Desktop rejeitar o token antigo durante a leitura do catálogo, o Mobile renova uma vez e tenta novamente. O fluxo não pede novo QR enquanto o consentimento do Desktop continua válido.
+- Controles remotos usam a mesma renovação e tentam novamente somente após uma resposta 401. Respostas 403, problemas de rede e falhas do Cobre Server continuam explícitos e não são mascarados.
+- A restauração inicial da sessão Cobre ID termina antes de uma renovação da concessão, evitando concorrência no refresh token ao abrir o app.
+- Validação local concluída: `:app:assembleDebug`, `:app:lintDebug`, `:app:assembleRelease` e `:app:lintVitalRelease` passaram. O lint reporta 24 avisos não bloqueantes já presentes no app, principalmente APIs Android/ícones depreciados; o APK local de release é unsigned.
+- A publicação depende do GitHub Actions gerar e verificar o APK com a chave estável de distribuição.
+
 ## 0.16.0 — medições recentes de áudio
 
 - A presença Cobre ID agora informa a idade da última amostra do stream, permitindo ao Cobre Server distinguir uma medição recente de uma taxa antiga.

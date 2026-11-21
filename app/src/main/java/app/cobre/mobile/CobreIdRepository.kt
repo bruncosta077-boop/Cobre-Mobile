@@ -111,6 +111,9 @@ class CobreIdRepository(context: Context) {
         val token = result.getString("grantToken")
         val tokenExpiresAt = result.optLong("expiresAt")
         val consentExpiresAt = result.optLong("consentExpiresAt")
+        if (token.isBlank() || tokenExpiresAt <= System.currentTimeMillis()) {
+            throw CobreIdException("O Cobre Server retornou uma autorização do computador inválida.")
+        }
         secretPrefs.edit().putLong("desktop_grant_expires_at", consentExpiresAt).putLong("desktop_token_expires_at", tokenExpiresAt).apply()
         saveSecret("desktop_grant_token", token)
         DesktopAccessStatus.Approved(grant, token, tokenExpiresAt, consentExpiresAt)
@@ -131,9 +134,16 @@ class CobreIdRepository(context: Context) {
     fun desktopConsentExpiresAt(): Long = secretPrefs.getLong("desktop_grant_expires_at", 0L)
     fun desktopTokenExpiresAt(): Long = secretPrefs.getLong("desktop_token_expires_at", 0L)
 
+    suspend fun ensureDesktopGrantToken(): String = withContext(Dispatchers.IO) {
+        if (desktopGrantId() == null) throw CobreIdException("Peça acesso ao computador pelo QR e aprove o pedido no Desktop.")
+        val token = currentDesktopGrantToken()
+        if (token.isNullOrBlank() || desktopTokenExpiresAt() <= System.currentTimeMillis() + 60_000L) {
+            refreshDesktopGrant().token
+        } else token
+    }
+
     suspend fun sendDesktopCommand(origin: String, action: String, value: Double? = null) = withContext(Dispatchers.IO) {
         if (desktopGrantId() == null) throw CobreIdException("Autorize primeiro este celular na aba Cobre ID.")
-        if (desktopTokenExpiresAt() < System.currentTimeMillis() + 60_000) refreshDesktopGrant()
         val body = JSONObject().put("action", action)
         if (value != null) {
             if (!value.isFinite()) throw CobreIdException("Valor de controle inválido.")
@@ -141,13 +151,23 @@ class CobreIdRepository(context: Context) {
             if (action == "seek") body.put("positionSeconds", value.coerceAtLeast(0.0))
             if (action == "play") body.put("trackId", value.toInt())
         }
-        desktopHttpBlocking(origin, "/v1/commands", "POST", body)
+        desktopHttpWithGrantRefresh(origin, "/v1/commands", "POST", body)
     }
 
     suspend fun readDesktopNowPlaying(origin: String): JSONObject = withContext(Dispatchers.IO) {
         if (desktopGrantId() == null) throw CobreIdException("Autorize primeiro este celular na aba Cobre ID.")
-        if (desktopTokenExpiresAt() < System.currentTimeMillis() + 60_000) refreshDesktopGrant()
-        desktopHttpBlocking(origin, "/v1/now-playing", "GET", null)
+        desktopHttpWithGrantRefresh(origin, "/v1/now-playing", "GET", null)
+    }
+
+    private suspend fun desktopHttpWithGrantRefresh(origin: String, path: String, method: String, body: JSONObject?): JSONObject {
+        ensureDesktopGrantToken()
+        return try {
+            desktopHttpBlocking(origin, path, method, body)
+        } catch (error: CobreIdException) {
+            if (error.statusCode != 401) throw error
+            refreshDesktopGrant()
+            desktopHttpBlocking(origin, path, method, body)
+        }
     }
 
     private fun desktopHttpBlocking(origin: String, path: String, method: String, body: JSONObject?): JSONObject {

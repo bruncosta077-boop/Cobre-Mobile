@@ -1,5 +1,10 @@
 # Cobre Mobile — status
 
+## Versão em desenvolvimento 0.17.0 — recuperação da concessão do Desktop
+
+- O app renova a concessão antes de buscar o catálogo e repete a leitura uma vez se receber 401, sem voltar a exigir QR quando o consentimento ainda existe.
+- Controles remotos também renovam e repetem uma vez em 401. Build debug/release e lint local passaram; há 24 avisos não bloqueantes no relatório. A assinatura estável e a publicação ainda dependem do GitHub Actions.
+
 ## Versão publicada 0.16.0 — idade das medições de áudio
 
 - A presença Cobre ID inclui a idade da amostra de áudio, sem enviar metadados da faixa.
