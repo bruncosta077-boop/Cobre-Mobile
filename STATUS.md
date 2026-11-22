@@ -4,6 +4,7 @@
 
 - API 36 e variante Play dedicados: sem permissão nem código de auto-instalação de APK; atualizações ficam a cargo da Play Store.
 - Workflow separado gera AAB da variante Play e APK da edição direta, mantendo uma mesma chave de distribuição.
+- GitHub Actions passou no [workflow 45055015245](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45055015245), compilando o APK de debug e o AAB de validação. Esse AAB da branch é unsigned e não deve ser enviado à Play Console.
 - Não publicar tag até o workflow gerar e verificar o AAB assinado e a variante ser validada em Android 16. Ainda é necessário preparar privacidade/exclusão de conta e preencher a Play Console.
 
 ## Versão publicada 0.18.0 — renovação serializada da sessão

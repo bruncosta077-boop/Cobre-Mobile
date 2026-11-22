@@ -5,7 +5,8 @@
 - Atualizados compile/target SDK para API 36, exigida para novos apps e atualizações da Google Play desde 31/08/2026.
 - Criada variante `play` que remove `REQUEST_INSTALL_PACKAGES`, desativa o atualizador de APK externo e orienta a receber atualizações pela loja. A edição `direct` mantém o atualizador GitHub existente.
 - O workflow produz APK direto e AAB da variante Play; ambos usam a chave de distribuição atual para preservar compatibilidade, sujeito à configuração correta do Play App Signing.
-- Ainda não é publicação da Play Store: validar AAB assinado no CI, comportamento em Android 16, chave no Play App Signing, política de privacidade, exclusão de conta e declarações da Play Console.
+- O GitHub Actions passou no [workflow 45055015245](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45055015245) e gerou APK de debug e AAB de validação sem assinatura de distribuição.
+- Ainda não é publicação da Play Store: validar AAB assinado, comportamento em Android 16, chave no Play App Signing, política de privacidade, exclusão de conta e declarações da Play Console.
 ## 0.18.0 — evitar conflito ao renovar sessão Cobre ID
 
 - A renovação do refresh token agora é serializada no processo Android, pois a tela principal e o serviço de reprodução têm instâncias independentes do repositório e compartilham o mesmo token rotativo.

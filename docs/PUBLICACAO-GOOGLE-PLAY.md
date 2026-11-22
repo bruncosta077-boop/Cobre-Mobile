@@ -22,4 +22,4 @@ Usar no Play App Signing a chave de assinatura existente do canal direto, em vez
 
 ## Estado
 
-API 36, flavor `play`, remoção de auto-update APK e geração do AAB estão em preparação. A Play Console não foi configurada e nenhum app foi enviado para revisão.
+API 36, flavor `play`, remoção de auto-update APK e geração do AAB passaram no workflow [45055015245](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45055015245). O AAB de validação da branch é unsigned; a versão assinada só é gerada em tag de release e ainda não foi criada. A Play Console não foi configurada e nenhum app foi enviado para revisão.
