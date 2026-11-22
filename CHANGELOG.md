@@ -2,6 +2,7 @@
 
 ## 0.19.0 — preparação técnica para Google Play (em desenvolvimento)
 
+- Incluído fluxo de exclusão permanente da conta Cobre ID com confirmação de senha no Mobile; o Server remove dispositivos, sessões e permissões vinculados. Músicas e preferências locais permanecem no aparelho.
 - Atualizados compile/target SDK para API 36, exigida para novos apps e atualizações da Google Play desde 31/08/2026.
 - Criada variante `play` que remove `REQUEST_INSTALL_PACKAGES`, desativa o atualizador de APK externo e orienta a receber atualizações pela loja. A edição `direct` mantém o atualizador GitHub existente.
 - O workflow produz APK direto e AAB da variante Play; ambos usam a chave de distribuição atual para preservar compatibilidade, sujeito à configuração correta do Play App Signing.

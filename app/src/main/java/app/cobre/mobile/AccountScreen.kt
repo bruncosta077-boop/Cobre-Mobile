@@ -69,6 +69,8 @@ fun AccountPage(
     var showDesktopDiscovery by remember { mutableStateOf(false) }
     var discoveredDesktops by remember { mutableStateOf(emptyList<DiscoveredDesktop>()) }
     var discoveryMessage by remember { mutableStateOf("Buscando Cobre Desktop nesta rede…") }
+    var showDeleteAccount by remember { mutableStateOf(false) }
+    var deletePassword by remember { mutableStateOf("") }
 
     DisposableEffect(showDesktopDiscovery) {
         if (showDesktopDiscovery) {
@@ -359,13 +361,18 @@ fun AccountPage(
                 }
             }
 
-            TextButton(onClick = {
-                scope.launch {
-                    runCatching { repository.logout() }
-                    onDesktopGrantChanged()
-                    onState(AccountUi(message = "Sessão encerrada."))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                TextButton(onClick = { showDeleteAccount = true }, enabled = !state.busy) {
+                    Text("Excluir conta Cobre ID", color = AccountError)
                 }
-            }, enabled = !state.busy, modifier = Modifier.align(Alignment.End)) { Text("Sair da conta", color = AccountError) }
+                TextButton(onClick = {
+                    scope.launch {
+                        runCatching { repository.logout() }
+                        onDesktopGrantChanged()
+                        onState(AccountUi(message = "Sessão encerrada."))
+                    }
+                }, enabled = !state.busy) { Text("Sair da conta", color = AccountMuted) }
+            }
         }
         Text("O Cobre Server confirma a permissão. Biblioteca e áudio seguem diretamente do computador para o celular na rede local.", color = AccountMuted, style = MaterialTheme.typography.bodySmall)
         Spacer(Modifier.height(10.dp))
@@ -393,6 +400,49 @@ fun AccountPage(
                 }
             },
             confirmButton = { TextButton(onClick = { showDesktopDiscovery = false }) { Text("Fechar") } },
+        )
+    }
+
+    if (showDeleteAccount) {
+        AlertDialog(
+            onDismissRequest = { if (!state.busy) { showDeleteAccount = false; deletePassword = "" } },
+            title = { Text("Excluir conta Cobre ID?") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text("A exclusão é permanente. O Server apagará a conta, os aparelhos vinculados, sessões e permissões. Músicas e preferências salvas neste celular serão mantidas.", color = AccountMuted)
+                    OutlinedTextField(
+                        value = deletePassword,
+                        onValueChange = { deletePassword = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text("Confirme sua senha") },
+                        singleLine = true,
+                        visualTransformation = PasswordVisualTransformation(),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                        enabled = !state.busy,
+                        colors = accountFieldColors(),
+                    )
+                    if (state.error && state.message.isNotBlank()) Text(state.message, color = AccountError, style = MaterialTheme.typography.bodySmall)
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    enabled = !state.busy && deletePassword.isNotBlank(),
+                    onClick = {
+                        scope.launch {
+                            onState(state.copy(busy = true, message = "Excluindo conta…", error = false))
+                            runCatching { repository.deleteAccount(deletePassword) }
+                                .onSuccess {
+                                    deletePassword = ""
+                                    showDeleteAccount = false
+                                    onDesktopGrantChanged()
+                                    onState(AccountUi(message = "Conta Cobre ID excluída."))
+                                }
+                                .onFailure { onState(state.copy(busy = false, message = it.message ?: "Não foi possível excluir a conta.", error = true)) }
+                        }
+                    },
+                ) { Text(if (state.busy) "Excluindo…" else "Excluir permanentemente", color = AccountError) }
+            },
+            dismissButton = { TextButton(onClick = { showDeleteAccount = false; deletePassword = "" }, enabled = !state.busy) { Text("Cancelar") } },
         )
     }
 }

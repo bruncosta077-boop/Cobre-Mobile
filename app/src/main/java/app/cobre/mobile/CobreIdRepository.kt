@@ -250,6 +250,14 @@ class CobreIdRepository(context: Context) {
         }
     }
 
+    suspend fun deleteAccount(password: String) = withContext(Dispatchers.IO) {
+        require(password.isNotBlank()) { "Digite sua senha para confirmar a exclusão." }
+        requestBlocking("/v1/account/deletion", "POST", JSONObject().put("password", password))
+        accessToken = null
+        secretPrefs.edit().clear().commit()
+        prefs.edit().remove("email").commit()
+    }
+
     private fun acceptSession(json: JSONObject) {
         accessToken = json.getString("accessToken")
         saveRefreshToken(json.getString("refreshToken"))

@@ -2,6 +2,7 @@
 
 ## Versão em preparação 0.19.0 — Google Play
 
+- A tela Cobre ID agora inclui exclusão de conta com confirmação de senha e aviso dos dados removidos; aguarda API do Server 1.3.0 publicada e validação em aparelho Android.
 - API 36 e variante Play dedicados: sem permissão nem código de auto-instalação de APK; atualizações ficam a cargo da Play Store.
 - Workflow separado gera AAB da variante Play e APK da edição direta, mantendo uma mesma chave de distribuição.
 - GitHub Actions passou no [workflow 45055015245](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45055015245), compilando o APK de debug e o AAB de validação. Esse AAB da branch é unsigned e não deve ser enviado à Play Console.
