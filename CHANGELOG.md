@@ -2,6 +2,7 @@
 
 ## 0.19.0 — preparação técnica para Google Play (em desenvolvimento)
 
+- No player, uma faixa da biblioteca autorizada do Desktop pode ser enviada para tocar no computador. O app confirma antes, informa que a ação substitui a fila do Desktop e pausa o celular somente depois da aceitação; faixa local ou de outro host não oferece essa ação.
 - Incluído fluxo de exclusão permanente da conta Cobre ID com confirmação de senha no Mobile; o Server remove dispositivos, sessões e permissões vinculados. O app apaga tokens, retira a autorização mantida pelo serviço de reprodução e pausa a faixa remota atual. Músicas e preferências locais permanecem no aparelho.
 - Adicionada a opção de baixar faixas do Desktop para reprodução offline, com progresso e remoção pelo mesmo controle. Os downloads ficam no armazenamento privado do app, usam uma autorização curta no cabeçalho e só aceitam a origem Desktop configurada; limite de 2 GB no total e 512 MB por faixa.
 - A fila agora é salva no aparelho com a faixa atual, posição, modo aleatório e repetição. Ao reabrir o Mobile, ela volta pausada e só toca quando o usuário iniciar a reprodução.

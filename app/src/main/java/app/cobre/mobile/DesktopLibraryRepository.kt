@@ -13,6 +13,22 @@ data class DesktopLibrarySnapshot(val tracks: List<Track>, val catalogResponseMs
 class DesktopLibraryException(message: String, val statusCode: Int) : IllegalStateException(message)
 
 class DesktopLibraryRepository {
+    /** Returns the Desktop catalog ID only when this track belongs to the configured paired host. */
+    fun desktopTrackIdForRemotePlayback(track: Track, expectedOrigin: String): Int? {
+        val stream = track.sourceUri ?: track.uri
+        val expected = runCatching { Uri.parse(expectedOrigin.trim()) }.getOrNull() ?: return null
+        val host = stream.host?.lowercase().orEmpty()
+        val expectedHost = expected.host?.lowercase().orEmpty()
+        val streamPort = if (stream.port == -1) 80 else stream.port
+        val expectedPort = if (expected.port == -1) 80 else expected.port
+        if (stream.scheme != "http" || expected.scheme != "http" || host != expectedHost || streamPort != expectedPort ||
+            !isPrivateIpv4(host) || stream.userInfo != null || stream.query != null || stream.fragment != null ||
+            expected.userInfo != null || expected.fragment != null ||
+            expected.query?.let { !it.matches(Regex("k=[A-Fa-f0-9]{18,128}")) } == true) return null
+        val match = Regex("/v1/tracks/(\\d+)/stream").matchEntire(stream.path.orEmpty()) ?: return null
+        return match.groupValues[1].toIntOrNull()
+    }
+
     suspend fun load(address: String, grantToken: String? = null): DesktopLibrarySnapshot = withContext(Dispatchers.IO) {
         if (!grantToken.isNullOrBlank()) return@withContext loadAuthorized(address, grantToken)
         loadLegacy(address)

@@ -2,6 +2,7 @@
 
 ## Versão em preparação 0.19.0 — Google Play
 
+- O player permite enviar ao Desktop a faixa atual da biblioteca autorizada. A ação confere host e porta pareados, confirma que a fila do computador será substituída e pausa o áudio do celular só depois que o Desktop aceita o comando. Build CI pendente; ainda precisa ser validado com um Desktop ativo em aparelho.
 - A tela Cobre ID inclui exclusão com confirmação de senha. Após sucesso, tokens e autorização do serviço de reprodução são removidos e a faixa remota é pausada; API do Server 1.3.0 está publicada.
 - Implementado nesta branch o download offline de faixas do Desktop, com limite de armazenamento, barra de progresso, catálogo “Baixadas” e remoção. Aguarda compilação e teste em celular.
 - A fila, a faixa atual, posição, aleatório e repetição são salvos localmente; ao iniciar o app a fila restaura pausada para evitar reprodução inesperada. Compilação e teste em aparelho pendentes.

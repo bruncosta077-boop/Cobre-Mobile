@@ -12,6 +12,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
 import android.util.Size
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -213,7 +214,16 @@ class MainActivity:ComponentActivity(){
     LaunchedEffect(playback.playing,fullPlayer){while(playback.playing&&fullPlayer){delay(450);player.refreshPosition()}}
     LaunchedEffect(playback.currentIndex,playback.queue){playback.queue.getOrNull(playback.currentIndex)?.let(collections::recordPlayed)}
     Column(Modifier.fillMaxSize().background(Bg).statusBarsPadding()){
-        if(fullPlayer&&playback.hasItem) PlayerPage(playback,player,{fullPlayer=false},{fullPlayer=false;page=Page.Queue})
+        if(fullPlayer&&playback.hasItem) PlayerPage(playback,player,settings.desktopUrl.orEmpty(),accountRepo.desktopGrantId()!=null,{fullPlayer=false},{fullPlayer=false;page=Page.Queue},{trackId->
+            scope.launch {
+                runCatching { accountRepo.sendDesktopCommand(settings.desktopUrl.orEmpty(),"play",trackId.toDouble()) }
+                    .onSuccess {
+                        if(playback.playing)player.toggle()
+                        Toast.makeText(context,"Faixa enviada ao Cobre Desktop.",Toast.LENGTH_SHORT).show()
+                    }
+                    .onFailure { Toast.makeText(context,it.message?:"Não foi possível enviar a faixa ao Desktop.",Toast.LENGTH_LONG).show() }
+            }
+        })
         else {
             Header(page,search,query,{query=it},{search=!search;query="";tab=LibraryTab.Tracks;album=null;artist=null},{scope.launch{granted=ContextCompat.checkSelfPermission(context,permission)==PackageManager.PERMISSION_GRANTED;localTracks=if(granted)runCatching{library.load(folderUri?.let{Uri.parse(it)})}.getOrDefault(emptyList()) else emptyList();desktopRefreshKey++}})
             Box(Modifier.weight(1f).fillMaxWidth()){
@@ -485,13 +495,16 @@ private fun selectLibrarySource(tracks:List<Track>,source:LibrarySource):List<Tr
     Column(Modifier.fillMaxWidth().background(Panel)){Row(Modifier.fillMaxWidth().height(68.dp).padding(horizontal=11.dp),verticalAlignment=Alignment.CenterVertically){Cover(s.queue.getOrNull(s.currentIndex),Modifier.size(46.dp).clip(RoundedCornerShape(8.dp)).clickable(onClick=onOpen));Column(Modifier.weight(1f).clickable(onClick=onOpen).padding(horizontal=10.dp)){Text(s.title.ifBlank{"Reproduzindo"},color=Tx,maxLines=1,overflow=TextOverflow.Ellipsis,fontWeight=FontWeight.Medium);Text(s.artist,color=Mu,style=MaterialTheme.typography.bodySmall,maxLines=1,overflow=TextOverflow.Ellipsis)};IconButton(onClick=player::previous){Icon(Icons.Default.SkipPrevious,"Anterior",tint=Tx,modifier=Modifier.size(21.dp))};IconButton(onClick=player::toggle){Icon(if(s.playing)Icons.Default.Pause else Icons.Default.PlayArrow,"Reproduzir ou pausar",tint=MaterialTheme.colorScheme.primary,modifier=Modifier.size(27.dp))};IconButton(onClick=player::next){Icon(Icons.Default.SkipNext,"Próxima",tint=Tx,modifier=Modifier.size(21.dp))}};val progress=if(s.durationMs>0)(s.positionMs.toFloat()/s.durationMs).coerceIn(0f,1f)else 0f;Box(Modifier.fillMaxWidth().height(2.dp).background(Line)){Box(Modifier.fillMaxWidth(progress).fillMaxHeight().background(MaterialTheme.colorScheme.primary))}}
 }
 
-@Composable private fun PlayerPage(s:NowPlaying,player:PlayerController,onClose:()->Unit,onQueue:()->Unit){
+@Composable private fun PlayerPage(s:NowPlaying,player:PlayerController,desktopOrigin:String,hasDesktopGrant:Boolean,onClose:()->Unit,onQueue:()->Unit,onPlayOnDesktop:(Int)->Unit){
     val context=LocalContext.current
     val audio=context.getSystemService(android.content.Context.AUDIO_SERVICE) as AudioManager
     val maxVolume=audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC).coerceAtLeast(1)
     var volume by remember{mutableFloatStateOf(audio.getStreamVolume(AudioManager.STREAM_MUSIC).toFloat()/maxVolume)}
     var scrubbing by remember{mutableStateOf(false)};var preview by remember{mutableFloatStateOf(0f)}
     val current=s.queue.getOrNull(s.currentIndex)
+    val desktopRepository=remember{DesktopLibraryRepository()}
+    val desktopTrackId=current?.let{desktopRepository.desktopTrackIdForRemotePlayback(it,desktopOrigin)}
+    var confirmDesktopPlayback by remember(current?.uri){mutableStateOf(false)}
     val source=if(current?.uri?.path?.startsWith("/v1/tracks/")==true||current?.uri?.path?.startsWith("/stream/")==true)"COMPUTADOR · REDE LOCAL" else "BIBLIOTECA DO CELULAR"
     Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color(0xFF35261E),Bg.copy(alpha=.98f),Bg))).navigationBarsPadding()){
         Column(Modifier.fillMaxSize()){
@@ -522,12 +535,27 @@ private fun selectLibrarySource(tracks:List<Track>,source:LibrarySource):List<Tr
                 }
                 Spacer(Modifier.height(16.dp))
                 Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(15.dp)).background(Color.White.copy(alpha=.055f)).padding(horizontal=13.dp,vertical=4.dp),verticalAlignment=Alignment.CenterVertically){Icon(Icons.Default.VolumeDown,"Volume",tint=Mu,modifier=Modifier.size(20.dp));Slider(value=volume,onValueChange={volume=it;audio.setStreamVolume(AudioManager.STREAM_MUSIC,(it*maxVolume).toInt().coerceIn(0,maxVolume),0)},modifier=Modifier.weight(1f).padding(horizontal=10.dp),valueRange=0f..1f,colors=SliderDefaults.colors(thumbColor=MaterialTheme.colorScheme.primary,activeTrackColor=MaterialTheme.colorScheme.primary,inactiveTrackColor=Line));Text("${(volume*100).toInt()}%",color=Mu,style=MaterialTheme.typography.labelSmall,modifier=Modifier.width(38.dp),textAlign=TextAlign.End)}
+                if(hasDesktopGrant&&desktopTrackId!=null){
+                    Spacer(Modifier.height(8.dp))
+                    OutlinedButton(onClick={confirmDesktopPlayback=true},modifier=Modifier.fillMaxWidth(),shape=RoundedCornerShape(14.dp)){
+                        Icon(Icons.Default.Cast,null,tint=MaterialTheme.colorScheme.primary)
+                        Spacer(Modifier.width(8.dp))
+                        Text("Tocar esta faixa no computador",color=Tx)
+                    }
+                }
                 Spacer(Modifier.height(12.dp))
                 Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(13.dp)).clickable(onClick=onQueue).padding(horizontal=14.dp,vertical=12.dp),verticalAlignment=Alignment.CenterVertically){Icon(Icons.Default.QueueMusic,null,tint=MaterialTheme.colorScheme.primary,modifier=Modifier.size(19.dp));Column(Modifier.weight(1f).padding(start=10.dp)){Text("A seguir",color=Tx,style=MaterialTheme.typography.labelLarge);Text("${s.queue.size} faixas · faixa ${if(s.queue.isEmpty())0 else s.currentIndex+1}",color=Mu,style=MaterialTheme.typography.bodySmall)};Icon(Icons.Default.KeyboardArrowRight,null,tint=Mu)}
                 Spacer(Modifier.height(14.dp))
             }
         }
     }
+    if(confirmDesktopPlayback&&desktopTrackId!=null)AlertDialog(
+        onDismissRequest={confirmDesktopPlayback=false},
+        title={Text("Tocar no Cobre Desktop?")},
+        text={Text("O computador vai tocar esta faixa e substituir a fila atual dele. O celular será pausado quando o Desktop aceitar o comando.",color=Mu)},
+        confirmButton={TextButton(onClick={confirmDesktopPlayback=false;onPlayOnDesktop(desktopTrackId)}){Text("Tocar no computador",color=MaterialTheme.colorScheme.primary)}},
+        dismissButton={TextButton(onClick={confirmDesktopPlayback=false}){Text("Cancelar",color=Mu)}},
+    )
 }
 
 @Composable private fun Cover(track:Track?,modifier:Modifier=Modifier){
