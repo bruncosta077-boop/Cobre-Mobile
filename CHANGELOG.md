@@ -4,7 +4,7 @@
 - A renovação do refresh token agora é serializada no processo Android, pois a tela principal e o serviço de reprodução têm instâncias independentes do repositório e compartilham o mesmo token rotativo.
 - Cada renovação lê o token mais recente já dentro da trava; isso evita que uma segunda chamada concorrente reutilize um refresh token consumido e encerre a sessão por detecção de replay.
 - Mantida a rotação de refresh token e a resposta de segurança do Server a reuso real; nenhum comportamento de autorização ou escopo foi afrouxado.
-- Validação local concluída: `:app:assembleDebug`, `:app:lintDebug`, `:app:assembleRelease` e `:app:lintVitalRelease` passaram. O APK local de release não tem a chave estável; assinatura e publicação dependem do workflow do GitHub.
+- Validação local concluída: `:app:assembleDebug`, `:app:lintDebug`, `:app:assembleRelease` e `:app:lintVitalRelease` passaram. APK assinado e checksum publicados na [release 0.18.0](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.18.0); build e assinatura passaram no [GitHub Actions](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45052837954).
 
 ## 0.17.0 — renovar acesso expirado sem refazer o QR
 
