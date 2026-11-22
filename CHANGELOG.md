@@ -3,11 +3,12 @@
 ## 0.19.0 — preparação técnica para Google Play (em desenvolvimento)
 
 - Incluído fluxo de exclusão permanente da conta Cobre ID com confirmação de senha no Mobile; o Server remove dispositivos, sessões e permissões vinculados. O app apaga tokens, retira a autorização mantida pelo serviço de reprodução e pausa a faixa remota atual. Músicas e preferências locais permanecem no aparelho.
+- Adicionada a opção de baixar faixas do Desktop para reprodução offline, com progresso e remoção pelo mesmo controle. Os downloads ficam no armazenamento privado do app, usam uma autorização curta no cabeçalho e só aceitam a origem Desktop configurada; limite de 2 GB no total e 512 MB por faixa.
 - Atualizados compile/target SDK para API 36, exigida para novos apps e atualizações da Google Play desde 31/08/2026.
 - Criada variante `play` que remove `REQUEST_INSTALL_PACKAGES`, desativa o atualizador de APK externo e orienta a receber atualizações pela loja. A edição `direct` mantém o atualizador GitHub existente.
 - O workflow produz APK direto e AAB da variante Play; ambos usam a chave de distribuição atual para preservar compatibilidade, sujeito à configuração correta do Play App Signing.
 - O GitHub Actions passou no [workflow 45055015245](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45055015245) e gerou APK de debug e AAB de validação sem assinatura de distribuição.
-- Ainda não é publicação da Play Store: validar AAB assinado, comportamento em Android 16, chave no Play App Signing, política de privacidade, exclusão de conta e declarações da Play Console.
+- Ainda não é publicação da Play Store: validar AAB assinado, comportamento em Android 16, chave no Play App Signing, política de privacidade, URL web pública de exclusão de conta e declarações da Play Console.
 ## 0.18.0 — evitar conflito ao renovar sessão Cobre ID
 
 - A renovação do refresh token agora é serializada no processo Android, pois a tela principal e o serviço de reprodução têm instâncias independentes do repositório e compartilham o mesmo token rotativo.

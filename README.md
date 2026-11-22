@@ -11,9 +11,9 @@ Desenvolvimento principal: Bruno C S Moraes · Contribuição ao projeto: [@dilu
 
 Aplicativo Android do ecossistema Cobre. Interface escura com a paleta, o símbolo e a organização visual do Cobre Desktop, adaptados para toque.
 
-## Última versão publicada: 0.17.0
+## Última versão publicada: 0.18.0
 
-APK assinado e checksum SHA-256 disponíveis em [Cobre Mobile 0.17.0](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.17.0). Build, verificação da assinatura e publicação passaram no [GitHub Actions](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/44951035326). A release é pré-release; a instalação é manual e não usa a Play Store.
+APK assinado e checksum SHA-256 disponíveis em [Cobre Mobile 0.18.0](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.18.0). Build, assinatura e publicação passaram no [GitHub Actions](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45052837954). A release é pré-release; a instalação é manual e não usa a Play Store.
 
 O app verifica novas versões ao abrir e em **Configurações → Aplicativo**. Quando encontra uma atualização, baixa e valida o APK assinado e abre a instalação do Android; o sistema pede autorização para instalar e confirmação final. As notas da versão aparecem antes e depois da atualização.
 
@@ -26,6 +26,7 @@ O app verifica novas versões ao abrir e em **Configurações → Aplicativo**. 
 - Aba de configurações com paletas do Desktop, volume de música e detalhes das saídas informadas pelo Android.
 - Favoritos, histórico recente e playlists locais persistidos em SQLite.
 - Biblioteca combinada com faixas do Cobre Desktop e reprodução direta pela rede local.
+- Nesta versão em desenvolvimento 0.19.0, faixas autorizadas do Desktop podem ser baixadas para ouvir offline. Em **Biblioteca → Computador → Faixas**, toque no ícone de download; elas aparecem em **Baixadas** e o mesmo controle as remove. Os arquivos ficam privados no app e há limite de 2 GB no total e 512 MB por faixa.
 - Descoberta automática do Desktop na mesma rede local enquanto a tela Conexões estiver aberta; QR continua disponível.
 - Status da conexão Desktop exibe tempo de resposta do catálogo e quantidade de faixas carregadas.
 - Filtro entre biblioteca do celular, biblioteca do computador ou visão conjunta sem faixas repetidas; totais e estado Desktop aparecem na biblioteca.
@@ -49,7 +50,7 @@ A conexão LAN e a reprodução Desktop foram validadas pelo autor. As versões 
 
 ## Conexão
 
-O Mobile usa o [Cobre Server](https://github.com/bruncosta077-boop/Cobre-Server/releases/tag/v1.2.0) para login, dispositivos e presença. Para o acesso protegido, entre na mesma conta Cobre ID no Desktop e no Mobile e escolha **Encontrar na rede local** ou escaneie o QR em **Cobre ID**; nos dois casos o Desktop pede aprovação. A descoberta automática requer Cobre Desktop 3.13.0 ou posterior. O QR requer Desktop 3.10.0 ou posterior. Ambos os aparelhos precisam estar na mesma rede local.
+O Mobile usa o [Cobre Server](https://github.com/bruncosta077-boop/Cobre-Server/releases/tag/v1.3.0) para login, dispositivos e presença. Para o acesso protegido, entre na mesma conta Cobre ID no Desktop e no Mobile e escolha **Encontrar na rede local** ou escaneie o QR em **Cobre ID**; nos dois casos o Desktop pede aprovação. A descoberta automática requer Cobre Desktop 3.13.0 ou posterior. O QR requer Desktop 3.10.0 ou posterior. Ambos os aparelhos precisam estar na mesma rede local.
 
 O [Cobre TV](https://github.com/bruncosta077-boop/Cobre-TV) segue como protótipo separado para Android TV/Google TV: já lista a biblioteca autorizada, reproduz áudio direto do Desktop e envia presença/diagnóstico ao Server; ainda precisa de validação em TV física e de uma assinatura de distribuição.
 

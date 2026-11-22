@@ -121,7 +121,7 @@ class DesktopLibraryRepository {
 
     fun coverUri(track: Track): Uri? {
         if (!track.isDesktopTrack()) return null
-        val stream = track.uri
+        val stream = track.sourceUri ?: track.uri
         val path = stream.path.orEmpty().let {
             if (it.startsWith("/v1/tracks/") && it.endsWith("/stream")) it.removeSuffix("/stream") + "/cover"
             else it.replaceFirst("/stream/", "/cover/")
@@ -165,4 +165,7 @@ class DesktopLibraryRepository {
     }
 }
 
-private fun Track.isDesktopTrack() = uri.scheme == "http" && (uri.path?.startsWith("/stream/") == true || uri.path?.startsWith("/v1/tracks/") == true)
+private fun Track.isDesktopTrack(): Boolean {
+    val stream = sourceUri ?: uri
+    return stream.scheme == "http" && (stream.path?.startsWith("/stream/") == true || stream.path?.startsWith("/v1/tracks/") == true)
+}

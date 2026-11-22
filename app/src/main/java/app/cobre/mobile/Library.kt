@@ -12,7 +12,14 @@ data class Track(
     val id: Long, val uri: Uri, val title: String, val artist: String,
     val albumArtist: String, val album: String, val trackNumber: Int,
     val discNumber: Int, val durationMs: Long, val year: Int,
+    val sourceUri: Uri? = null,
 )
+internal fun Track.libraryIdentity(): String {
+    fun norm(value: String) = java.text.Normalizer.normalize(value.trim().lowercase(), java.text.Normalizer.Form.NFD)
+        .replace(Regex("\\p{Mn}+"), "").replace(Regex("[^a-z0-9]+"), "")
+    return "${norm(albumArtist.ifBlank { artist })}|${norm(album)}|$trackNumber|${norm(title)}|${norm(artist)}"
+}
+
 data class Album(val artist: String, val title: String, val year: Int, val tracks: List<Track>) {
     val key: String get() = "${artist.lowercase()}|${title.lowercase()}"
 }

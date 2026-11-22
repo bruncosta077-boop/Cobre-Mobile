@@ -1,5 +1,11 @@
 # Cobre Mobile — roadmap de paridade com Desktop
 
+## 0.19.0 em desenvolvimento
+
+- Exclusão de conta Cobre ID com senha atual, remoção de sessões e permissões no Server e limpeza de tokens no Mobile.
+- Downloads de faixas do Desktop para reprodução offline no armazenamento privado do Mobile. Limites atuais: 2 GB de biblioteca, 512 MB por faixa; só aceita o endpoint HTTP local versionado e o host configurado no app.
+- Próximas validações: compilação do workflow, teste no aparelho com uma faixa MP3/FLAC, interrupção durante download, remoção do arquivo, falta de espaço e exclusão da conta enquanto toca uma faixa remota.
+
 ## Estado validado
 
 **0.2.0 validado em aparelho pelo autor:** Cobre ID conectado, músicas lidas, reprodução normal e ícone instalado.
