@@ -1,16 +1,16 @@
 # Cobre Mobile — status
 
-## Versão em preparação 0.19.0 — Google Play
+## Pré-release GitHub 0.19.0 — Google Play ainda pendente
 
 - O player permite enviar ao Desktop a faixa atual da biblioteca autorizada. A ação confere host e porta pareados, confirma que a fila do computador será substituída e pausa o áudio do celular só depois que o Desktop aceita o comando. A compilação passou no [workflow 45066267659](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45066267659); ainda precisa ser validado com um Desktop ativo em aparelho.
 - A tela Cobre ID inclui exclusão com confirmação de senha. Após sucesso, tokens e autorização do serviço de reprodução são removidos e a faixa remota é pausada; API do Server 1.3.0 está publicada.
-- Implementado nesta branch o download offline de faixas do Desktop, com limite de armazenamento, barra de progresso, catálogo “Baixadas” e remoção. Aguarda compilação e teste em celular.
-- A fila, a faixa atual, posição, aleatório e repetição são salvos localmente; ao iniciar o app a fila restaura pausada para evitar reprodução inesperada. Compilação e teste em aparelho pendentes.
+- Implementado nesta branch o download offline de faixas do Desktop, com limite de armazenamento, barra de progresso, catálogo “Baixadas” e remoção. O build compila; falta teste em celular.
+- A fila, a faixa atual, posição, aleatório e repetição são salvos localmente; ao iniciar o app a fila restaura pausada para evitar reprodução inesperada. O build compila; falta teste em aparelho.
 - O workflow **Build APK** agora pode gerar APK/AAB assinados para teste físico sem publicar uma release; a próxima validação deve usar esse pacote assinado.
 - API 36 e variante Play dedicados: sem permissão nem código de auto-instalação de APK; atualizações ficam a cargo da Play Store.
 - Workflow separado gera AAB da variante Play e APK da edição direta, mantendo uma mesma chave de distribuição.
 - GitHub Actions passou no [workflow 45055015245](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45055015245), compilando o APK de debug e o AAB de validação. Esse AAB da branch é unsigned e não deve ser enviado à Play Console.
-- Não publicar tag até o workflow gerar e verificar o AAB assinado e a variante ser validada em Android 16. Ainda é necessária a página web pública para solicitar exclusão e o preenchimento da política de privacidade e da Play Console.
+- A tag 0.19.0 publica somente uma pré-release no GitHub. A variante Play ainda precisa de validação em Android 16, página web pública para solicitar exclusão, política de privacidade, configuração do Play App Signing e preenchimento da Play Console.
 
 ## Versão publicada 0.18.0 — renovação serializada da sessão
 
