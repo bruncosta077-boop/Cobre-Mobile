@@ -111,7 +111,7 @@ class MainActivity:ComponentActivity(){
     val updateManager=remember{AppUpdateManager(context)}
     var updateInfo by remember{mutableStateOf<MobileUpdate?>(null)}
     var updateFile by remember{mutableStateOf<File?>(null)}
-    var updateStatus by remember{mutableStateOf("Verificando atualizações automaticamente…")}
+    var updateStatus by remember{mutableStateOf(if(BuildConfig.PLAY_DISTRIBUTION)"Atualizações gerenciadas pela Play Store." else "Verificando atualizações automaticamente…")}
     var updateBusy by remember{mutableStateOf(false)}
     var updateProgress by remember{mutableIntStateOf(0)}
     var showUpdatePrompt by remember{mutableStateOf(false)}
@@ -122,6 +122,7 @@ class MainActivity:ComponentActivity(){
         else updateStatus="Permita instalações do Cobre nas configurações do Android e toque em Instalar novamente."
     }
     fun installUpdate(){
+        if(BuildConfig.PLAY_DISTRIBUTION){updateStatus="Atualizações gerenciadas pela Play Store.";return}
         val apk=updateFile ?: return
         if(!updateManager.canInstallPackages())installPermissionLauncher.launch(updateManager.permissionSettingsIntent())
         else runCatching{context.startActivity(updateManager.installerIntent(apk))}.onFailure{
@@ -129,6 +130,7 @@ class MainActivity:ComponentActivity(){
         }
     }
     fun checkForMobileUpdate(force:Boolean){
+        if(BuildConfig.PLAY_DISTRIBUTION){updateStatus="Atualizações gerenciadas pela Play Store.";return}
         scope.launch{
             updateBusy=true
             updateStatus="Verificando atualizações…"
@@ -141,6 +143,7 @@ class MainActivity:ComponentActivity(){
         }
     }
     fun downloadOrInstallUpdate(){
+        if(BuildConfig.PLAY_DISTRIBUTION){updateStatus="Atualizações gerenciadas pela Play Store.";return}
         val latest=updateInfo?:return
         val existing=updateFile
         if(existing!=null){installUpdate();return}
@@ -154,7 +157,7 @@ class MainActivity:ComponentActivity(){
             updateBusy=false
         }
     }
-    LaunchedEffect(Unit){checkForMobileUpdate(false)}
+    LaunchedEffect(Unit){if(!BuildConfig.PLAY_DISTRIBUTION)checkForMobileUpdate(false)}
     LaunchedEffect(Unit){
         if(!granted)askAudio.launch(permission)
         if(accountRepo.hasSavedSession&&accountRepo.serverUrl.isNotBlank()){
@@ -261,7 +264,7 @@ class MainActivity:ComponentActivity(){
                             }.onFailure { error->account=account.copy(busy=false,message=error.message?:"Não foi possível conectar ao computador.",error=true) }
                         }
                     })
-                    Page.Settings->SettingsPage(settings,folderUri,desktopStatus,desktopTracks.size,updateInfo?.let{"Atualização ${it.version} disponível."}?:updateStatus,updateBusy,updateProgress,updateFile!=null,{folderPicker.launch(folderUri?.let{Uri.parse(it)})},{folderUri?.let{old->runCatching{context.contentResolver.releasePersistableUriPermission(Uri.parse(old),Intent.FLAG_GRANT_READ_URI_PERMISSION)}};settings.setFolder(null);folderUri=null},{page=Page.Account;search=false},{desktopRefreshKey++},{checkForMobileUpdate(true)},{downloadOrInstallUpdate()})
+                    Page.Settings->SettingsPage(settings,folderUri,desktopStatus,desktopTracks.size,updateInfo?.let{"Atualização ${it.version} disponível."}?:updateStatus,BuildConfig.PLAY_DISTRIBUTION,updateBusy,updateProgress,updateFile!=null,{folderPicker.launch(folderUri?.let{Uri.parse(it)})},{folderUri?.let{old->runCatching{context.contentResolver.releasePersistableUriPermission(Uri.parse(old),Intent.FLAG_GRANT_READ_URI_PERMISSION)}};settings.setFolder(null);folderUri=null},{page=Page.Account;search=false},{desktopRefreshKey++},{checkForMobileUpdate(true)},{downloadOrInstallUpdate()})
                 }
             }
             if(playback.hasItem) MiniPlayer(playback,player){fullPlayer=true}

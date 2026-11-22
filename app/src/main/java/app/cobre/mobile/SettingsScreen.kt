@@ -54,7 +54,7 @@ private val desktopAccents=listOf(
 )
 
 @Composable
-fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,desktopTrackCount:Int,updateStatus:String,updateBusy:Boolean,updateProgress:Int,updateReady:Boolean,onPickFolder:()->Unit,onClearFolder:()->Unit,onOpenAccount:()->Unit,onRetryDesktop:()->Unit,onCheckUpdates:()->Unit,onInstallUpdate:()->Unit){
+fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,desktopTrackCount:Int,updateStatus:String,playDistribution:Boolean,updateBusy:Boolean,updateProgress:Int,updateReady:Boolean,onPickFolder:()->Unit,onClearFolder:()->Unit,onOpenAccount:()->Unit,onRetryDesktop:()->Unit,onCheckUpdates:()->Unit,onInstallUpdate:()->Unit){
     val context=LocalContext.current
     val audio=context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
     var showReleaseNotes by remember{mutableStateOf(false)}
@@ -165,14 +165,18 @@ fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,
             SectionHeading(Icons.Default.Refresh,"Aplicativo")
             Text("Cobre Mobile ${BuildConfig.VERSION_NAME}",color=Tx,fontWeight=FontWeight.SemiBold,modifier=Modifier.padding(top=12.dp))
             Text("Cobre ID aprova e renova o acesso. As músicas do Desktop são transmitidas diretamente pela rede local.",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=4.dp))
-            Text(updateStatus,color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=8.dp))
-            if(updateBusy)LinearProgressIndicator(progress={updateProgress/100f},modifier=Modifier.fillMaxWidth())
-            Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp)){
-                OutlinedButton(onClick=onCheckUpdates,enabled=!updateBusy,modifier=Modifier.weight(1f),shape=RoundedCornerShape(22.dp)){
-                    Icon(Icons.Default.Refresh,null,tint=MaterialTheme.colorScheme.primary);Spacer(Modifier.width(6.dp));Text("Verificar",color=Tx)
-                }
-                Button(onClick=onInstallUpdate,enabled=!updateBusy&&(updateStatus.startsWith("Atualização")||updateReady),modifier=Modifier.weight(1f),colors=ButtonDefaults.buttonColors(containerColor=MaterialTheme.colorScheme.primary),shape=RoundedCornerShape(22.dp)){
-                    Text(if(updateBusy)"Aguarde…" else if(updateReady)"Instalar" else "Baixar e instalar")
+            if(playDistribution){
+                Text("As atualizações desta edição são entregues pela Google Play Store.",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=8.dp))
+            }else{
+                Text(updateStatus,color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=8.dp))
+                if(updateBusy)LinearProgressIndicator(progress={updateProgress/100f},modifier=Modifier.fillMaxWidth())
+                Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp)){
+                    OutlinedButton(onClick=onCheckUpdates,enabled=!updateBusy,modifier=Modifier.weight(1f),shape=RoundedCornerShape(22.dp)){
+                        Icon(Icons.Default.Refresh,null,tint=MaterialTheme.colorScheme.primary);Spacer(Modifier.width(6.dp));Text("Verificar",color=Tx)
+                    }
+                    Button(onClick=onInstallUpdate,enabled=!updateBusy&&(updateStatus.startsWith("Atualização")||updateReady),modifier=Modifier.weight(1f),colors=ButtonDefaults.buttonColors(containerColor=MaterialTheme.colorScheme.primary),shape=RoundedCornerShape(22.dp)){
+                        Text(if(updateBusy)"Aguarde…" else if(updateReady)"Instalar" else "Baixar e instalar")
+                    }
                 }
             }
             TextButton(onClick={showReleaseNotes=true}){Text("Sobre o Cobre Mobile",color=MaterialTheme.colorScheme.primary)}

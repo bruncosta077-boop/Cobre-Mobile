@@ -1,5 +1,11 @@
 # Cobre Mobile — status
 
+## Versão em preparação 0.19.0 — Google Play
+
+- API 36 e variante Play dedicados: sem permissão nem código de auto-instalação de APK; atualizações ficam a cargo da Play Store.
+- Workflow separado gera AAB da variante Play e APK da edição direta, mantendo uma mesma chave de distribuição.
+- Não publicar tag até o workflow gerar e verificar o AAB assinado e a variante ser validada em Android 16. Ainda é necessário preparar privacidade/exclusão de conta e preencher a Play Console.
+
 ## Versão publicada 0.18.0 — renovação serializada da sessão
 
 - A tela e o serviço de reprodução agora compartilham uma trava de processo ao rotacionar o refresh token Cobre ID.

@@ -5,13 +5,24 @@ plugins {
 }
 android {
     namespace = "app.cobre.mobile"
-    compileSdk = 34
+    compileSdk = 36
     defaultConfig {
         applicationId = "app.cobre.mobile"
         minSdk = 29          // loadThumbnail() e MediaStore moderno; ver STATUS.md
-        targetSdk = 34
-        versionCode = 20
-        versionName = "0.18.0"
+        targetSdk = 36
+        versionCode = 21
+        versionName = "0.19.0"
+    }
+    flavorDimensions += "distribution"
+    productFlavors {
+        create("direct") {
+            dimension = "distribution"
+            buildConfigField("boolean", "PLAY_DISTRIBUTION", "false")
+        }
+        create("play") {
+            dimension = "distribution"
+            buildConfigField("boolean", "PLAY_DISTRIBUTION", "true")
+        }
     }
     buildFeatures { compose = true; buildConfig = true }
     val mobileKeystorePath = project.providers.environmentVariable("COBRE_MOBILE_KEYSTORE_PATH").orNull

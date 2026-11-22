@@ -2,7 +2,7 @@
   <img src="assets/branding/cobre-logo.png" alt="Logo do Cobre" width="150">
   <h1>Cobre Mobile</h1>
   <p>Player Android integrado ao ecossistema Cobre</p>
-  <p><strong>Versão 0.18.0 — renovação de sessão sem conflito</strong></p>
+  <p><strong>Em desenvolvimento: 0.19.0 — preparação para Google Play</strong></p>
 </div>
 
 O código do Cobre é proprietário e está disponível publicamente para inspeção. Consulte o [aviso de licença](LICENSE); componentes de terceiros mantêm suas próprias licenças.
@@ -67,7 +67,7 @@ Estatísticas, letras sincronizadas, edição de metadados, créditos de encarte
 
 O APK é o instalador padrão do Android. Baixe o arquivo em [Releases](https://github.com/bruncosta077-boop/Cobre-Mobile/releases), abra-o no celular e confirme a instalação. O Android pode pedir permissão para instalar apps baixados pelo navegador.
 
-As versões de desenvolvimento são compiladas pelo GitHub Actions; tags `mobile-v*` publicam o APK diretamente em Releases. O pacote atual é de teste e não é distribuído pela Play Store.
+As versões de desenvolvimento são compiladas pelo GitHub Actions; tags `mobile-v*` publicam o APK de instalação direta e o AAB da variante Play. A versão 0.19.0 ainda está em preparação e não está publicada na Google Play.
 
 Para gerar uma compilação de teste manualmente, abra **Actions**, selecione **Build APK**, clique em **Run workflow** e baixe o artefato `cobre-mobile-debug-apk`.
 
