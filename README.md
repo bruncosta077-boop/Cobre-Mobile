@@ -70,6 +70,8 @@ O APK é o instalador padrão do Android. Baixe o arquivo em [Releases](https://
 
 As versões de desenvolvimento são compiladas pelo GitHub Actions; tags `mobile-v*` publicam o APK de instalação direta e o AAB da variante Play. A versão 0.19.0 ainda está em preparação e não está publicada na Google Play.
 
+Para gerar um pacote assinado para teste físico sem criar uma release pública, use o workflow **Build APK** em **Actions** e habilite **signed_candidate**. O APK e o AAB ficam como artefatos temporários daquela execução.
+
 Para gerar uma compilação de teste manualmente, abra **Actions**, selecione **Build APK**, clique em **Run workflow** e baixe o artefato `cobre-mobile-debug-apk`.
 
 O workflow também roda ao enviar alterações para `main`. O APK é de depuração e não está assinado para a Play Store.

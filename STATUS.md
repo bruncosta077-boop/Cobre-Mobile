@@ -4,6 +4,7 @@
 
 - A tela Cobre ID inclui exclusão com confirmação de senha. Após sucesso, tokens e autorização do serviço de reprodução são removidos e a faixa remota é pausada; API do Server 1.3.0 está publicada.
 - Implementado nesta branch o download offline de faixas do Desktop, com limite de armazenamento, barra de progresso, catálogo “Baixadas” e remoção. Aguarda compilação e teste em celular.
+- O workflow **Build APK** agora pode gerar APK/AAB assinados para teste físico sem publicar uma release; a próxima validação deve usar esse pacote assinado.
 - API 36 e variante Play dedicados: sem permissão nem código de auto-instalação de APK; atualizações ficam a cargo da Play Store.
 - Workflow separado gera AAB da variante Play e APK da edição direta, mantendo uma mesma chave de distribuição.
 - GitHub Actions passou no [workflow 45055015245](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45055015245), compilando o APK de debug e o AAB de validação. Esse AAB da branch é unsigned e não deve ser enviado à Play Console.
