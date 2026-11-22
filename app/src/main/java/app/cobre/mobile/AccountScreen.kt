@@ -49,6 +49,7 @@ fun AccountPage(
     desktopTrackCount: Int,
     onState: (AccountUi) -> Unit,
     onDesktopGrantChanged: () -> Unit = {},
+    onAccountDeleted: () -> Unit = {},
     onScanDesktop: () -> Unit = {},
     onDiscoveredDesktop: (DiscoveredDesktop) -> Unit = {},
 ) {
@@ -435,6 +436,7 @@ fun AccountPage(
                                     deletePassword = ""
                                     showDeleteAccount = false
                                     onDesktopGrantChanged()
+                                    onAccountDeleted()
                                     onState(AccountUi(message = "Conta Cobre ID excluída."))
                                 }
                                 .onFailure { onState(state.copy(busy = false, message = it.message ?: "Não foi possível excluir a conta.", error = true)) }

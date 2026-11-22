@@ -254,6 +254,7 @@ class CobreIdRepository(context: Context) {
         require(password.isNotBlank()) { "Digite sua senha para confirmar a exclusão." }
         requestBlocking("/v1/account/deletion", "POST", JSONObject().put("password", password))
         accessToken = null
+        clearDesktopGrant() // Notifies PlaybackService to remove its in-memory Authorization header.
         secretPrefs.edit().clear().commit()
         prefs.edit().remove("email").commit()
     }
