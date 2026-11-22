@@ -1,5 +1,10 @@
 # Cobre Mobile — status
 
+## Versão em desenvolvimento 0.18.0 — renovação serializada da sessão
+
+- A tela e o serviço de reprodução agora compartilham uma trava de processo ao rotacionar o refresh token Cobre ID.
+- Build debug/release e lint debug/release passaram localmente; assinatura estável e publicação dependem do workflow do GitHub.
+
 ## Versão publicada 0.17.0 — recuperação da concessão do Desktop
 
 - O app renova a concessão antes de buscar o catálogo e repete a leitura uma vez se receber 401, sem voltar a exigir QR quando o consentimento ainda existe.

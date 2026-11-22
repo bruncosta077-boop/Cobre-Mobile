@@ -1,4 +1,11 @@
 # Histórico de versões — Cobre Mobile
+## 0.18.0 — evitar conflito ao renovar sessão Cobre ID
+
+- A renovação do refresh token agora é serializada no processo Android, pois a tela principal e o serviço de reprodução têm instâncias independentes do repositório e compartilham o mesmo token rotativo.
+- Cada renovação lê o token mais recente já dentro da trava; isso evita que uma segunda chamada concorrente reutilize um refresh token consumido e encerre a sessão por detecção de replay.
+- Mantida a rotação de refresh token e a resposta de segurança do Server a reuso real; nenhum comportamento de autorização ou escopo foi afrouxado.
+- Validação local concluída: `:app:assembleDebug`, `:app:lintDebug`, `:app:assembleRelease` e `:app:lintVitalRelease` passaram. O APK local de release não tem a chave estável; assinatura e publicação dependem do workflow do GitHub.
+
 ## 0.17.0 — renovar acesso expirado sem refazer o QR
 
 - Antes de carregar a biblioteca, o Mobile verifica a validade da concessão e pede uma nova ao Cobre Server quando ela está perto de expirar.

@@ -256,17 +256,21 @@ class CobreIdRepository(context: Context) {
     }
 
     private fun refreshBlocking() {
-        val refresh = readRefreshToken() ?: throw CobreIdException("Entre na sua conta Cobre ID para conectar este aparelho.")
-        try {
-            val result = requestBlocking("/v1/refresh", "POST", JSONObject().put("refreshToken", refresh), authorize = false, allowRefresh = false)
-            acceptSession(result)
-        } catch (error: Exception) {
-            accessToken = null
-            if (error is CobreIdException && error.statusCode == 401) {
-                secretPrefs.edit().remove("refresh_token").apply()
-                prefs.edit().remove("email").apply()
+        synchronized(SESSION_REFRESH_LOCK) {
+            // MainActivity and PlaybackService have separate repositories but share this rotating token.
+            // Read it only after taking the process-wide lock so concurrent refreshes never replay a used token.
+            val refresh = readRefreshToken() ?: throw CobreIdException("Entre na sua conta Cobre ID para conectar este aparelho.")
+            try {
+                val result = requestBlocking("/v1/refresh", "POST", JSONObject().put("refreshToken", refresh), authorize = false, allowRefresh = false)
+                acceptSession(result)
+            } catch (error: Exception) {
+                accessToken = null
+                if (error is CobreIdException && error.statusCode == 401) {
+                    secretPrefs.edit().remove("refresh_token").apply()
+                    prefs.edit().remove("email").apply()
+                }
+                throw error
             }
-            throw error
         }
     }
 
@@ -354,6 +358,10 @@ class CobreIdRepository(context: Context) {
                 .build(),
         )
         return generator.generateKey()
+    }
+
+    companion object {
+        private val SESSION_REFRESH_LOCK = Any()
     }
 
     private fun normalizeUrl(raw: String): String {
