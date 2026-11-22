@@ -4,6 +4,7 @@
 
 - A tela Cobre ID inclui exclusão com confirmação de senha. Após sucesso, tokens e autorização do serviço de reprodução são removidos e a faixa remota é pausada; API do Server 1.3.0 está publicada.
 - Implementado nesta branch o download offline de faixas do Desktop, com limite de armazenamento, barra de progresso, catálogo “Baixadas” e remoção. Aguarda compilação e teste em celular.
+- A fila, a faixa atual, posição, aleatório e repetição são salvos localmente; ao iniciar o app a fila restaura pausada para evitar reprodução inesperada. Compilação e teste em aparelho pendentes.
 - O workflow **Build APK** agora pode gerar APK/AAB assinados para teste físico sem publicar uma release; a próxima validação deve usar esse pacote assinado.
 - API 36 e variante Play dedicados: sem permissão nem código de auto-instalação de APK; atualizações ficam a cargo da Play Store.
 - Workflow separado gera AAB da variante Play e APK da edição direta, mantendo uma mesma chave de distribuição.

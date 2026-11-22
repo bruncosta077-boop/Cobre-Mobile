@@ -4,6 +4,7 @@
 
 - Exclusão de conta Cobre ID com senha atual, remoção de sessões e permissões no Server e limpeza de tokens no Mobile.
 - Downloads de faixas do Desktop para reprodução offline no armazenamento privado do Mobile. Limites atuais: 2 GB de biblioteca, 512 MB por faixa; só aceita o endpoint HTTP local versionado e o host configurado no app.
+- Restauração local da fila, faixa atual, posição, aleatório e repetição; a retomada fica pausada até uma ação explícita do usuário.
 - Próximas validações: compilação do workflow, teste no aparelho com uma faixa MP3/FLAC, interrupção durante download, remoção do arquivo, falta de espaço e exclusão da conta enquanto toca uma faixa remota.
 
 ## Estado validado
@@ -24,7 +25,7 @@
 
 Compilar e validar o 0.8.0 no aparelho, em especial as medições durante stream. Depois, avançar a paridade local prioritária:
 
-1. Avaliações e restauração da fila após reiniciar o app.
+1. Validar em aparelho os downloads offline e a restauração da fila, inclusive fontes locais e Desktop.
 2. Letras locais e sincronizadas; artista do álbum, disco e total de faixas por tags.
 3. Busca e gestão de encartes/metadados.
 4. Equalizador, volume prévio, crossfade e efeitos DSP medidos no Android.

@@ -10,6 +10,8 @@ import androidx.media3.common.MediaMetadata
 import androidx.media3.common.Player
 import androidx.media3.session.MediaController
 import androidx.media3.session.SessionToken
+import org.json.JSONArray
+import org.json.JSONObject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,6 +30,10 @@ class PlayerController(context: Context) {
     private var controller: MediaController? = null
     private var queue: List<Track> = emptyList()
     private var pendingPlay: Pair<List<Track>, Int>? = null
+    private val playbackPrefs = appContext.getSharedPreferences("cobre-playback-state", Context.MODE_PRIVATE)
+    private var restoring = false
+    private var lastSavedPositionMs = -SAVE_POSITION_INTERVAL_MS
+    private var lastSavedQueueFingerprint = ""
     private val listener = object : Player.Listener {
         override fun onEvents(player: Player, events: Player.Events) = sync(player)
     }
@@ -41,7 +47,8 @@ class PlayerController(context: Context) {
                 mediaController.addListener(listener)
                 pendingPlay?.let { (tracks, index) -> applyQueue(tracks, index) }
                 pendingPlay = null
-                sync(mediaController)
+                if (mediaController.mediaItemCount == 0) restoreQueue(mediaController)
+                else sync(mediaController)
             }
         }, ContextCompat.getMainExecutor(appContext))
     }
@@ -53,11 +60,14 @@ class PlayerController(context: Context) {
         if (tracks.isEmpty()) return
         val player = controller ?: return
         queue = tracks.toList()
+        restoring = true
         player.setMediaItems(queue.map(::mediaItem), index.coerceIn(0, queue.lastIndex), 0)
-        player.prepare(); player.play(); sync(player)
+        player.prepare(); player.play()
+        restoring = false
+        sync(player, forceSave = true)
     }
 
-    private fun sync(player: Player) {
+    private fun sync(player: Player, forceSave: Boolean = false) {
         if (queue.size != player.mediaItemCount) {
             queue = (0 until player.mediaItemCount).map { i ->
                 val item = player.getMediaItemAt(i); val m = item.mediaMetadata; val uri = item.localConfiguration?.uri ?: Uri.EMPTY
@@ -75,6 +85,77 @@ class PlayerController(context: Context) {
             positionMs = player.currentPosition.coerceAtLeast(0), durationMs = duration,
             shuffleEnabled = player.shuffleModeEnabled, repeatMode = player.repeatMode,
         )
+        persistQueue(player, forceSave)
+    }
+
+    private fun restoreQueue(player: MediaController) {
+        val saved = readSavedQueue() ?: return
+        if (saved.tracks.isEmpty()) return
+        restoring = true
+        queue = saved.tracks
+        player.shuffleModeEnabled = saved.shuffleEnabled
+        player.repeatMode = saved.repeatMode
+        player.setMediaItems(queue.map(::mediaItem), saved.currentIndex.coerceIn(0, queue.lastIndex), saved.positionMs)
+        // Keep the restored queue paused. Playback starts only after the user presses Play.
+        player.pause()
+        restoring = false
+        sync(player, forceSave = true)
+    }
+
+    private fun readSavedQueue(): SavedPlayback? = runCatching {
+        val json = playbackPrefs.getString(KEY_QUEUE, null)?.let(::JSONObject) ?: return null
+        val items = json.optJSONArray("tracks") ?: return null
+        if (items.length() > MAX_PERSISTED_QUEUE) return null
+        val tracks = buildList {
+            for (index in 0 until items.length()) {
+                val item = items.optJSONObject(index) ?: continue
+                val uri = Uri.parse(item.optString("uri"))
+                if (uri.scheme !in setOf("content", "file", "http", "https")) continue
+                add(Track(
+                    id = item.optLong("id", uri.toString().hashCode().toLong()), uri = uri,
+                    title = item.optString("title", "Faixa"), artist = item.optString("artist", "Artista desconhecido"),
+                    albumArtist = item.optString("albumArtist", item.optString("artist", "Artista desconhecido")),
+                    album = item.optString("album", "Sem álbum"), trackNumber = item.optInt("trackNumber"),
+                    discNumber = item.optInt("discNumber"), durationMs = item.optLong("durationMs"), year = item.optInt("year"),
+                ))
+            }
+        }
+        if (tracks.isEmpty()) return null
+        SavedPlayback(
+            tracks = tracks,
+            currentIndex = json.optInt("currentIndex").coerceIn(0, tracks.lastIndex),
+            positionMs = json.optLong("positionMs").coerceAtLeast(0),
+            shuffleEnabled = json.optBoolean("shuffleEnabled"),
+            repeatMode = json.optInt("repeatMode").takeIf { it in Player.REPEAT_MODE_OFF..Player.REPEAT_MODE_ALL } ?: Player.REPEAT_MODE_OFF,
+        )
+    }.getOrNull()
+
+    private fun persistQueue(player: Player, force: Boolean) {
+        if (restoring) return
+        val position = player.currentPosition.coerceAtLeast(0)
+        val fingerprint = buildString {
+            queue.forEach { append(it.uri).append('|') }
+            append(':').append(player.currentMediaItemIndex).append(':').append(player.shuffleModeEnabled).append(':').append(player.repeatMode)
+        }
+        val queueChanged = fingerprint != lastSavedQueueFingerprint
+        if (!force && !queueChanged && kotlin.math.abs(position - lastSavedPositionMs) < SAVE_POSITION_INTERVAL_MS) return
+        val tracks = JSONArray().apply {
+            queue.take(MAX_PERSISTED_QUEUE).forEach { track ->
+                put(JSONObject().apply {
+                    put("id", track.id); put("uri", track.uri.toString()); put("title", track.title)
+                    put("artist", track.artist); put("albumArtist", track.albumArtist); put("album", track.album)
+                    put("trackNumber", track.trackNumber); put("discNumber", track.discNumber)
+                    put("durationMs", track.durationMs); put("year", track.year)
+                })
+            }
+        }
+        val json = JSONObject().apply {
+            put("tracks", tracks); put("currentIndex", player.currentMediaItemIndex.coerceAtLeast(0))
+            put("positionMs", position); put("shuffleEnabled", player.shuffleModeEnabled); put("repeatMode", player.repeatMode)
+        }
+        playbackPrefs.edit().putString(KEY_QUEUE, json.toString()).apply()
+        lastSavedQueueFingerprint = fingerprint
+        lastSavedPositionMs = position
     }
 
     fun play(tracks: List<Track>, index: Int = 0) {
@@ -85,24 +166,35 @@ class PlayerController(context: Context) {
     fun addToQueue(track: Track) {
         val p = controller ?: return
         if (p.mediaItemCount == 0) applyQueue(listOf(track), 0)
-        else { queue = queue + track; p.addMediaItem(mediaItem(track)); sync(p) }
+        else { queue = queue + track; p.addMediaItem(mediaItem(track)); sync(p, forceSave = true) }
     }
     fun removeFromQueue(index: Int) {
         val p = controller ?: return
-        if (index in queue.indices) { queue = queue.toMutableList().also { it.removeAt(index) }; p.removeMediaItem(index); sync(p) }
+        if (index in queue.indices) { queue = queue.toMutableList().also { it.removeAt(index) }; p.removeMediaItem(index); sync(p, forceSave = true) }
     }
     fun moveInQueue(from: Int, to: Int) {
         val p = controller ?: return
         if (from !in queue.indices || to !in queue.indices || from == to) return
-        queue = queue.toMutableList().also { it.add(to, it.removeAt(from)) }; p.moveMediaItem(from, to); sync(p)
+        queue = queue.toMutableList().also { it.add(to, it.removeAt(from)) }; p.moveMediaItem(from, to); sync(p, forceSave = true)
     }
-    fun clearQueue() { queue = emptyList(); controller?.clearMediaItems(); controller?.let(::sync) }
-    fun toggle() { controller?.let { if (it.isPlaying) it.pause() else it.play() } }
+    fun clearQueue() { queue = emptyList(); controller?.clearMediaItems(); controller?.let { sync(it, forceSave = true) } }
+    fun toggle() { controller?.let { if (it.isPlaying) it.pause() else { if (it.playbackState == Player.STATE_IDLE && it.mediaItemCount > 0) it.prepare(); it.play() } } }
     fun next() { controller?.seekToNextMediaItem() }
     fun previous() { controller?.let { if (it.currentPosition > 3_000L) it.seekTo(0) else it.seekToPreviousMediaItem() } }
     fun seekTo(positionMs: Long) { controller?.seekTo(positionMs) }
     fun refreshPosition() { controller?.let(::sync) }
-    fun toggleShuffle() { controller?.let { it.shuffleModeEnabled = !it.shuffleModeEnabled; sync(it) } }
-    fun cycleRepeat() { controller?.let { it.repeatMode = when (it.repeatMode) { Player.REPEAT_MODE_OFF -> Player.REPEAT_MODE_ALL; Player.REPEAT_MODE_ALL -> Player.REPEAT_MODE_ONE; else -> Player.REPEAT_MODE_OFF }; sync(it) } }
+    fun toggleShuffle() { controller?.let { it.shuffleModeEnabled = !it.shuffleModeEnabled; sync(it, forceSave = true) } }
+    fun cycleRepeat() { controller?.let { it.repeatMode = when (it.repeatMode) { Player.REPEAT_MODE_OFF -> Player.REPEAT_MODE_ALL; Player.REPEAT_MODE_ALL -> Player.REPEAT_MODE_ONE; else -> Player.REPEAT_MODE_OFF }; sync(it, forceSave = true) } }
     fun release() { controller?.removeListener(listener); controller?.release(); controller = null }
+
+    private data class SavedPlayback(
+        val tracks: List<Track>, val currentIndex: Int, val positionMs: Long,
+        val shuffleEnabled: Boolean, val repeatMode: Int,
+    )
+
+    private companion object {
+        const val KEY_QUEUE = "saved_queue"
+        const val MAX_PERSISTED_QUEUE = 2_000
+        const val SAVE_POSITION_INTERVAL_MS = 10_000L
+    }
 }

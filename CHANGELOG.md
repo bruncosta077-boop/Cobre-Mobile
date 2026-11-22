@@ -4,6 +4,7 @@
 
 - Incluído fluxo de exclusão permanente da conta Cobre ID com confirmação de senha no Mobile; o Server remove dispositivos, sessões e permissões vinculados. O app apaga tokens, retira a autorização mantida pelo serviço de reprodução e pausa a faixa remota atual. Músicas e preferências locais permanecem no aparelho.
 - Adicionada a opção de baixar faixas do Desktop para reprodução offline, com progresso e remoção pelo mesmo controle. Os downloads ficam no armazenamento privado do app, usam uma autorização curta no cabeçalho e só aceitam a origem Desktop configurada; limite de 2 GB no total e 512 MB por faixa.
+- A fila agora é salva no aparelho com a faixa atual, posição, modo aleatório e repetição. Ao reabrir o Mobile, ela volta pausada e só toca quando o usuário iniciar a reprodução.
 - Atualizados compile/target SDK para API 36, exigida para novos apps e atualizações da Google Play desde 31/08/2026.
 - Criada variante `play` que remove `REQUEST_INSTALL_PACKAGES`, desativa o atualizador de APK externo e orienta a receber atualizações pela loja. A edição `direct` mantém o atualizador GitHub existente.
 - O workflow produz APK direto e AAB da variante Play; ambos usam a chave de distribuição atual para preservar compatibilidade, sujeito à configuração correta do Play App Signing.
