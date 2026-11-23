@@ -1,5 +1,11 @@
 # Histórico de versões — Cobre Mobile
 
+## 0.21.0-rc.1 — pacote de teste de áudio e visual do player
+
+- Pré-lançamento instalável que reúne letras, busca de capas, player de vinil, perfis de equalização, reforço de graves e espacialização.
+- Mantém a biblioteca local e do Desktop, Cobre ID, favoritos, histórico, playlists locais, downloads offline e atualização direta já existentes.
+- Build e assinatura são verificados pelo workflow de publicação. Teste em aparelho de equalização e efeitos de áudio segue necessário; a disponibilidade varia entre celulares e saídas.
+
 ## 0.21.0 — controles de áudio e perfis do equalizador (em desenvolvimento)
 
 - Adicionados perfis de equalização Plano, Rock, Metal, Voz e Jazz, aplicados às cinco bandas do mecanismo Android e preservados entre sessões.
