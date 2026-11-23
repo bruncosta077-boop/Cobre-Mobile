@@ -311,7 +311,7 @@ class MainActivity:ComponentActivity(){
     LaunchedEffect(account.signedIn,desktopCatalogResponseMs){if(account.signedIn&&desktopCatalogResponseMs!=null)runCatching{sendMeasuredPresence(accountRepo,context,desktopCatalogResponseMs)}}
     LaunchedEffect(account.signedIn,desktopCatalogResponseMs){while(account.signedIn){delay(45_000);runCatching{sendMeasuredPresence(accountRepo,context,desktopCatalogResponseMs);accountRepo.loadDevices()}.onSuccess{account=account.copy(devices=it,message="Conexão ativa.",error=false)}.onFailure{account=account.copy(message=it.message?:"Conexão interrompida.",error=true)}}}
     LaunchedEffect(playback.playing,fullPlayer){while(playback.playing&&fullPlayer){delay(800);player.refreshPosition()}}
-    LaunchedEffect(playback.currentIndex,playback.queue){playback.queue.getOrNull(playback.currentIndex)?.let(collections::recordPlayed)}
+    LaunchedEffect(playback.currentIndex,playback.queue){val track=playback.queue.getOrNull(playback.currentIndex);if(track!=null)collections.recordPlayed(track)}
     Column(Modifier.fillMaxSize().background(Bg).statusBarsPadding()){
          if(fullPlayer&&playback.hasItem) PlayerPage(playback,player,settings.desktopUrl.orEmpty(),accountRepo.desktopGrantId()!=null,settings.vinylPlayer,settings.dynamicAlbumColors,coverArtwork,accountRepo.currentDesktopGrantToken(),settings::saveVinylPlayer,{fullPlayer=false},{fullPlayer=false;page=Page.Queue},{trackId->
             scope.launch {
