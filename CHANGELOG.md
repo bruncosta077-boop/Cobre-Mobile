@@ -5,7 +5,7 @@
 - Após o catálogo do computador carregar, favoritos, histórico e playlists são associados às URLs atuais do Desktop usando a identidade da faixa (artista, álbum, título e posição).
 - Isso recupera faixas salvas com a rota antiga depois da limpeza da chave LAN e não grava o token na coleção.
 - O remapeamento do banco ocorre em segundo plano e mantém faixas sem correspondência, sem removê-las.
-- Esta versão aguarda compilação e assinatura automáticas antes da publicação.
+- CI compilou, verificou as assinaturas do APK/AAB e publicou os pacotes com checksums em 23/11/2026.
 
 ## 0.34.0-rc.1 — limpeza de chaves LAN antigas
 
