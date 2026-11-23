@@ -2,10 +2,11 @@
 
 ## 0.25.0-rc.1 — atualização protegida contra falta de espaço
 
-- Antes de baixar o APK, o app verifica se há espaço para o arquivo, para a cópia de instalação do Android e para uma reserva operacional. Se não houver, informa quantos MB precisam ser liberados.
+- Antes e durante o download do APK, o app verifica se há espaço para o arquivo, para a cópia de instalação do Android e para uma reserva operacional. Se não houver, informa quantos MB precisam ser liberados.
 - Downloads temporários e APKs antigos do atualizador são removidos antes de iniciar uma nova transferência, evitando que versões incompletas ocupem armazenamento.
 - O espaço é verificado novamente antes de abrir o instalador, pois pode mudar durante o download.
 - A checagem não substitui a validação do checksum, pacote e certificado, que continua obrigatória.
+- O workflow 45103243315 compilou e assinou o APK/AAB. O APK da release foi baixado e verificado: checksum SHA-256, certificado estável, pacote `app.cobre.mobile`, versionCode 27 e SDK mínimo 29 conferem. Falta o teste de instalação no aparelho do usuário.
 
 ## 0.24.0-rc.1 — visualizador de espectro opcional
 

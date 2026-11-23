@@ -1,9 +1,10 @@
 # Cobre Mobile — status
 
-## 0.25.0-rc.1 em preparação
+## 0.25.0-rc.1 publicado
 
-- O atualizador verifica o espaço livre antes de baixar e instalar, mostra quanto precisa ser liberado e limpa arquivos temporários antigos do próprio atualizador.
-- Build, assinatura, publicação e validação física ainda pendentes.
+- O atualizador verifica o espaço livre antes e durante o download e antes de instalar, mostra quanto precisa ser liberado e limpa APKs e arquivos temporários antigos do atualizador.
+- O workflow [45103243315](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45103243315) compilou, assinou e publicou APK/AAB. O APK foi conferido localmente: checksum, certificado, pacote `app.cobre.mobile`, versionCode 27, minSdk 29 e targetSdk 36 corretos.
+- Release disponível em [mobile-v0.25.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.25.0-rc.1). Falta o usuário confirmar atualização/instalação no telefone com espaço livre.
 
 ## 0.24.0-rc.1 publicado
 
