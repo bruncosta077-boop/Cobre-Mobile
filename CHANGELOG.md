@@ -5,7 +5,7 @@
 - A lista e o resumo de armazenamento offline são carregados do banco e do sistema de arquivos em segundo plano durante a abertura do app.
 - Consultas para saber se uma faixa já está baixada e operações de remover cópias offline também rodam fora da thread da interface.
 - Enquanto a biblioteca offline inicializa, ações de download em lote informam que os dados ainda estão carregando, evitando decidir com uma lista incompleta.
-- A compilação local e a assinatura/publicação no GitHub Actions serão registradas após a execução.
+- Build, assinatura estável do APK/AAB e publicação com checksums SHA-256 passaram no [GitHub Actions](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45270069446). Pacote 38 / versionCode 38. A avaliação em aparelho ainda não foi feita.
 
 ## 0.35.0-rc.1 — reconciliação das coleções do Desktop
 

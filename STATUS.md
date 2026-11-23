@@ -1,10 +1,11 @@
 # Cobre Mobile — status
 
-## 0.36.0-rc.1 em preparação
+## 0.36.0-rc.1 publicado — 23/11/2026
 
 - Banco e verificação dos arquivos offline são carregados em I/O, sem trabalho síncrono pesado na interface na abertura.
 - Resumo de espaço, consulta de faixa baixada e remoção de cópia também ficam em segundo plano.
-- Build local e assinatura/publicação automática pendentes; esta versão ainda não está disponível para instalar.
+- Pacote 38 / versionCode 38. Build, assinatura estável APK/AAB, publicação e checksums passaram no [workflow 45270069446](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45270069446). Instalação e uso em aparelho ainda não testados.
+- APK e AAB disponíveis na [release mobile-v0.36.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.36.0-rc.1).
 
 ## 0.35.0-rc.1 publicado — 23/11/2026
 

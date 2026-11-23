@@ -2,7 +2,7 @@
   <img src="assets/branding/cobre-logo.png" alt="Logo do Cobre" width="150">
   <h1>Cobre Mobile</h1>
   <p>Player Android integrado ao ecossistema Cobre</p>
-  <p><strong>Próxima versão: 0.36.0-rc.1 — inicialização de downloads sem bloquear a tela</strong></p>
+  <p><strong>Última versão publicada: 0.36.0-rc.1 — downloads offline sem bloquear a interface</strong></p>
 </div>
 
 O código do Cobre é proprietário e está disponível publicamente para inspeção. Consulte o [aviso de licença](LICENSE); componentes de terceiros mantêm suas próprias licenças.
@@ -11,15 +11,15 @@ Desenvolvimento principal: Bruno C S Moraes · Contribuição ao projeto: [@dilu
 
 Aplicativo Android do ecossistema Cobre. Interface escura com a paleta, o símbolo e a organização visual do Cobre Desktop, adaptados para toque.
 
-## Versão em preparação: 0.36.0-rc.1
+## Última versão publicada: 0.36.0-rc.1
 
-O app carrega o catálogo offline e mede o espaço ocupado em segundo plano; consultas de banco e conferência de arquivos deixam de bloquear a interface ao abrir configurações ou baixar/remover uma faixa. A compilação e assinatura ainda serão verificadas pelo GitHub Actions.
+O app carrega o catálogo offline e mede o espaço ocupado em segundo plano; consultas de banco e conferência de arquivos deixam de bloquear a interface ao abrir configurações ou baixar/remover uma faixa. APK/AAB assinados e checksums estão na [release 0.36.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.36.0-rc.1). Build, assinatura estável e publicação passaram no [GitHub Actions](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45270069446).
 
 O backup leva aparência, áudio, e-mail e endereços do Server/Desktop para outra instalação. Senhas, tokens, concessões e permissões de pasta não são exportados.
 
 O backup do Android continua preservando as coleções locais. A versão 0.34 remove chaves antigas das URLs persistidas; a 0.35 associa novamente as faixas salvas às URLs atuais do catálogo do Desktop.
 
-APK e AAB assinados, com checksums SHA-256, disponíveis em [Cobre Mobile 0.29.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.29.0-rc.1). É um pré-lançamento para avaliação em aparelho.
+As versões publicadas são pré-lançamentos para avaliação em aparelho.
 
 O app verifica novas versões ao abrir e em **Configurações → Aplicativo**. Quando encontra uma atualização, baixa e valida o APK assinado e abre a instalação do Android; o sistema pede autorização para instalar e confirmação final. As notas da versão aparecem antes e depois da atualização.
 
