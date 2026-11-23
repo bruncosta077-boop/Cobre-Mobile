@@ -1,10 +1,10 @@
 # Cobre Mobile — status
 
-## 0.32.0-rc.1 em publicação
+## 0.32.0-rc.1 publicado — 23/11/2026
 
 - Configurações exportáveis/importáveis: paleta, vinil, cores dinâmicas, equalizador, ReplayGain, reforço de graves e áudio espacial.
 - Backup versionado e validado; credenciais, concessões, endereços, permissões da pasta e áudio offline ficam fora do arquivo.
-- Versão de pacote 34 / 0.32.0-rc.1. A publicação depende do workflow de compilação e assinatura.
+- Versão de pacote 34 / 0.32.0-rc.1. CI compilou, validou as assinaturas e publicou APK/AAB com checksums SHA-256.
 
 ## 0.31.0-rc.1 publicado
 

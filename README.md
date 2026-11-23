@@ -2,7 +2,7 @@
   <img src="assets/branding/cobre-logo.png" alt="Logo do Cobre" width="150">
   <h1>Cobre Mobile</h1>
   <p>Player Android integrado ao ecossistema Cobre</p>
-  <p><strong>Versão em publicação: 0.32.0-rc.1 — backup de configurações</strong></p>
+  <p><strong>Versão publicada: 0.32.0-rc.1 — backup de configurações</strong></p>
 </div>
 
 O código do Cobre é proprietário e está disponível publicamente para inspeção. Consulte o [aviso de licença](LICENSE); componentes de terceiros mantêm suas próprias licenças.
@@ -15,7 +15,7 @@ Aplicativo Android do ecossistema Cobre. Interface escura com a paleta, o símbo
 
 APK e AAB assinados, com checksums SHA-256, disponíveis em [Cobre Mobile 0.31.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.31.0-rc.1). É um pré-lançamento para avaliação em aparelho.
 
-Próxima versão em publicação: 0.32.0-rc.1, com exportação e restauração segura das preferências de aparência e áudio.
+APK, AAB e checksums SHA-256 assinados disponíveis em [Cobre Mobile 0.32.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.32.0-rc.1). O backup permite levar aparência e ajustes de áudio para outra instalação sem incluir credenciais ou permissões privadas.
 
 APK e AAB assinados, com checksums SHA-256, disponíveis em [Cobre Mobile 0.29.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.29.0-rc.1). É um pré-lançamento para avaliação em aparelho.
 
