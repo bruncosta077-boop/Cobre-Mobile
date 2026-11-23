@@ -8,6 +8,8 @@ import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 data class SavedPlaylist(val name: String, val tracks: List<Track>)
 
@@ -22,6 +24,41 @@ class LibraryCollections(context: Context) {
         private set
     private var albumRatings by mutableStateOf(readAlbumRatings())
     fun rating(album: Album): Int = albumRatings[albumIdentity(album)] ?: 0
+
+    suspend fun rebindRemoteTracks(available:List<Track>){
+        val snapshot=withContext(Dispatchers.IO){
+            val currentByIdentity=available.asSequence().filter{it.uri.scheme=="http"}.associateBy{it.libraryIdentity()}
+            if(currentByIdentity.isEmpty())return@withContext null
+            val db=database.writableDatabase
+            db.beginTransaction()
+            try{
+                listOf("favorites" to "saved_at","history" to "played_at").forEach{(table,timeColumn)->
+                    val rows=db.query(table,TRACK_COLUMNS+timeColumn,null,null,null,null,"$timeColumn DESC").use{cursor->buildList(cursor.count){while(cursor.moveToNext())add(cursor.toTrack() to cursor.getLong(cursor.getColumnIndexOrThrow(timeColumn)))}}
+                    rows.forEach rowLoop@{(stored,timestamp)->
+                        if(stored.uri.scheme!="http")return@rowLoop
+                        val replacement=currentByIdentity[stored.libraryIdentity()]?:return@rowLoop
+                        if(safeStoredTrackUri(stored.uri)==safeStoredTrackUri(replacement.uri))return@rowLoop
+                        val replacementUri=safeStoredTrackUri(replacement.uri)
+                        val existingTime=db.query(table,arrayOf(timeColumn),"uri = ?",arrayOf(replacementUri),null,null,null).use{if(it.moveToFirst())it.getLong(0)else 0L}
+                        db.delete(table,"uri = ?",arrayOf(stored.uri.toString()))
+                        db.insertWithOnConflict(table,null,trackValues(replacement).apply{put(timeColumn,maxOf(timestamp,existingTime))},SQLiteDatabase.CONFLICT_REPLACE)
+                    }
+                }
+                val playlistRows=db.query("playlist_tracks",arrayOf("playlist_id","position")+TRACK_COLUMNS,null,null,null,null,null).use{cursor->buildList(cursor.count){while(cursor.moveToNext())add(Triple(cursor.getLong(0),cursor.getInt(1),cursor.toTrack()))}}
+                playlistRows.forEach playlistLoop@{(playlistId,position,stored)->
+                    if(stored.uri.scheme!="http")return@playlistLoop
+                    val replacement=currentByIdentity[stored.libraryIdentity()]?:return@playlistLoop
+                    if(safeStoredTrackUri(stored.uri)==safeStoredTrackUri(replacement.uri))return@playlistLoop
+                    db.update("playlist_tracks",trackValues(replacement),"playlist_id = ? AND position = ?",arrayOf(playlistId.toString(),position.toString()))
+                }
+                db.setTransactionSuccessful()
+            }finally{db.endTransaction()}
+            CollectionSnapshot(readTracks("favorites","saved_at DESC"),readTracks("history","played_at DESC",200),readPlaylists())
+        }?:return
+        favorites=snapshot.favorites
+        history=snapshot.history
+        playlists=snapshot.playlists
+    }
 
     fun setRating(album: Album, rating: Int) {
         val key = albumIdentity(album)
@@ -125,6 +162,8 @@ class LibraryCollections(context: Context) {
         }
         return result
     }
+
+    private data class CollectionSnapshot(val favorites:List<Track>,val history:List<Track>,val playlists:List<SavedPlaylist>)
 
     private fun trackValues(track: Track) = ContentValues().apply {
         put("uri", safeStoredTrackUri(track.uri)); put("media_id", track.id); put("title", track.title)

@@ -2,7 +2,7 @@
   <img src="assets/branding/cobre-logo.png" alt="Logo do Cobre" width="150">
   <h1>Cobre Mobile</h1>
   <p>Player Android integrado ao ecossistema Cobre</p>
-  <p><strong>Versão publicada: 0.34.0-rc.1 — segurança do backup local</strong></p>
+  <p><strong>Versão em publicação: 0.35.0-rc.1 — coleções do Desktop</strong></p>
 </div>
 
 O código do Cobre é proprietário e está disponível publicamente para inspeção. Consulte o [aviso de licença](LICENSE); componentes de terceiros mantêm suas próprias licenças.
@@ -17,7 +17,7 @@ APK e AAB assinados, com checksums SHA-256, disponíveis em [Cobre Mobile 0.34.0
 
 O backup leva aparência, áudio, e-mail e endereços do Server/Desktop para outra instalação. Senhas, tokens, concessões e permissões de pasta não são exportados.
 
-O backup do Android continua preservando as coleções locais. Nesta versão, a migração remove chaves antigas das URLs persistidas antes de os dados voltarem a entrar no backup do sistema.
+O backup do Android continua preservando as coleções locais. A versão 0.34 remove chaves antigas das URLs persistidas; a 0.35 associa novamente as faixas salvas às URLs atuais do catálogo do Desktop.
 
 APK e AAB assinados, com checksums SHA-256, disponíveis em [Cobre Mobile 0.29.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.29.0-rc.1). É um pré-lançamento para avaliação em aparelho.
 
@@ -47,6 +47,7 @@ O app verifica novas versões ao abrir e em **Configurações → Aplicativo**. 
 - Na versão publicada 0.31.0-rc.1, o catálogo do Desktop é mantido em banco privado para continuar visível durante quedas temporárias de conexão; ele é apagado quando a autorização é recusada.
 - A versão publicada 0.32.0-rc.1 adiciona backup importável de aparência e áudio; a 0.33.0-rc.1 também preserva e-mail e endereços de conexão, removendo chaves antigas do endereço local.
 - A versão publicada 0.34.0-rc.1 limpa chaves LAN legadas das URLs persistidas em favoritos, histórico e playlists antes do próximo backup do sistema.
+- A versão 0.35.0-rc.1 em publicação reassocia coleções remotas às faixas atuais do Desktop em segundo plano, sem gravar tokens.
 - Faixas autorizadas do Desktop podem ser baixadas para ouvir offline. Em **Biblioteca → Computador → Faixas**, toque no ícone de download; elas aparecem em **Baixadas** e o mesmo controle as remove. Os arquivos ficam privados no app e há limite de 2 GB no total e 512 MB por faixa.
 - Descoberta automática do Desktop na mesma rede local enquanto a tela Conexões estiver aberta; QR continua disponível.
 - Status da conexão Desktop exibe tempo de resposta do catálogo e quantidade de faixas carregadas.

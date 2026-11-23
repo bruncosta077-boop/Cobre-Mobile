@@ -1,5 +1,11 @@
 # Cobre Mobile — status
 
+## 0.35.0-rc.1 em publicação
+
+- Ao carregar catálogo local/remoto, favoritos, histórico e playlists são reassociados às faixas disponíveis do Desktop por identidade de metadados, atualizando URL de streaming sem chave.
+- Remapeamento ocorre em I/O; referências que ainda não encontram correspondência são mantidas.
+- Versão de pacote 37 / 0.35.0-rc.1. A publicação depende da compilação e validação da assinatura no GitHub Actions.
+
 ## 0.34.0-rc.1 publicado — 23/11/2026
 
 - Migração do banco de coleções sanitiza URLs legadas com chave; novas gravações de favoritos, histórico e playlists persistem URLs sem query/fragmento.

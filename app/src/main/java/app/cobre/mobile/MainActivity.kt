@@ -113,6 +113,7 @@ class MainActivity:ComponentActivity(){
     val offlineStorage=remember(offlineTracks){offlineStore.storageSummary()}
     val catalogIdentity=IdentityKey(localTracks,offlineTracks,desktopTracks)
     val allTracks=remember(catalogIdentity){localTracks?.plus(offlineTracks)?.plus(desktopTracks)}
+    LaunchedEffect(catalogIdentity){allTracks?.takeIf{it.isNotEmpty()}?.let{collections.rebindRemoteTracks(it)}}
     val allTracksIdentity=IdentityKey(allTracks)
     val tracks by produceState<List<Track>?>(null,allTracksIdentity,librarySource){val snapshot=allTracks;value=snapshot?.let{withContext(Dispatchers.Default){selectLibrarySource(it,librarySource)}}}
     val sourceCounts by produceState<Map<LibrarySource,Int>>(emptyMap(),catalogIdentity){value=withContext(Dispatchers.Default){val combined=localTracks.orEmpty()+offlineTracks+desktopTracks;mapOf(LibrarySource.All to selectLibrarySource(combined,LibrarySource.All).size,LibrarySource.Phone to combined.count{it.uri.scheme!="http"&&it.uri.scheme!="file"},LibrarySource.Desktop to combined.count{it.uri.scheme=="http"},LibrarySource.Downloaded to offlineTracks.size)}}
