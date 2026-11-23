@@ -408,7 +408,7 @@ private suspend fun sendMeasuredPresence(repository:CobreIdRepository,context:an
 }
 
 @Composable private fun LibraryPage(tracks:List<Track>,library:LocalLibrary,collections:LibraryCollections,offlineTracks:List<Track>,downloadMessage:String,downloadProgress:Int,activeDownload:String?,onDownload:(Track)->Unit,onDownloadBatch:(List<Track>,String)->Unit,tab:LibraryTab,query:String,album:Album?,artist:Artist?,source:LibrarySource,sourceCounts:Map<LibrarySource,Int>,desktopStatus:String,onOpenConnections:()->Unit,onSource:(LibrarySource)->Unit,onTab:(LibraryTab)->Unit,onAlbum:(Album)->Unit,onArtist:(Artist)->Unit,onBack:()->Unit,onPlay:(List<Track>,Int)->Unit,onQueue:(Track)->Unit,onSearchCovers:(Album)->Unit,onAlbumInfo:(Album)->Unit){
-    if(album!=null){AlbumPage(album,collections,onBack,onPlay,onQueue,{onDownloadBatch(album.tracks,"álbum ${album.title}")},{onSearchCovers(album)},{onAlbumInfo(album)});return}
+    if(album!=null){AlbumPage(album,collections,onBack,onPlay,onQueue,onDownloadBatch,{onSearchCovers(album)},{onAlbumInfo(album)});return}
     if(artist!=null){Column{Row(Modifier.fillMaxWidth().padding(16.dp),verticalAlignment=Alignment.CenterVertically){IconButton(onClick=onBack){Icon(Icons.Default.ArrowBack,"Voltar",tint=MaterialTheme.colorScheme.primary)};Column{Text(artist.name,color=Tx,style=MaterialTheme.typography.titleLarge);Text("${artist.albums.size} álbuns · ${artist.tracks.size} faixas",color=Mu,style=MaterialTheme.typography.bodySmall)}};AlbumGrid(artist.albums,onAlbum,{onPlay(it,0)},{albumTracks->albumTracks.forEach(onQueue)})};return}
     val q=query.trim().lowercase()
     val trackSnapshotIdentity=IdentityKey(tracks)
