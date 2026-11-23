@@ -163,11 +163,7 @@ class CoverArtworkRepository(context: Context) {
     }
 
     private fun requestMusicBrainz(address: String): Any? {
-        synchronized(musicBrainzLock) {
-            val waitMs = MUSICBRAINZ_INTERVAL_MS - (System.currentTimeMillis() - lastMusicBrainzRequestAt)
-            if (waitMs > 0) Thread.sleep(waitMs)
-            lastMusicBrainzRequestAt = System.currentTimeMillis()
-        }
+        MusicBrainzRateLimiter.waitForSlot()
         return requestJson(address)
     }
 
@@ -227,9 +223,6 @@ class CoverArtworkRepository(context: Context) {
     private fun hex(value: String) = value.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
 
     private companion object {
-        val musicBrainzLock = Any()
-        var lastMusicBrainzRequestAt = 0L
-        const val MUSICBRAINZ_INTERVAL_MS = 1_100L
         const val MAX_CANDIDATES = 6
         const val MAX_DOWNLOAD_BYTES = 15 * 1024 * 1024
         const val MAX_DIMENSION = 1_200

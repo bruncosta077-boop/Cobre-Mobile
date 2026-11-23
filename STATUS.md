@@ -1,10 +1,15 @@
 # Cobre Mobile — status
 
-## 0.22.0-rc.1 em preparação
+## 0.23.0-rc.1 em preparação
 
-- Implementados nesta etapa: capa escolhida pelo usuário com restauração segura, nota local de 1–5 estrelas por álbum e cor dominante da arte no player com controle em Ajustes.
-- Migração SQLite da versão 1 para 2 é aditiva; favoritos, histórico e playlists existentes permanecem nas tabelas atuais.
-- O próximo pacote é 0.22.0-rc.1 (versionCode 24). Build e publicação ainda dependem de compilação e assinatura no GitHub Actions; depois, falta teste físico do autor.
+- Adicionada consulta de edições exatas e créditos por faixa, com seleção explícita de edição e imagens de encarte/contracapa quando a comunidade cadastrou material.
+- Consultas respeitam intervalo compartilhado para MusicBrainz; imagens têm limite de download e decodificação. Build, assinatura e publicação ainda dependem do workflow desta tag; falta validação do autor em celular.
+
+## 0.22.0-rc.1 publicado
+
+- APK e AAB com assinatura estável disponíveis em [mobile-v0.22.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.22.0-rc.1). Workflow [45099666262](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45099666262) compilou, assinou e publicou; checksum e assinatura do APK foram conferidos localmente.
+- Inclui capa escolhida/restaurada no Mobile, notas de álbum persistentes e cores dinâmicas opcionais no player. Migração SQLite da versão 1 para 2 é aditiva e conserva favoritos, histórico e playlists.
+- Falta teste físico do autor, especialmente escolha de imagem de diferentes provedores, migração de banco existente e troca de cor com faixa local/stream.
 
 ## 0.21.0-rc.1 publicado
 

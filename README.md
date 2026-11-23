@@ -2,7 +2,7 @@
   <img src="assets/branding/cobre-logo.png" alt="Logo do Cobre" width="150">
   <h1>Cobre Mobile</h1>
   <p>Player Android integrado ao ecossistema Cobre</p>
-  <p><strong>Em desenvolvimento: 0.22.0-rc.1 — capas, avaliações e cores dinâmicas</strong></p>
+  <p><strong>Em desenvolvimento: 0.23.0-rc.1 — créditos e encarte por edição</strong></p>
 </div>
 
 O código do Cobre é proprietário e está disponível publicamente para inspeção. Consulte o [aviso de licença](LICENSE); componentes de terceiros mantêm suas próprias licenças.
@@ -26,9 +26,10 @@ O app verifica novas versões ao abrir e em **Configurações → Aplicativo**. 
 - Aba de configurações com paletas do Desktop, volume de música e detalhes das saídas informadas pelo Android.
 - Favoritos, histórico recente e playlists locais persistidos em SQLite.
 - Biblioteca combinada com faixas do Cobre Desktop e reprodução direta pela rede local.
-- Nesta versão em desenvolvimento 0.20.0, o player mostra letras do LRCLIB, acompanha letras sincronizadas e lê `.lrc`/`.txt` junto a faixas offline; a busca de letras usa cache local.
-- Nesta versão em desenvolvimento 0.21.0, o áudio recebe perfis Plano/Rock/Metal/Voz/Jazz, reforço de graves e espacialização quando disponíveis no aparelho.
-- Nesta versão em desenvolvimento 0.22.0-rc.1, o usuário pode escolher uma imagem como capa, avaliar álbuns de uma a cinco estrelas e ativar cores da arte no player. As avaliações e capas personalizadas ficam locais no Mobile.
+- O player mostra letras do LRCLIB, acompanha letras sincronizadas e lê `.lrc`/`.txt` junto a faixas offline; a busca de letras usa cache local.
+- O áudio recebe perfis Plano/Rock/Metal/Voz/Jazz, reforço de graves e espacialização quando disponíveis no aparelho.
+- Na versão publicada 0.22.0-rc.1, o usuário pode escolher uma imagem como capa, avaliar álbuns de uma a cinco estrelas e ativar cores da arte no player. As avaliações e capas personalizadas ficam locais no Mobile.
+- Nesta versão em desenvolvimento 0.23.0-rc.1, a página do álbum pode consultar créditos e imagens de encarte por edição correspondente. O usuário escolhe o relançamento para evitar misturar dados de edições diferentes; a disponibilidade depende do cadastro comunitário.
 - A página do álbum busca capas em Apple Music e MusicBrainz/Cover Art Archive. A escolha é salva em espaço privado do Mobile, sem alterar os arquivos de música ou o Desktop.
 - O player de vinil opcional coloca a capa no selo central e gira enquanto a faixa toca; a preferência permanece salva.
 - Faixas autorizadas do Desktop podem ser baixadas para ouvir offline. Em **Biblioteca → Computador → Faixas**, toque no ícone de download; elas aparecem em **Baixadas** e o mesmo controle as remove. Os arquivos ficam privados no app e há limite de 2 GB no total e 512 MB por faixa.
@@ -67,7 +68,7 @@ O refresh token do Cobre ID fica protegido pelo Android Keystore. Para conexões
 
 ## Funções do Desktop ainda ausentes no Mobile
 
-Estatísticas avançadas, edição de metadados nos arquivos, créditos/encarte, crossfade, integração Last.fm, visualizador de espectro/VU e sincronização de playlists entre aparelhos ainda não estão implementados. Equalizador, graves reforçados, espacialização, letras, busca de capas e capas locais já existem no Mobile.
+Estatísticas avançadas, edição de tags nos arquivos, crossfade, integração Last.fm, visualizador de espectro/VU e sincronização de playlists entre aparelhos ainda não estão implementados. Equalizador, graves reforçados, espacialização, letras, busca/seleção de capas, notas de álbum, cores dinâmicas e créditos/encarte por edição já existem no Mobile em versões de desenvolvimento.
 
 ## Gerar APK de teste
 

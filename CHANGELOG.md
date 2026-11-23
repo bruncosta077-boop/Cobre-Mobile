@@ -1,5 +1,12 @@
 # Histórico de versões — Cobre Mobile
 
+## 0.23.0-rc.1 — créditos e encarte por edição
+
+- A página do álbum agora permite consultar edições correspondentes no MusicBrainz e escolher qual edição consultar. O app exige correspondência exata do álbum e do artista antes de apresentar dados, e mostra ano, país, formato e gravadora quando disponíveis.
+- Os créditos por faixa são exibidos separadamente e as imagens aprovadas de contracapa, encarte e mídia disponíveis no Cover Art Archive podem ser abertas no app.
+- As consultas ao MusicBrainz compartilham limitação de frequência; imagens e respostas têm limites de tamanho/dimensão. As fontes comunitárias podem não ter créditos ou encarte para todas as edições.
+- Ainda precisa de validação física do autor e conferência em álbuns com vários relançamentos, álbuns duplos, créditos de artistas convidados e imagens de encarte grandes.
+
 ## 0.22.0-rc.1 — capas, avaliações e cor dinâmica
 
 - A página do álbum permite escolher uma imagem do celular como capa e restaurar a arte original. A imagem é validada, reduzida e guardada no espaço privado do Cobre Mobile; os arquivos de música e o Desktop não são alterados.
