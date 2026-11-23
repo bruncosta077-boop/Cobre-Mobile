@@ -117,6 +117,7 @@ class MainActivity:ComponentActivity(){
     val tracks by produceState<List<Track>?>(null,allTracksIdentity,librarySource){val snapshot=allTracks;value=snapshot?.let{withContext(Dispatchers.Default){selectLibrarySource(it,librarySource)}}}
     val sourceCounts by produceState<Map<LibrarySource,Int>>(emptyMap(),catalogIdentity){value=withContext(Dispatchers.Default){val combined=localTracks.orEmpty()+offlineTracks+desktopTracks;mapOf(LibrarySource.All to selectLibrarySource(combined,LibrarySource.All).size,LibrarySource.Phone to combined.count{it.uri.scheme!="http"&&it.uri.scheme!="file"},LibrarySource.Desktop to combined.count{it.uri.scheme=="http"},LibrarySource.Downloaded to offlineTracks.size)}}
     val desktopLibrary=remember{DesktopLibraryRepository()}
+    val desktopCatalogCache=remember{DesktopCatalogCache(context)}
     var search by remember{mutableStateOf(false)}; var query by remember{mutableStateOf("")}
     var page by remember{mutableStateOf(Page.Library)}; var tab by remember{mutableStateOf(LibraryTab.Albums)}
      var album by remember{mutableStateOf<Album?>(null)}; var artist by remember{mutableStateOf<Artist?>(null)}; var fullPlayer by remember{mutableStateOf(false)};var coverSearchAlbum by remember{mutableStateOf<Album?>(null)};var albumInfoAlbum by remember{mutableStateOf<Album?>(null)}
@@ -246,14 +247,29 @@ class MainActivity:ComponentActivity(){
             if(settings.secureDesktopAccessRequired&&grantToken.isNullOrBlank()){
                 desktopTracks=emptyList();desktopCatalogResponseMs=null;desktopStatus="Peça acesso Cobre ID ao Desktop para reconectar esta biblioteca."
             }else{
-                desktopStatus="Conectando ao Cobre Desktop…";runCatching{
+                val origin=runCatching{desktopLibrary.cacheOrigin(address)}.getOrNull()
+                val grantId=accountRepo.desktopGrantId()
+                val cacheKey=if(origin!=null&&!grantId.isNullOrBlank())DesktopCatalogCache.key(origin,grantId)else null
+                desktopStatus="Conectando ao Cobre Desktop…"
+                try{
                     val validToken=if(accountRepo.desktopGrantId()!=null)accountRepo.ensureDesktopGrantToken()else grantToken
-                    try{desktopLibrary.load(address,validToken)}catch(error:DesktopLibraryException){
+                    val remote=try{desktopLibrary.load(address,validToken)}catch(error:DesktopLibraryException){
                         if(error.statusCode!=401||accountRepo.desktopGrantId()==null)throw error
                         val renewed=accountRepo.refreshDesktopGrant()
                         desktopLibrary.loadAuthorized(address,renewed.token)
                     }
-                }.onSuccess{remote->desktopTracks=remote.tracks;desktopCatalogResponseMs=remote.catalogResponseMs;desktopStatus="Computador conectado · ${remote.tracks.size} faixas · catálogo respondeu em ${remote.catalogResponseMs} ms"}.onFailure{desktopTracks=emptyList();desktopCatalogResponseMs=null;desktopStatus=it.message?:"Não foi possível conectar ao computador."}
+                    desktopTracks=remote.tracks;desktopCatalogResponseMs=remote.catalogResponseMs;desktopStatus="Computador conectado · ${remote.tracks.size} faixas · catálogo respondeu em ${remote.catalogResponseMs} ms"
+                    if(cacheKey!=null&&origin!=null)runCatching{desktopCatalogCache.replace(cacheKey,origin,remote.tracks)}
+                }catch(error:Exception){
+                    desktopCatalogResponseMs=null
+                    val authorizationRejected=(error is DesktopLibraryException&&(error.statusCode==401||error.statusCode==403))||(error is CobreIdException&&(error.statusCode==401||error.statusCode==403))
+                    if(authorizationRejected){cacheKey?.let{runCatching{desktopCatalogCache.clear(it)}};desktopTracks=emptyList();desktopStatus=error.message?:"A autorização do computador foi recusada. Reconecte pelo QR."}
+                    else{
+                        val cached=cacheKey?.let{runCatching{desktopCatalogCache.read(it)}.getOrNull()}.orEmpty()
+                        if(cached.isNotEmpty()){desktopTracks=cached;desktopStatus="Computador indisponível · catálogo salvo com ${cached.size} faixas. A reprodução pela rede retorna quando ele reconectar."}
+                        else{desktopTracks=emptyList();desktopStatus=error.message?:"Não foi possível conectar ao computador."}
+                    }
+                }
             }
         }
     }

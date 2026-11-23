@@ -13,6 +13,8 @@ data class DesktopLibrarySnapshot(val tracks: List<Track>, val catalogResponseMs
 class DesktopLibraryException(message: String, val statusCode: Int) : IllegalStateException(message)
 
 class DesktopLibraryRepository {
+    fun cacheOrigin(address:String):String=runCatching{parseOrigin(address)}.getOrElse{throw IllegalArgumentException("O endereço salvo do Desktop não é válido.")}
+
     /** Returns the Desktop catalog ID only when this track belongs to the configured paired host. */
     fun desktopTrackIdForRemotePlayback(track: Track, expectedOrigin: String): Int? {
         val stream = track.sourceUri ?: track.uri

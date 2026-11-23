@@ -1,5 +1,11 @@
 # Cobre Mobile — status
 
+## 0.31.0-rc.1 em publicação
+
+- Catálogo remoto salvo em banco privado do Mobile como metadados, vinculado ao endereço do Desktop e ao ID da concessão, sem salvar tokens ou arquivos de áudio.
+- Em indisponibilidade de rede, o Mobile preserva o catálogo em tela; autorização recusada (401/403) limpa o cache vinculado.
+- Versão de pacote 33 / 0.31.0-rc.1. A publicação depende do workflow de compilação e assinatura.
+
 ## 0.30.0-rc.1 publicado
 
 - Ajustes agora mostram o espaço usado pelos downloads offline e permitem limpar as cópias com confirmação, sem tocar na biblioteca do Desktop.
