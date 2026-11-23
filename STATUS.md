@@ -1,5 +1,11 @@
 # Cobre Mobile — status
 
+## 0.33.0-rc.1 em publicação
+
+- Backup restaura também e-mail, Cobre Server e endereço local do Desktop; qualquer chave antiga na URL é descartada.
+- Backups 0.32 continuam aceitos. Senhas, tokens, autorizações e permissões SAF não são exportados; trocar e-mail/servidor encerra a sessão anterior para evitar misturar contas.
+- Versão de pacote 35 / 0.33.0-rc.1. A publicação depende da compilação e validação de assinatura no GitHub Actions.
+
 ## 0.32.0-rc.1 publicado — 23/11/2026
 
 - Configurações exportáveis/importáveis: paleta, vinil, cores dinâmicas, equalizador, ReplayGain, reforço de graves e áudio espacial.

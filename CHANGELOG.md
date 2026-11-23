@@ -1,10 +1,18 @@
 # Histórico de versões — Cobre Mobile
 
+## 0.33.0-rc.1 — backup de conexão sem segredos
+
+- O backup portátil agora também guarda e-mail da conta e endereços do Cobre Server e do Desktop para acelerar a configuração após reinstalação.
+- Chaves antigas que apareciam em endereços do Desktop são removidas; tokens, senha, concessões, permissões da pasta e músicas baixadas continuam fora do arquivo.
+- Importar outro e-mail/servidor encerra a sessão e as autorizações antigas; quando a identidade permanece igual, o login atual é mantido.
+- A importação valida os endereços antes de alterar as preferências e segue aceitando backups de aparência/áudio da versão 0.32.
+- Esta versão aguarda compilação e assinatura automáticas antes da publicação.
+
 ## 0.32.0-rc.1 — backup portátil de configurações
 
 - Configurações agora permitem exportar e importar cor, player de vinil, cores dinâmicas da capa, equalizador, ReplayGain, graves e áudio espacial.
 - O formato tem versão e valida os campos antes de gravar; importar exige confirmação e atualiza os controles do app sem reiniciar.
-- O arquivo não inclui conta Cobre ID, tokens, endereço do Desktop, permissão da pasta ou downloads offline.
+- O arquivo não inclui senha, tokens, endereço do Desktop, permissão da pasta ou downloads offline. A versão 0.33 passa a preservar somente dados de conexão não secretos.
 - CI compilou o app, verificou a assinatura do APK/AAB e publicou os pacotes com checksums em 23/11/2026.
 
 ## 0.31.0-rc.1 — biblioteca do Desktop resiliente

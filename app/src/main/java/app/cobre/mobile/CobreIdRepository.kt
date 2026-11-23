@@ -52,6 +52,26 @@ class CobreIdRepository(context: Context) {
         prefs.edit().putString("server_url", normalizeUrl(value)).apply()
     }
 
+    fun validateServerUrl(value: String): String = normalizeUrl(value)
+
+    fun restoreNonSecretSettings(server: String, email: String): Boolean {
+        val normalizedServer = normalizeUrl(server)
+        val normalizedEmail = email.trim()
+        require(normalizedEmail.isEmpty() || (normalizedEmail.length <= 254 && normalizedEmail.contains('@') && normalizedEmail.none(Char::isISOControl))) {
+            "O e-mail do backup não é válido."
+        }
+        val identityChanged = runCatching { normalizeUrl(serverUrl) }.getOrDefault("") != normalizedServer ||
+            savedEmail.trim().lowercase() != normalizedEmail.lowercase()
+        if (identityChanged) {
+            accessToken = null
+            check(secretPrefs.edit().clear().commit()) { "Não foi possível encerrar a sessão anterior com segurança." }
+        }
+        check(prefs.edit().putString("server_url", normalizedServer).putString("email", normalizedEmail).commit()) {
+            "Não foi possível restaurar as preferências de conta."
+        }
+        return identityChanged
+    }
+
     suspend fun checkServer(): Boolean = withContext(Dispatchers.IO) {
         requestBlocking("/health", "GET", null, authorize = false).optBoolean("ok")
     }

@@ -1,12 +1,13 @@
 package app.cobre.mobile
 
 import android.content.Context
+import android.net.Uri
 import org.json.JSONObject
 
-/** Portable settings only. Connection addresses, grants, credentials, folder permissions and audio files are never exported. */
+/** Portable preferences plus non-secret connection hints. Credentials, grants, folder permissions and audio files are never exported. */
 object MobileSettingsBackup{
     private const val FORMAT="cobre-mobile-settings"
-    private const val SCHEMA=1
+    private const val SCHEMA=2
     private val allowedAccents=setOf(
         0xFFC9773F.toInt() to 0xFFE6A06A.toInt(),0xFFD99AA9.toInt() to 0xFFF1C4CE.toInt(),
         0xFFD2AC67.toInt() to 0xFFE8CC8F.toInt(),0xFF6D91B8.toInt() to 0xFF91B7C7.toInt(),
@@ -14,7 +15,7 @@ object MobileSettingsBackup{
         0xFF77A786.toInt() to 0xFFB4C39A.toInt(),
     )
 
-    fun export(settings:MobileSettings,context:Context):String{
+    fun export(settings:MobileSettings,account:CobreIdRepository,context:Context):String{
         val audio=context.getSharedPreferences(PlaybackService.AUDIO_PREFS,Context.MODE_PRIVATE)
         val bands=JSONObject().apply{repeat(5){put("eqBand$it",audio.getInt("eq_band_$it",0))}}
         return JSONObject().put("format",FORMAT).put("schemaVersion",SCHEMA).put("createdAt",System.currentTimeMillis())
@@ -22,13 +23,16 @@ object MobileSettingsBackup{
             .put("audio",JSONObject().put("equalizerEnabled",audio.getBoolean("eq_enabled",false)).put("equalizerBands",bands)
                 .put("replayGainEnabled",audio.getBoolean("replaygain_enabled",false)).put("bassEnabled",audio.getBoolean("bass_enabled",false))
                 .put("bassStrength",audio.getInt("bass_strength",25)).put("spatialAudioEnabled",audio.getBoolean("virtualizer_enabled",false))
-                .put("spatialAudioStrength",audio.getInt("virtualizer_strength",20))).toString(2)
+                .put("spatialAudioStrength",audio.getInt("virtualizer_strength",20)))
+            .put("connection",JSONObject().put("serverUrl",account.serverUrl).put("accountEmail",account.savedEmail)
+                .put("desktopOrigin",safeDesktopOrigin(settings.desktopUrl))).toString(2)
     }
 
-    fun import(jsonText:String,settings:MobileSettings,context:Context){
+    fun import(jsonText:String,settings:MobileSettings,account:CobreIdRepository,context:Context):Boolean{
         require(jsonText.toByteArray(Charsets.UTF_8).size<=64*1024){"Este arquivo de backup é maior que o permitido."}
         val root=JSONObject(jsonText)
-        require(root.getString("format")==FORMAT&&root.getInt("schemaVersion")==SCHEMA){"Este arquivo não é um backup compatível do Cobre Mobile."}
+        val schema=root.optInt("schemaVersion",-1)
+        require(root.getString("format")==FORMAT&&schema in 1..SCHEMA){"Este arquivo não é um backup compatível do Cobre Mobile."}
         val appearance=root.getJSONObject("appearance")
         val primary=appearance.getInt("accentPrimary");val secondary=appearance.getInt("accentSecondary")
         require((primary to secondary) in allowedAccents){"A cor deste backup não é reconhecida pelo Cobre Mobile."}
@@ -39,6 +43,20 @@ object MobileSettingsBackup{
         val spatialStrength=audio.getInt("spatialAudioStrength").also{require(it in 0..100){"Ajuste de áudio espacial inválido no backup."}}
         val eqEnabled=audio.getBoolean("equalizerEnabled");val replayGain=audio.getBoolean("replayGainEnabled")
         val bassEnabled=audio.getBoolean("bassEnabled");val spatialEnabled=audio.getBoolean("spatialAudioEnabled")
+        val connection=root.optJSONObject("connection")
+        require((schema==1&&connection==null)||(schema==2&&connection!=null)){"O conteúdo do backup está incompleto."}
+        if(connection!=null)require(connection.has("serverUrl")&&connection.has("accountEmail")&&connection.has("desktopOrigin")){"As informações de conexão do backup estão incompletas."}
+        val serverUrl=connection?.optString("serverUrl").orEmpty()
+        val accountEmail=connection?.optString("accountEmail").orEmpty()
+        val desktopOrigin=connection?.optString("desktopOrigin").orEmpty().takeIf(String::isNotBlank)?.let(::safeDesktopOrigin)
+        require(connection==null||desktopOrigin!=null||connection.isNull("desktopOrigin")||connection.optString("desktopOrigin").isBlank()) {
+            "O endereço local do Desktop não é válido neste backup."
+        }
+        // Validate account URL/email before changing any preferences.
+        val normalizedServer=account.validateServerUrl(serverUrl)
+        require(accountEmail.isBlank()||(accountEmail.length<=254&&accountEmail.contains('@')&&accountEmail.none(Char::isISOControl))) {
+            "O e-mail do backup não é válido."
+        }
 
         val audioPrefs=context.getSharedPreferences(PlaybackService.AUDIO_PREFS,Context.MODE_PRIVATE)
         check(audioPrefs.edit().putBoolean("eq_enabled",eqEnabled).putBoolean("replaygain_enabled",replayGain)
@@ -48,6 +66,23 @@ object MobileSettingsBackup{
         settings.setAccent(primary,secondary)
         settings.saveVinylPlayer(vinyl)
         settings.saveDynamicAlbumColors(dynamic)
+        var sessionReset=false
+        if(connection!=null){
+            sessionReset=account.restoreNonSecretSettings(normalizedServer,accountEmail)
+            if(safeDesktopOrigin(settings.desktopUrl)!=desktopOrigin)account.clearDesktopGrant()
+            settings.saveDesktopUrl(desktopOrigin)
+        }
         settings.notifyPortableRestore()
+        return sessionReset
+    }
+
+    private fun safeDesktopOrigin(raw:String?):String?{
+        if(raw.isNullOrBlank())return null
+        val uri=runCatching{Uri.parse(raw.trim())}.getOrNull()?:return null
+        val host=uri.host?.lowercase().orEmpty()
+        val parts=host.split('.').map{it.toIntOrNull()?:return null}
+        if(uri.scheme!="http"||uri.port !in -1..65535||parts.size!=4||parts.any{it !in 0..255}||uri.userInfo!=null||uri.fragment!=null||uri.path.orEmpty() !in setOf("","/")||
+            !(parts[0]==10||(parts[0]==192&&parts[1]==168)||(parts[0]==172&&parts[1] in 16..31)||(parts[0]==169&&parts[1]==254)||parts[0]==127))return null
+        return Uri.Builder().scheme("http").encodedAuthority(buildString{append(host);if(uri.port>=0)append(":${uri.port}")}).build().toString()
     }
 }

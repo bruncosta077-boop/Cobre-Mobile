@@ -130,7 +130,7 @@ class MainActivity:ComponentActivity(){
     var backupBusy by remember{mutableStateOf(false)};var backupStatus by remember{mutableStateOf("")}
     val exportSettingsBackup=rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")){uri->
         if(uri!=null){
-            val contents=runCatching{MobileSettingsBackup.export(settings,context)}.getOrElse{backupStatus=it.message?:"Não foi possível preparar o backup.";return@rememberLauncherForActivityResult}
+            val contents=runCatching{MobileSettingsBackup.export(settings,accountRepo,context)}.getOrElse{backupStatus=it.message?:"Não foi possível preparar o backup.";return@rememberLauncherForActivityResult}
             scope.launch{backupBusy=true;backupStatus="";runCatching{withContext(Dispatchers.IO){context.contentResolver.openOutputStream(uri,"wt")?.bufferedWriter(Charsets.UTF_8)?.use{it.write(contents)}?:error("Não foi possível gravar o arquivo de backup.")}}.onSuccess{backupStatus="Backup de configurações salvo."}.onFailure{backupStatus=it.message?:"Não foi possível salvar o backup."};backupBusy=false}
         }
     }
@@ -143,8 +143,14 @@ class MainActivity:ComponentActivity(){
                     while(true){val count=input.read(buffer);if(count<0)break;require(output.size()+count<=64*1024){"O arquivo de backup é maior que o permitido."};output.write(buffer,0,count)}
                     output.toString(Charsets.UTF_8.name())
                 }?:error("Não foi possível abrir o arquivo de backup.")}
-                MobileSettingsBackup.import(contents,settings,context)
-            }.onSuccess{backupStatus="Aparência e ajustes de áudio restaurados. Reconecte o Cobre ID e escolha novamente a pasta da biblioteca."}.onFailure{backupStatus=it.message?:"Não foi possível importar o backup."}
+                val previousGrant=accountRepo.desktopGrantId()
+                val sessionReset=MobileSettingsBackup.import(contents,settings,accountRepo,context)
+                sessionReset to (previousGrant!=accountRepo.desktopGrantId())
+            }.onSuccess{(sessionReset,desktopGrantReset)->
+                account=if(sessionReset)AccountUi(email=accountRepo.savedEmail,message="Entre no Cobre ID para continuar.") else if(!account.signedIn)account.copy(email=accountRepo.savedEmail) else account
+                if(desktopGrantReset){desktopStatus="Acesso ao Desktop precisa ser autorizado novamente.";desktopRefreshKey++;desktopAuthorizationRevision++}
+                backupStatus="Preferências restauradas. Entre no Cobre ID se solicitado e autorize novamente a pasta, se necessário."
+            }.onFailure{backupStatus=it.message?:"Não foi possível importar o backup."}
             backupBusy=false
         }
     }

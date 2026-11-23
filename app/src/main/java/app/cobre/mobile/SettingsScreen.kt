@@ -134,8 +134,8 @@ fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,
         }
         SettingsCard {
             SectionHeading(Icons.Default.Settings,"Backup de configurações")
-            Text("Salva aparência, vinil, cores da capa e ajustes de áudio em um arquivo que você pode guardar e importar depois.",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=8.dp))
-            Text("Por segurança, o backup não inclui Cobre ID, tokens, endereço do computador, pasta autorizada ou músicas baixadas.",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=5.dp))
+            Text("Salva aparência, vinil, cores da capa, ajustes de áudio, e-mail e endereços do Cobre Server e Desktop em um arquivo que você pode guardar e importar depois.",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=8.dp))
+            Text("Senhas, tokens, autorizações, permissões de pasta e músicas baixadas ficam fora do arquivo. Após restaurar, entre no Cobre ID e conceda novamente o acesso à pasta, se usar uma.",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=5.dp))
             Row(Modifier.fillMaxWidth().padding(top=9.dp),horizontalArrangement=Arrangement.spacedBy(8.dp)){
                 OutlinedButton(onClick=onExportBackup,enabled=!backupBusy,modifier=Modifier.weight(1f),shape=RoundedCornerShape(22.dp)){Text("Exportar",color=Tx)}
                 OutlinedButton(onClick={confirmImportBackup=true},enabled=!backupBusy,modifier=Modifier.weight(1f),shape=RoundedCornerShape(22.dp)){Text("Importar",color=Tx)}
@@ -281,7 +281,7 @@ fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,
     if(confirmImportBackup)AlertDialog(
         onDismissRequest={confirmImportBackup=false},
         title={Text("Importar configurações?")},
-        text={Text("A aparência e os ajustes de áudio atuais serão substituídos. O backup não altera biblioteca, pasta, computador conectado ou conta Cobre ID.")},
+        text={Text("As preferências atuais serão substituídas. Senhas, tokens e permissões da pasta não entram no arquivo. Se o e-mail ou servidor forem diferentes, a sessão atual será encerrada por segurança.")},
         confirmButton={TextButton(onClick={confirmImportBackup=false;onImportBackup()}){Text("Escolher backup",color=MaterialTheme.colorScheme.primary)}},
         dismissButton={TextButton(onClick={confirmImportBackup=false}){Text("Cancelar",color=Tx)}},
     )

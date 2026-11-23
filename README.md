@@ -2,7 +2,7 @@
   <img src="assets/branding/cobre-logo.png" alt="Logo do Cobre" width="150">
   <h1>Cobre Mobile</h1>
   <p>Player Android integrado ao ecossistema Cobre</p>
-  <p><strong>Versão publicada: 0.32.0-rc.1 — backup de configurações</strong></p>
+  <p><strong>Versão em publicação: 0.33.0-rc.1 — backup de conexão</strong></p>
 </div>
 
 O código do Cobre é proprietário e está disponível publicamente para inspeção. Consulte o [aviso de licença](LICENSE); componentes de terceiros mantêm suas próprias licenças.
@@ -11,11 +11,11 @@ Desenvolvimento principal: Bruno C S Moraes · Contribuição ao projeto: [@dilu
 
 Aplicativo Android do ecossistema Cobre. Interface escura com a paleta, o símbolo e a organização visual do Cobre Desktop, adaptados para toque.
 
-## Última versão publicada: 0.31.0-rc.1
+## Última versão publicada: 0.32.0-rc.1
 
-APK e AAB assinados, com checksums SHA-256, disponíveis em [Cobre Mobile 0.31.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.31.0-rc.1). É um pré-lançamento para avaliação em aparelho.
+APK e AAB assinados, com checksums SHA-256, disponíveis em [Cobre Mobile 0.32.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.32.0-rc.1). É um pré-lançamento para avaliação em aparelho.
 
-APK, AAB e checksums SHA-256 assinados disponíveis em [Cobre Mobile 0.32.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.32.0-rc.1). O backup permite levar aparência e ajustes de áudio para outra instalação sem incluir credenciais ou permissões privadas.
+Próxima versão em publicação: 0.33.0-rc.1. O backup também preservará e-mail e endereços de conexão, sem salvar senhas, tokens, concessões ou permissões de pasta.
 
 APK e AAB assinados, com checksums SHA-256, disponíveis em [Cobre Mobile 0.29.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.29.0-rc.1). É um pré-lançamento para avaliação em aparelho.
 
@@ -43,7 +43,7 @@ O app verifica novas versões ao abrir e em **Configurações → Aplicativo**. 
 - Na versão publicada 0.29.0-rc.1, álbuns e playlists do Desktop podem ser baixados em lote para ouvir offline, com progresso, cancelamento e retomada sem repetir faixas concluídas.
 - Na versão publicada 0.30.0-rc.1, Configurações mostra espaço e quantidade de faixas baixadas e permite remover cópias offline com segurança.
 - Na versão publicada 0.31.0-rc.1, o catálogo do Desktop é mantido em banco privado para continuar visível durante quedas temporárias de conexão; ele é apagado quando a autorização é recusada.
-- A versão em publicação 0.32.0-rc.1 adiciona backup importável de aparência e áudio; para segurança, conta, tokens, computador e permissões de pasta são configurados novamente no aparelho.
+- A versão publicada 0.32.0-rc.1 adiciona backup importável de aparência e áudio; a versão 0.33.0-rc.1 em publicação também preserva e-mail e endereços de conexão sem expor credenciais.
 - Faixas autorizadas do Desktop podem ser baixadas para ouvir offline. Em **Biblioteca → Computador → Faixas**, toque no ícone de download; elas aparecem em **Baixadas** e o mesmo controle as remove. Os arquivos ficam privados no app e há limite de 2 GB no total e 512 MB por faixa.
 - Descoberta automática do Desktop na mesma rede local enquanto a tela Conexões estiver aberta; QR continua disponível.
 - Status da conexão Desktop exibe tempo de resposta do catálogo e quantidade de faixas carregadas.
