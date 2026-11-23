@@ -1,10 +1,10 @@
 # Cobre Mobile — status
 
-## 0.31.0-rc.1 em publicação
+## 0.31.0-rc.1 publicado
 
 - Catálogo remoto salvo em banco privado do Mobile como metadados, vinculado ao endereço do Desktop e ao ID da concessão, sem salvar tokens ou arquivos de áudio.
 - Em indisponibilidade de rede, o Mobile preserva o catálogo em tela; autorização recusada (401/403) limpa o cache vinculado.
-- Versão de pacote 33 / 0.31.0-rc.1. A publicação depende do workflow de compilação e assinatura.
+- Versão de pacote 33 / 0.31.0-rc.1. Build, assinatura estável e publicação [45258493140](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45258493140) passaram. APK/AAB e checksums estão na [release](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.31.0-rc.1).
 
 ## 0.30.0-rc.1 publicado
 

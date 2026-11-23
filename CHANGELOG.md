@@ -5,7 +5,7 @@
 - O catálogo de faixas do computador fica salvo no banco privado do app, sem áudio ou tokens, e reaparece quando uma queda temporária impede a conexão.
 - O cache é associado ao endereço local normalizado e à concessão Cobre ID do aparelho; uma autorização recusada (401/403) apaga o catálogo salvo correspondente.
 - Quando a rede retorna, o Mobile substitui os metadados salvos pelo catálogo atual do Desktop. A reprodução remota continua dependendo de conexão ativa e autorização válida.
-- Esta versão aguarda compilação e assinatura automáticas antes da publicação.
+- Build, assinatura do APK/AAB e publicação passaram no workflow [45258493140](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45258493140). Artefatos na [release 0.31.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.31.0-rc.1).
 
 ## 0.30.0-rc.1 — controle de espaço offline
 
