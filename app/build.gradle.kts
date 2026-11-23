@@ -10,8 +10,8 @@ android {
         applicationId = "app.cobre.mobile"
         minSdk = 29          // loadThumbnail() e MediaStore moderno; ver STATUS.md
         targetSdk = 36
-        versionCode = 35
-        versionName = "0.33.0-rc.1"
+        versionCode = 36
+        versionName = "0.34.0-rc.1"
     }
     flavorDimensions += "distribution"
     productFlavors {

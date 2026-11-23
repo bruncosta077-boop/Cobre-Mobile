@@ -1,5 +1,12 @@
 # Histórico de versões — Cobre Mobile
 
+## 0.34.0-rc.1 — limpeza de chaves LAN antigas
+
+- O banco de favoritos, histórico e playlists remove chaves de acesso antigas que estavam embutidas nas URLs do Desktop; novas gravações já descartam query e fragmento das URLs de rede.
+- A preferência de endereço do Desktop também é sanitizada na inicialização e os endereços legados passam a exigir novo pareamento pelo Cobre ID.
+- A migração do banco roda uma vez durante a atualização, antes de os dados voltarem a ser usados; os arquivos do usuário continuam no backup Android sem copiar tokens de acesso nas URLs.
+- Esta versão aguarda compilação e assinatura automáticas antes da publicação.
+
 ## 0.33.0-rc.1 — backup de conexão sem segredos
 
 - O backup portátil agora também guarda e-mail da conta e endereços do Cobre Server e do Desktop para acelerar a configuração após reinstalação.

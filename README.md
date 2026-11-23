@@ -2,7 +2,7 @@
   <img src="assets/branding/cobre-logo.png" alt="Logo do Cobre" width="150">
   <h1>Cobre Mobile</h1>
   <p>Player Android integrado ao ecossistema Cobre</p>
-  <p><strong>Versão publicada: 0.33.0-rc.1 — backup de conexão</strong></p>
+  <p><strong>Versão em publicação: 0.34.0-rc.1 — segurança do backup local</strong></p>
 </div>
 
 O código do Cobre é proprietário e está disponível publicamente para inspeção. Consulte o [aviso de licença](LICENSE); componentes de terceiros mantêm suas próprias licenças.
@@ -16,6 +16,8 @@ Aplicativo Android do ecossistema Cobre. Interface escura com a paleta, o símbo
 APK e AAB assinados, com checksums SHA-256, disponíveis em [Cobre Mobile 0.33.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.33.0-rc.1). É um pré-lançamento para avaliação em aparelho.
 
 O backup leva aparência, áudio, e-mail e endereços do Server/Desktop para outra instalação. Senhas, tokens, concessões e permissões de pasta não são exportados.
+
+Próxima versão em publicação: 0.34.0-rc.1. A atualização remove chaves LAN antigas das preferências e das coleções antes de esses dados serem novamente armazenados pelo backup Android.
 
 APK e AAB assinados, com checksums SHA-256, disponíveis em [Cobre Mobile 0.29.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.29.0-rc.1). É um pré-lançamento para avaliação em aparelho.
 
@@ -44,6 +46,7 @@ O app verifica novas versões ao abrir e em **Configurações → Aplicativo**. 
 - Na versão publicada 0.30.0-rc.1, Configurações mostra espaço e quantidade de faixas baixadas e permite remover cópias offline com segurança.
 - Na versão publicada 0.31.0-rc.1, o catálogo do Desktop é mantido em banco privado para continuar visível durante quedas temporárias de conexão; ele é apagado quando a autorização é recusada.
 - A versão publicada 0.32.0-rc.1 adiciona backup importável de aparência e áudio; a 0.33.0-rc.1 também preserva e-mail e endereços de conexão, removendo chaves antigas do endereço local.
+- A versão 0.34.0-rc.1 em publicação limpa chaves LAN legadas das URLs persistidas em favoritos, histórico e playlists antes do próximo backup do sistema.
 - Faixas autorizadas do Desktop podem ser baixadas para ouvir offline. Em **Biblioteca → Computador → Faixas**, toque no ícone de download; elas aparecem em **Baixadas** e o mesmo controle as remove. Os arquivos ficam privados no app e há limite de 2 GB no total e 512 MB por faixa.
 - Descoberta automática do Desktop na mesma rede local enquanto a tela Conexões estiver aberta; QR continua disponível.
 - Status da conexão Desktop exibe tempo de resposta do catálogo e quantidade de faixas carregadas.
@@ -76,7 +79,7 @@ O áudio da biblioteca do Desktop é entregue pelo próprio computador na rede l
 
 ## Segurança da conexão
 
-O refresh token do Cobre ID fica protegido pelo Android Keystore. Para conexões HTTP, o app aceita apenas loopback ou endereço IPv4 privado; HTTPS usa a validação padrão de certificados do Android. As requisições de conta e catálogo não seguem redirecionamentos, para evitar encaminhar senhas, tokens ou a chave da biblioteca a outro host. O tráfego HTTP local continua sem criptografia e deve ser usado somente em uma rede Wi-Fi confiável.
+O refresh token do Cobre ID fica protegido pelo Android Keystore e não entra no backup Android. Para conexões HTTP, o app aceita apenas loopback ou endereço IPv4 privado; HTTPS usa a validação padrão de certificados do Android. As requisições de conta e catálogo não seguem redirecionamentos, para evitar encaminhar senhas, tokens ou a chave da biblioteca a outro host. URLs antigas de streaming com chave são removidas das configurações e coleções durante a migração do app. O tráfego HTTP local continua sem criptografia e deve ser usado somente em uma rede Wi-Fi confiável.
 
 ## Funções do Desktop ainda ausentes no Mobile
 

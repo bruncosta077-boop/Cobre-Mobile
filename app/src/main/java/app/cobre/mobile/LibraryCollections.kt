@@ -47,7 +47,7 @@ class LibraryCollections(context: Context) {
         return "${norm(album.artist)}|${norm(album.title)}"
     }
 
-    fun isFavorite(track: Track) = favorites.any { it.uri == track.uri }
+    fun isFavorite(track: Track) = favorites.any { safeStoredTrackUri(it.uri) == safeStoredTrackUri(track.uri) }
 
     fun toggleFavorite(track: Track) {
         val db = database.writableDatabase
@@ -127,7 +127,7 @@ class LibraryCollections(context: Context) {
     }
 
     private fun trackValues(track: Track) = ContentValues().apply {
-        put("uri", track.uri.toString()); put("media_id", track.id); put("title", track.title)
+        put("uri", safeStoredTrackUri(track.uri)); put("media_id", track.id); put("title", track.title)
         put("artist", track.artist); put("album_artist", track.albumArtist); put("album", track.album)
         put("track_number", track.trackNumber); put("disc_number", track.discNumber)
         put("duration_ms", track.durationMs); put("year", track.year)
@@ -141,7 +141,7 @@ class LibraryCollections(context: Context) {
         durationMs = getLong(getColumnIndexOrThrow("duration_ms")), year = getInt(getColumnIndexOrThrow("year")),
     )
 
-    private class CollectionsDatabase(context: Context) : SQLiteOpenHelper(context, "cobre-mobile-library.db", null, 2) {
+    private class CollectionsDatabase(context: Context) : SQLiteOpenHelper(context, "cobre-mobile-library.db", null, 3) {
         override fun onCreate(db: SQLiteDatabase) {
             val trackFields = "uri TEXT NOT NULL, media_id INTEGER NOT NULL, title TEXT NOT NULL, artist TEXT NOT NULL, album_artist TEXT NOT NULL, album TEXT NOT NULL, track_number INTEGER NOT NULL, disc_number INTEGER NOT NULL, duration_ms INTEGER NOT NULL, year INTEGER NOT NULL"
             db.execSQL("CREATE TABLE favorites ($trackFields, saved_at INTEGER NOT NULL, PRIMARY KEY(uri))")
@@ -156,6 +156,17 @@ class LibraryCollections(context: Context) {
 
         override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
             if (oldVersion < 2) db.execSQL("CREATE TABLE album_ratings (album_key TEXT PRIMARY KEY NOT NULL, rating INTEGER NOT NULL CHECK(rating BETWEEN 1 AND 5), updated_at INTEGER NOT NULL)")
+            if (oldVersion < 3) scrubLegacyDesktopUris(db)
+        }
+
+        private fun scrubLegacyDesktopUris(db:SQLiteDatabase){
+            val remoteWithQuery="(uri LIKE 'http://%' OR uri LIKE 'https://%') AND (instr(uri,'?')>0 OR instr(uri,'#')>0)"
+            val cleanUri="CASE WHEN instr(uri,'?')>0 THEN substr(uri,1,instr(uri,'?')-1) ELSE substr(uri,1,instr(uri,'#')-1) END"
+            listOf("favorites","history").forEach { table ->
+                db.execSQL("UPDATE OR IGNORE $table SET uri=$cleanUri WHERE $remoteWithQuery")
+                db.execSQL("DELETE FROM $table WHERE $remoteWithQuery")
+            }
+            db.execSQL("UPDATE playlist_tracks SET uri=$cleanUri WHERE $remoteWithQuery")
         }
     }
 
@@ -163,3 +174,6 @@ class LibraryCollections(context: Context) {
         val TRACK_COLUMNS = arrayOf("uri", "media_id", "title", "artist", "album_artist", "album", "track_number", "disc_number", "duration_ms", "year")
     }
 }
+
+private fun safeStoredTrackUri(uri:Uri):String = if(uri.scheme=="http"||uri.scheme=="https")
+    uri.buildUpon().clearQuery().fragment(null).build().toString() else uri.toString()

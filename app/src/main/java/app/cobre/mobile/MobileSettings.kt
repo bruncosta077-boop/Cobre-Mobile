@@ -1,6 +1,7 @@
 package app.cobre.mobile
 
 import android.content.Context
+import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -28,6 +29,16 @@ class MobileSettings(context: Context) {
         }
         if (hasAccessMigration) access.commit()
         if (legacy.all.isNotEmpty()) legacy.edit().clear().commit()
+        val savedDesktopAddress=accessPrefs.getString("desktop_library_url",null)
+        if(!savedDesktopAddress.isNullOrBlank()){
+            val safeAddress=safeLocalDesktopOrigin(savedDesktopAddress)
+            val hadQuery=runCatching{Uri.parse(savedDesktopAddress).encodedQuery!=null}.getOrDefault(true)
+            if(safeAddress==null||safeAddress!=savedDesktopAddress||hadQuery){
+                val editor=accessPrefs.edit().putBoolean("desktop_secure_access_required",true)
+                if(safeAddress==null)editor.remove("desktop_library_url")else editor.putString("desktop_library_url",safeAddress)
+                editor.commit()
+            }
+        }
     }
     var accentPrimary by mutableIntStateOf(appearancePrefs.getInt("accent_primary", 0xFFC9773F.toInt()))
         private set
@@ -68,8 +79,11 @@ class MobileSettings(context: Context) {
     }
 
     fun saveDesktopUrl(url: String?) {
-        desktopUrl = url?.trim()?.takeIf(String::isNotBlank)
+        val raw=url?.trim()?.takeIf(String::isNotBlank)
+        val safe=safeLocalDesktopOrigin(raw)
+        desktopUrl=safe
         accessPrefs.edit().putString("desktop_library_url", desktopUrl).apply()
+        if(raw!=null&&safe!=null&&runCatching{Uri.parse(raw).encodedQuery!=null}.getOrDefault(true))requireSecureDesktopAccess()
     }
 
     fun requireSecureDesktopAccess() {
@@ -78,4 +92,14 @@ class MobileSettings(context: Context) {
     }
 
     fun notifyPortableRestore(){portableRestoreRevision++}
+}
+
+internal fun safeLocalDesktopOrigin(raw:String?):String?{
+    if(raw.isNullOrBlank())return null
+    val uri=runCatching{Uri.parse(raw.trim())}.getOrNull()?:return null
+    val host=uri.host?.lowercase().orEmpty()
+    val octets=host.split('.').map{it.toIntOrNull()?:return null}
+    if(uri.scheme!="http"||uri.port !in -1..65535||octets.size!=4||octets.any{it !in 0..255}||uri.userInfo!=null||uri.fragment!=null||uri.path.orEmpty() !in setOf("","/")||
+        !(octets[0]==10||(octets[0]==192&&octets[1]==168)||(octets[0]==172&&octets[1] in 16..31)||(octets[0]==169&&octets[1]==254)||octets[0]==127))return null
+    return Uri.Builder().scheme("http").encodedAuthority(buildString{append(host);if(uri.port>=0)append(":${uri.port}")}).build().toString()
 }
