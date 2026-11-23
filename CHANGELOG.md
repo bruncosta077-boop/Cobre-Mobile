@@ -6,7 +6,7 @@
 - Chaves antigas que apareciam em endereços do Desktop são removidas; tokens, senha, concessões, permissões da pasta e músicas baixadas continuam fora do arquivo.
 - Importar outro e-mail/servidor encerra a sessão e as autorizações antigas; quando a identidade permanece igual, o login atual é mantido.
 - A importação valida os endereços antes de alterar as preferências e segue aceitando backups de aparência/áudio da versão 0.32.
-- Esta versão aguarda compilação e assinatura automáticas antes da publicação.
+- CI compilou o app, verificou as assinaturas do APK/AAB e publicou os pacotes com checksums em 23/11/2026.
 
 ## 0.32.0-rc.1 — backup portátil de configurações
 
