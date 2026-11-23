@@ -1,10 +1,11 @@
 # Cobre Mobile — status
 
-## 0.28.0-rc.1 em preparação
+## 0.28.0-rc.1 publicado
 
 - Navegação inferior em três áreas, ações de faixa em menus contextuais, mini player simplificado e controles avançados de áudio recolhidos por padrão.
 - Busca, filtragem e agrupamento de biblioteca calculados fora da thread visual; removidas buscas repetidas de posição nas listas.
-- Build, assinatura e validação no celular pendentes.
+- Build [45250835205](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45250835205) e publicação assinada [45251861919](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45251861919) passaram. APK conferido localmente: SHA-256, assinatura estável, pacote `app.cobre.mobile`, versionCode 30, minSdk 29 e targetSdk 36 corretos.
+- Release disponível em [mobile-v0.28.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.28.0-rc.1). A fluidez em diferentes aparelhos ainda precisa de validação prática.
 
 ## 0.27.0-rc.1 publicado
 

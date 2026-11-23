@@ -8,7 +8,7 @@
 - Mini player reduzido a capa, faixa, progresso e reproduzir/pausar. A fila permanece no botão específico da tela completa.
 - Equalizador, graves e espacialização ficam recolhidos por padrão nas configurações; ReplayGain permanece visível como ajuste simples de volume.
 - Toque em Buscar para abrir a pesquisa; atalhos de fila e coleção ficam no Início. Agrupamento e filtragem são calculados em segundo plano e as linhas usam seus índices diretos, evitando buscas repetidas ao tocar em faixas.
-- Build, assinatura e validação em aparelho ainda pendentes.
+- Build [45250835205](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45250835205), build assinado e publicação [45251861919](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45251861919) passaram. APK conferido: SHA-256, assinatura estável, package `app.cobre.mobile`, versionCode 30, minSdk 29 e targetSdk 36 corretos. A suavidade precisa ser observada em diferentes aparelhos.
 
 ## 0.27.0-rc.1 — ações úteis no player e ReplayGain
 
