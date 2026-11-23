@@ -1,7 +1,6 @@
 package app.cobre.mobile
 
 import android.content.Context
-import android.net.Uri
 import org.json.JSONObject
 
 /** Portable preferences plus non-secret connection hints. Credentials, grants, folder permissions and audio files are never exported. */
@@ -25,7 +24,7 @@ object MobileSettingsBackup{
                 .put("bassStrength",audio.getInt("bass_strength",25)).put("spatialAudioEnabled",audio.getBoolean("virtualizer_enabled",false))
                 .put("spatialAudioStrength",audio.getInt("virtualizer_strength",20)))
             .put("connection",JSONObject().put("serverUrl",account.serverUrl).put("accountEmail",account.savedEmail)
-                .put("desktopOrigin",safeDesktopOrigin(settings.desktopUrl))).toString(2)
+                .put("desktopOrigin",safeLocalDesktopOrigin(settings.desktopUrl))).toString(2)
     }
 
     fun import(jsonText:String,settings:MobileSettings,account:CobreIdRepository,context:Context):Boolean{
@@ -48,7 +47,7 @@ object MobileSettingsBackup{
         if(connection!=null)require(connection.has("serverUrl")&&connection.has("accountEmail")&&connection.has("desktopOrigin")){"As informações de conexão do backup estão incompletas."}
         val serverUrl=connection?.optString("serverUrl").orEmpty()
         val accountEmail=connection?.optString("accountEmail").orEmpty()
-        val desktopOrigin=connection?.optString("desktopOrigin").orEmpty().takeIf(String::isNotBlank)?.let(::safeDesktopOrigin)
+        val desktopOrigin=connection?.optString("desktopOrigin").orEmpty().takeIf(String::isNotBlank)?.let(::safeLocalDesktopOrigin)
         require(connection==null||desktopOrigin!=null||connection.isNull("desktopOrigin")||connection.optString("desktopOrigin").isBlank()) {
             "O endereço local do Desktop não é válido neste backup."
         }
@@ -69,20 +68,11 @@ object MobileSettingsBackup{
         var sessionReset=false
         if(connection!=null){
             sessionReset=account.restoreNonSecretSettings(normalizedServer,accountEmail)
-            if(safeDesktopOrigin(settings.desktopUrl)!=desktopOrigin)account.clearDesktopGrant()
+            if(safeLocalDesktopOrigin(settings.desktopUrl)!=desktopOrigin)account.clearDesktopGrant()
             settings.saveDesktopUrl(desktopOrigin)
         }
         settings.notifyPortableRestore()
         return sessionReset
     }
 
-    private fun safeDesktopOrigin(raw:String?):String?{
-        if(raw.isNullOrBlank())return null
-        val uri=runCatching{Uri.parse(raw.trim())}.getOrNull()?:return null
-        val host=uri.host?.lowercase().orEmpty()
-        val parts=host.split('.').map{it.toIntOrNull()?:return null}
-        if(uri.scheme!="http"||uri.port !in -1..65535||parts.size!=4||parts.any{it !in 0..255}||uri.userInfo!=null||uri.fragment!=null||uri.path.orEmpty() !in setOf("","/")||
-            !(parts[0]==10||(parts[0]==192&&parts[1]==168)||(parts[0]==172&&parts[1] in 16..31)||(parts[0]==169&&parts[1]==254)||parts[0]==127))return null
-        return Uri.Builder().scheme("http").encodedAuthority(buildString{append(host);if(uri.port>=0)append(":${uri.port}")}).build().toString()
-    }
 }
