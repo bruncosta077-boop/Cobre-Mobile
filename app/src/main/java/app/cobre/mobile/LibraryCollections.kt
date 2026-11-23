@@ -136,7 +136,7 @@ class LibraryCollections(context: Context) {
         playlists = readPlaylists()
     }
 
-    fun recordPlayed(track: Track) {
+    suspend fun recordPlayed(track: Track) = withContext(Dispatchers.IO) {
         val db = database.writableDatabase
         db.insertWithOnConflict("history", null, trackValues(track).apply { put("played_at", System.currentTimeMillis()) }, SQLiteDatabase.CONFLICT_REPLACE)
         db.execSQL("DELETE FROM history WHERE uri NOT IN (SELECT uri FROM history ORDER BY played_at DESC LIMIT 200)")

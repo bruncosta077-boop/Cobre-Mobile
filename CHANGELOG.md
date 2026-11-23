@@ -1,5 +1,10 @@
 # Histórico de versões — Cobre Mobile
 
+## 0.37.0-rc.1 — histórico sem travar a reprodução
+
+- Ao começar outra faixa, gravar a reprodução, limitar o histórico e atualizar a lista de recentes agora ocorre em I/O, sem consultas SQLite na thread da interface.
+- Build e assinatura/publicação pendentes no GitHub Actions.
+
 ## 0.36.0-rc.1 — downloads offline sem bloquear a interface
 
 - A lista e o resumo de armazenamento offline são carregados do banco e do sistema de arquivos em segundo plano durante a abertura do app.

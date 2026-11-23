@@ -1,5 +1,10 @@
 # Cobre Mobile — status
 
+## 0.37.0-rc.1 em preparação
+
+- Escrita e atualização do histórico de reprodução movidas para I/O ao trocar de faixa.
+- Build e publicação aguardando GitHub Actions.
+
 ## 0.36.0-rc.1 publicado — 23/11/2026
 
 - Banco e verificação dos arquivos offline são carregados em I/O, sem trabalho síncrono pesado na interface na abertura.
