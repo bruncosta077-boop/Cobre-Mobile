@@ -16,11 +16,6 @@
 - APK direto e AAB assinados disponíveis em [mobile-v0.21.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.21.0-rc.1). A compilação e a assinatura do pacote passaram no workflow de publicação.
 - Perfis e efeitos de áudio foram incorporados junto com letras, busca de capas e player de vinil; funcionamento de equalização/efeitos depende do aparelho e da saída e ainda precisa de confirmação física.
 
-## 0.21.0 em desenvolvimento
-
-- Implementados: perfis de equalização Plano/Rock/Metal/Voz/Jazz, reforço de graves e espacialização ligados à sessão ativa do Android, com indicação de suporte; também permanecem letras, busca de capas e player de vinil da etapa anterior.
-- Versão ajustada para 0.21.0 (versionCode 23) para permitir instalação por cima do APK 0.20.0. Build e pacote assinado estão em validação no GitHub Actions; efeitos ainda precisam de teste físico em diferentes saídas antes da pré-release.
-
 ## Pré-release GitHub 0.19.0 — Google Play ainda pendente
 
 - O player permite enviar ao Desktop a faixa atual da biblioteca autorizada. A ação confere host e porta pareados, confirma que a fila do computador será substituída e pausa o áudio do celular só depois que o Desktop aceita o comando. A compilação passou no [workflow 45066267659](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45066267659); ainda precisa ser validado com um Desktop ativo em aparelho.
