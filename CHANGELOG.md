@@ -1,5 +1,14 @@
 # Histórico de versões — Cobre Mobile
 
+## 0.29.0-rc.1 — downloads offline de álbuns e playlists
+
+- Álbuns e playlists do Desktop podem ser baixados em lote para ouvir offline, sem baixar faixa por faixa manualmente.
+- O download é sequencial para limitar uso de memória e rede, mostra andamento geral e da faixa atual e pode ser cancelado.
+- Faixas já disponíveis offline são ignoradas; se um download falhar ou for cancelado, os itens concluídos são mantidos e uma nova tentativa continua do que falta.
+- Downloads continuam no espaço privado do aplicativo e respeitam o limite total de 2 GB e o limite de 512 MB por faixa existentes.
+- Em playlists, as ações de fila e exclusão foram agrupadas no menu contextual para reduzir botões permanentes.
+- Pacote assinado e publicação serão conferidos pelo workflow do GitHub antes de marcar esta versão como publicada.
+
 ## 0.28.0-rc.1 — navegação enxuta e biblioteca mais leve
 
 - A barra inferior agora tem três áreas: Início, Buscar e Ajustes. Fila e Minha coleção ficam acessíveis por atalhos no cabeçalho da biblioteca; conexões Cobre ID continuam dentro de Ajustes.
