@@ -1,5 +1,11 @@
 # Cobre Mobile — status
 
+## 0.39.0-rc.1 em preparação
+
+- Atualização encontrada e notas persistem entre aberturas do app; consulta automática ao iniciar e a cada hora enquanto aberto.
+- Janela de consulta reduzida de seis para uma hora.
+- Build, assinatura estável e publicação pendentes.
+
 ## 0.38.0-rc.1 publicado — 23/11/2026
 
 - Inicialização de favoritos, histórico, playlists e avaliações no banco movida para I/O.

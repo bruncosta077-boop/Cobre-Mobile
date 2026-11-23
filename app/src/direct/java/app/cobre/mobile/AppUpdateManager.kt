@@ -28,7 +28,7 @@ class AppUpdateManager(private val context: Context) {
 
     suspend fun checkForUpdate(force: Boolean = false): MobileUpdate? = withContext(Dispatchers.IO) {
         val now = System.currentTimeMillis()
-        if (!force && now - preferences.getLong("last_check", 0L) < CHECK_INTERVAL_MS) return@withContext null
+        if (!force && now - preferences.getLong("last_check", 0L) < CHECK_INTERVAL_MS) return@withContext cachedUpdate()
         val connection = URL(RELEASES_URL).openConnection() as HttpURLConnection
         try {
             connection.connectTimeout = 12_000
@@ -62,11 +62,35 @@ class AppUpdateManager(private val context: Context) {
                     expectedSha256 = asset.optString("digest").takeIf { it.startsWith("sha256:") }?.substringAfter("sha256:"),
                 )
             }.maxWithOrNull { left, right -> compareVersions(left.version, right.version) }
-            preferences.edit().putLong("last_check", now).apply()
+            preferences.edit().putLong("last_check", now).apply {
+                if (available == null) {
+                    remove("available_version").remove("available_notes").remove("available_apk_url").remove("available_sha256")
+                } else {
+                    putString("available_version", available.version)
+                    putString("available_notes", available.notes)
+                    putString("available_apk_url", available.apkUrl)
+                    available.expectedSha256?.let { putString("available_sha256", it) } ?: remove("available_sha256")
+                }
+            }.apply()
             available
         } finally {
             connection.disconnect()
         }
+    }
+
+    private fun cachedUpdate(): MobileUpdate? {
+        val version = preferences.getString("available_version", null) ?: return null
+        if (compareVersions(version, BuildConfig.VERSION_NAME) <= 0) return null
+        val apkUrl = preferences.getString("available_apk_url", null) ?: return null
+        val uri = runCatching { Uri.parse(apkUrl) }.getOrNull() ?: return null
+        if (uri.scheme != "https" || uri.host != "github.com" ||
+            !uri.path.orEmpty().startsWith("/bruncosta077-boop/Cobre-Mobile/releases/download/")) return null
+        return MobileUpdate(
+            version = version,
+            notes = preferences.getString("available_notes", "").orEmpty().take(12_000),
+            apkUrl = apkUrl,
+            expectedSha256 = preferences.getString("available_sha256", null),
+        )
     }
 
     suspend fun downloadAndVerify(update: MobileUpdate, onProgress: (Int) -> Unit): File = withContext(Dispatchers.IO) {
@@ -205,7 +229,7 @@ class AppUpdateManager(private val context: Context) {
 
     companion object {
         private const val RELEASES_URL = "https://api.github.com/repos/bruncosta077-boop/Cobre-Mobile/releases?per_page=20"
-        private const val CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000L
+        private const val CHECK_INTERVAL_MS = 60 * 60 * 1000L
         private const val MAX_APK_BYTES = 250L * 1024 * 1024
         private const val MIN_APK_BYTES = 20L * 1024 * 1024
         private const val INSTALL_RESERVE_BYTES = 64L * 1024 * 1024

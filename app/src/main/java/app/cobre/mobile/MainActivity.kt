@@ -262,7 +262,7 @@ class MainActivity:ComponentActivity(){
             updateBusy=false
         }
     }
-    LaunchedEffect(Unit){if(!BuildConfig.PLAY_DISTRIBUTION)checkForMobileUpdate(false)}
+    LaunchedEffect(Unit){if(!BuildConfig.PLAY_DISTRIBUTION){checkForMobileUpdate(false);while(isActive){delay(60*60*1000L);checkForMobileUpdate(false)}}}
     LaunchedEffect(Unit){
         if(!granted)askAudio.launch(permission)
         if(accountRepo.hasSavedSession&&accountRepo.serverUrl.isNotBlank()){

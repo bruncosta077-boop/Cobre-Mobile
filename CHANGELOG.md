@@ -1,5 +1,12 @@
 # Histórico de versões — Cobre Mobile
 
+## 0.39.0-rc.1 — atualização direta mais confiável
+
+- A edição de instalação direta volta a mostrar a atualização já encontrada se o app for fechado/reaberto dentro do intervalo de consulta, incluindo as notas da release.
+- A consulta automática ocorre ao abrir e uma vez por hora enquanto o app permanece aberto; a janela de cache caiu de seis para uma hora.
+- APKs baixados continuam sujeitos à verificação de hash quando informado, nome do pacote, versão superior e assinatura igual à instalada antes de chamar o instalador Android.
+- Build, assinatura e publicação pendentes no GitHub Actions.
+
 ## 0.38.0-rc.1 — coleções carregadas sem bloquear a interface
 
 - A primeira leitura do banco de favoritos, histórico, playlists e avaliações foi movida para I/O; os dados prontos são publicados em estado do app.
