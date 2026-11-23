@@ -110,7 +110,10 @@ class MainActivity:ComponentActivity(){
     var desktopAuthorizationRevision by remember{mutableIntStateOf(0)}
     var librarySource by remember{mutableStateOf(LibrarySource.All)}
     val offlineTracks=offlineStore.tracks
-    val offlineStorage=remember(offlineTracks){offlineStore.storageSummary()}
+    var offlineReady by remember{mutableStateOf(false)}
+    var offlineStorage by remember{mutableStateOf(OfflineStorageSummary(0,0,2L*1024*1024*1024))}
+    LaunchedEffect(offlineStore){offlineStorage=offlineStore.load();offlineReady=true}
+    LaunchedEffect(offlineTracks){if(offlineReady)offlineStorage=offlineStore.storageSummary()}
     val catalogIdentity=IdentityKey(localTracks,offlineTracks,desktopTracks)
     val allTracks=remember(catalogIdentity){localTracks?.plus(offlineTracks)?.plus(desktopTracks)}
     LaunchedEffect(catalogIdentity){allTracks?.takeIf{it.isNotEmpty()}?.let{collections.rebindRemoteTracks(it)}}
@@ -158,22 +161,26 @@ class MainActivity:ComponentActivity(){
     val mainHandler=remember{android.os.Handler(android.os.Looper.getMainLooper())}
     fun downloadTrack(track:Track){
         if(activeDownload!=null||activeBatchLabel!=null)return
-        if(track.uri.scheme=="file"){
-            offlineStore.remove(track);downloadMessage="Download removido do celular.";return
-        }
-        if(offlineStore.contains(track)){
-            offlineStore.remove(track);downloadMessage="Download removido do celular.";return
-        }
-        activeDownload=track.uri.toString();downloadProgress=0;downloadMessage="Baixando ${track.title}…"
+        activeDownload=track.uri.toString();downloadProgress=0;downloadMessage="Preparando ${track.title}…"
         scope.launch{
-            runCatching{val token=accountRepo.ensureDesktopGrantToken();offlineStore.download(track,token,settings.desktopUrl.orEmpty()){percent->mainHandler.post{downloadProgress=percent}}}
-                .onSuccess{downloadMessage="${it.title} disponível offline no celular."}
+            runCatching{
+                check(offlineReady){"Os downloads offline ainda estão sendo carregados. Tente novamente em instantes."}
+                if(track.uri.scheme=="file"||offlineStore.contains(track)){
+                    offlineStore.remove(track)
+                    null
+                }else{
+                    downloadMessage="Baixando ${track.title}…"
+                    val token=accountRepo.ensureDesktopGrantToken()
+                    offlineStore.download(track,token,settings.desktopUrl.orEmpty()){percent->mainHandler.post{downloadProgress=percent}}
+                }
+            }.onSuccess{downloadMessage=it?.let{"${it.title} disponível offline no celular."}?:"Download removido do celular."}
                 .onFailure{downloadMessage=it.message?:"Não foi possível baixar a faixa."}
             activeDownload=null
         }
     }
     fun downloadTracksBatch(tracks:List<Track>,label:String){
         if(activeDownload!=null||activeBatchLabel!=null)return
+        if(!offlineReady){downloadMessage="Os downloads offline ainda estão sendo carregados. Tente novamente em instantes.";return}
         val alreadyOffline=offlineStore.tracks.mapTo(hashSetOf()){it.libraryIdentity()}
         val pending=tracks.distinctBy{it.libraryIdentity()}.filter{it.uri.scheme=="http"&&it.libraryIdentity() !in alreadyOffline}
         if(pending.isEmpty()){

@@ -1,5 +1,11 @@
 # Cobre Mobile — status
 
+## 0.36.0-rc.1 em preparação
+
+- Banco e verificação dos arquivos offline são carregados em I/O, sem trabalho síncrono pesado na interface na abertura.
+- Resumo de espaço, consulta de faixa baixada e remoção de cópia também ficam em segundo plano.
+- Build local e assinatura/publicação automática pendentes; esta versão ainda não está disponível para instalar.
+
 ## 0.35.0-rc.1 publicado — 23/11/2026
 
 - Ao carregar catálogo local/remoto, favoritos, histórico e playlists são reassociados às faixas disponíveis do Desktop por identidade de metadados, atualizando URL de streaming sem chave.

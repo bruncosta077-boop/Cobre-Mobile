@@ -22,14 +22,23 @@ data class OfflineStorageSummary(val trackCount:Int,val usedBytes:Long,val limit
 class OfflineTrackStore(context: Context) {
     private val appContext = context.applicationContext
     private val db = OfflineDatabase(appContext)
-    var tracks by androidx.compose.runtime.mutableStateOf(readAll())
+    var tracks by androidx.compose.runtime.mutableStateOf(emptyList<Track>())
         private set
 
-    fun contains(track: Track): Boolean = db.readableDatabase
-        .query("offline_tracks", arrayOf("source_key"), "source_key=?", arrayOf(track.libraryIdentity()), null, null, null)
-        .use { it.moveToFirst() }
+    suspend fun load(): OfflineStorageSummary = withContext(Dispatchers.IO) {
+        tracks = readAll()
+        storageSummaryOnIo()
+    }
 
-    fun storageSummary():OfflineStorageSummary = db.readableDatabase.rawQuery("SELECT COUNT(*), COALESCE(SUM(byte_size),0) FROM offline_tracks",null).use{cursor->
+    suspend fun contains(track: Track): Boolean = withContext(Dispatchers.IO) {
+        db.readableDatabase
+            .query("offline_tracks", arrayOf("source_key"), "source_key=?", arrayOf(track.libraryIdentity()), null, null, null)
+            .use { it.moveToFirst() }
+    }
+
+    suspend fun storageSummary(): OfflineStorageSummary = withContext(Dispatchers.IO) { storageSummaryOnIo() }
+
+    private fun storageSummaryOnIo(): OfflineStorageSummary = db.readableDatabase.rawQuery("SELECT COUNT(*), COALESCE(SUM(byte_size),0) FROM offline_tracks",null).use{cursor->
         if(cursor.moveToFirst())OfflineStorageSummary(cursor.getInt(0),cursor.getLong(1),MAX_LIBRARY_BYTES)else OfflineStorageSummary(0,0,MAX_LIBRARY_BYTES)
     }
 
@@ -147,7 +156,7 @@ class OfflineTrackStore(context: Context) {
         }
     }
 
-    fun remove(track: Track) {
+    suspend fun remove(track: Track) = withContext(Dispatchers.IO) {
         val key = track.libraryIdentity()
         val path = db.readableDatabase.query("offline_tracks", arrayOf("file_path"), "source_key=?", arrayOf(key), null, null, null)
             .use { if (it.moveToFirst()) it.getString(0) else null }
