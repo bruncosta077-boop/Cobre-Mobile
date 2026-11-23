@@ -114,6 +114,7 @@ class MainActivity:ComponentActivity(){
     var offlineStorage by remember{mutableStateOf(OfflineStorageSummary(0,0,2L*1024*1024*1024))}
     LaunchedEffect(offlineStore){offlineStorage=offlineStore.load();offlineReady=true}
     LaunchedEffect(offlineTracks){if(offlineReady)offlineStorage=offlineStore.storageSummary()}
+    LaunchedEffect(collections){collections.load()}
     val catalogIdentity=IdentityKey(localTracks,offlineTracks,desktopTracks)
     val allTracks=remember(catalogIdentity){localTracks?.plus(offlineTracks)?.plus(desktopTracks)}
     LaunchedEffect(catalogIdentity){allTracks?.takeIf{it.isNotEmpty()}?.let{collections.rebindRemoteTracks(it)}}
@@ -546,6 +547,7 @@ private fun selectLibrarySource(tracks:List<Track>,source:LibrarySource):List<Tr
 
 @Composable private fun TrackList(tracks:List<Track>,onPlay:(Int)->Unit,onQueue:(Track)->Unit,collections:LibraryCollections?=null,offlineTracks:List<Track> = emptyList(),activeDownload:String?=null,onDownload:(Track)->Unit={}){
     val context=LocalContext.current
+    val scope=rememberCoroutineScope()
     val favoriteIdentity=IdentityKey(collections?.favorites)
     val favoriteUris=remember(favoriteIdentity){collections?.favorites?.mapTo(hashSetOf()){it.uri.toString()}.orEmpty()}
     val offlineIdentity=IdentityKey(offlineTracks)
@@ -567,7 +569,7 @@ private fun selectLibrarySource(tracks:List<Track>,source:LibrarySource):List<Tr
                     else IconButton(onClick={menu=true}){Icon(Icons.Default.MoreVert,"Ações da faixa",tint=Mu)}
                     DropdownMenu(expanded=menu,onDismissRequest={menu=false}){
                         DropdownMenuItem(text={Text("Adicionar à fila")},leadingIcon={Icon(Icons.Default.QueueMusic,null)},onClick={menu=false;onQueue(t)})
-                        if(collections!=null)DropdownMenuItem(text={Text(if(t.uri.toString() in favoriteUris)"Remover dos favoritos" else "Adicionar aos favoritos")},leadingIcon={Icon(if(t.uri.toString() in favoriteUris)Icons.Default.Favorite else Icons.Default.FavoriteBorder,null)},onClick={menu=false;collections.toggleFavorite(t)})
+                        if(collections!=null)DropdownMenuItem(text={Text(if(t.uri.toString() in favoriteUris)"Remover dos favoritos" else "Adicionar aos favoritos")},leadingIcon={Icon(if(t.uri.toString() in favoriteUris)Icons.Default.Favorite else Icons.Default.FavoriteBorder,null)},onClick={menu=false;scope.launch{collections.toggleFavorite(t)}})
                         if(canDownload)DropdownMenuItem(text={Text(if(saved)"Remover download offline" else "Baixar para ouvir offline")},leadingIcon={Icon(if(saved)Icons.Default.DeleteOutline else Icons.Default.Download,null)},onClick={menu=false;onDownload(t)})
                         if(t.uri.scheme=="content")DropdownMenuItem(text={Text("Compartilhar")},leadingIcon={Icon(Icons.Default.Share,null)},onClick={menu=false;runCatching{Intent(Intent.ACTION_SEND).apply{type="audio/*";putExtra(Intent.EXTRA_STREAM,t.uri);addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)}.let{context.startActivity(Intent.createChooser(it,"Compartilhar faixa"))}}})
                     }
@@ -578,8 +580,9 @@ private fun selectLibrarySource(tracks:List<Track>,source:LibrarySource):List<Tr
     }
 }
 @Composable private fun AlbumPage(album:Album,collections:LibraryCollections,onBack:()->Unit,onPlay:(List<Track>,Int)->Unit,onQueue:(Track)->Unit,onDownloadBatch:(List<Track>,String)->Unit,onSearchCovers:()->Unit,onAlbumInfo:()->Unit){
+    val scope=rememberCoroutineScope()
     val rating=collections.rating(album)
-    LazyColumn(contentPadding=PaddingValues(bottom=18.dp)){item{Column(Modifier.padding(horizontal=18.dp)){TextButton(onClick=onBack){Icon(Icons.Default.ArrowBack,null,tint=MaterialTheme.colorScheme.primary);Spacer(Modifier.width(6.dp));Text("Biblioteca",color=MaterialTheme.colorScheme.primary)};Cover(album.tracks.first(),Modifier.fillMaxWidth().aspectRatio(1.05f).clip(RoundedCornerShape(14.dp)));Text(album.title,color=Tx,style=MaterialTheme.typography.headlineSmall,fontWeight=FontWeight.Bold,maxLines=2,overflow=TextOverflow.Ellipsis,modifier=Modifier.padding(top=14.dp));Text(album.artist,color=MaterialTheme.colorScheme.primary,style=MaterialTheme.typography.titleMedium);Text("${if(album.year>0)"${album.year} · " else ""}${album.tracks.size} faixas",color=Mu,style=MaterialTheme.typography.bodySmall);Row(verticalAlignment=Alignment.CenterVertically,modifier=Modifier.padding(top=6.dp)){Text("Sua avaliação",color=Mu,style=MaterialTheme.typography.bodySmall);Spacer(Modifier.width(7.dp));(1..5).forEach{star->IconButton(onClick={collections.setRating(album,if(rating==star)0 else star)},modifier=Modifier.size(30.dp)){Icon(if(star<=rating)Icons.Default.Star else Icons.Default.StarBorder,"${star} estrelas",tint=if(star<=rating)MaterialTheme.colorScheme.primary else Mu,modifier=Modifier.size(20.dp))}}};Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(vertical=12.dp),horizontalArrangement=Arrangement.spacedBy(4.dp),verticalAlignment=Alignment.CenterVertically){Button(onClick={onPlay(album.tracks,0)},colors=ButtonDefaults.buttonColors(containerColor=MaterialTheme.colorScheme.primary),shape=RoundedCornerShape(24.dp)){Icon(Icons.Default.PlayArrow,null);Text("Reproduzir")};TextButton(onClick={onDownloadBatch(album.tracks,"álbum ${album.title}")},enabled=album.tracks.any{it.uri.scheme=="http"}){Icon(Icons.Default.Download,null,tint=MaterialTheme.colorScheme.primary);Text("Offline",color=Tx)};TextButton(onClick={album.tracks.forEach(onQueue)}){Icon(Icons.Default.QueueMusic,null,tint=MaterialTheme.colorScheme.primary);Text("Fila",color=Tx)};TextButton(onClick=onSearchCovers){Icon(Icons.Default.Search,null,tint=MaterialTheme.colorScheme.primary);Text("Capa",color=Tx)};TextButton(onClick=onAlbumInfo){Icon(Icons.Default.AutoStories,null,tint=MaterialTheme.colorScheme.primary);Text("Encarte",color=Tx)}}}}
+    LazyColumn(contentPadding=PaddingValues(bottom=18.dp)){item{Column(Modifier.padding(horizontal=18.dp)){TextButton(onClick=onBack){Icon(Icons.Default.ArrowBack,null,tint=MaterialTheme.colorScheme.primary);Spacer(Modifier.width(6.dp));Text("Biblioteca",color=MaterialTheme.colorScheme.primary)};Cover(album.tracks.first(),Modifier.fillMaxWidth().aspectRatio(1.05f).clip(RoundedCornerShape(14.dp)));Text(album.title,color=Tx,style=MaterialTheme.typography.headlineSmall,fontWeight=FontWeight.Bold,maxLines=2,overflow=TextOverflow.Ellipsis,modifier=Modifier.padding(top=14.dp));Text(album.artist,color=MaterialTheme.colorScheme.primary,style=MaterialTheme.typography.titleMedium);Text("${if(album.year>0)"${album.year} · " else ""}${album.tracks.size} faixas",color=Mu,style=MaterialTheme.typography.bodySmall);Row(verticalAlignment=Alignment.CenterVertically,modifier=Modifier.padding(top=6.dp)){Text("Sua avaliação",color=Mu,style=MaterialTheme.typography.bodySmall);Spacer(Modifier.width(7.dp));(1..5).forEach{star->IconButton(onClick={scope.launch{collections.setRating(album,if(rating==star)0 else star)}},modifier=Modifier.size(30.dp)){Icon(if(star<=rating)Icons.Default.Star else Icons.Default.StarBorder,"${star} estrelas",tint=if(star<=rating)MaterialTheme.colorScheme.primary else Mu,modifier=Modifier.size(20.dp))}}};Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(vertical=12.dp),horizontalArrangement=Arrangement.spacedBy(4.dp),verticalAlignment=Alignment.CenterVertically){Button(onClick={onPlay(album.tracks,0)},colors=ButtonDefaults.buttonColors(containerColor=MaterialTheme.colorScheme.primary),shape=RoundedCornerShape(24.dp)){Icon(Icons.Default.PlayArrow,null);Text("Reproduzir")};TextButton(onClick={onDownloadBatch(album.tracks,"álbum ${album.title}")},enabled=album.tracks.any{it.uri.scheme=="http"}){Icon(Icons.Default.Download,null,tint=MaterialTheme.colorScheme.primary);Text("Offline",color=Tx)};TextButton(onClick={album.tracks.forEach(onQueue)}){Icon(Icons.Default.QueueMusic,null,tint=MaterialTheme.colorScheme.primary);Text("Fila",color=Tx)};TextButton(onClick=onSearchCovers){Icon(Icons.Default.Search,null,tint=MaterialTheme.colorScheme.primary);Text("Capa",color=Tx)};TextButton(onClick=onAlbumInfo){Icon(Icons.Default.AutoStories,null,tint=MaterialTheme.colorScheme.primary);Text("Encarte",color=Tx)}}}}
         itemsIndexed(album.tracks,key={_,track->track.uri.toString()}){index,t->
             var menu by remember(t.uri){mutableStateOf(false)}
             Row(Modifier.fillMaxWidth().clickable{onPlay(album.tracks,index)}.padding(start=22.dp,end=12.dp,top=7.dp,bottom=7.dp),verticalAlignment=Alignment.CenterVertically){
@@ -590,7 +593,7 @@ private fun selectLibrarySource(tracks:List<Track>,source:LibrarySource):List<Tr
                     IconButton(onClick={menu=true}){Icon(Icons.Default.MoreVert,"Ações da faixa",tint=Mu)}
                     DropdownMenu(expanded=menu,onDismissRequest={menu=false}){
                         DropdownMenuItem(text={Text("Adicionar à fila")},leadingIcon={Icon(Icons.Default.QueueMusic,null)},onClick={menu=false;onQueue(t)})
-                        DropdownMenuItem(text={Text(if(collections.isFavorite(t))"Remover dos favoritos" else "Adicionar aos favoritos")},leadingIcon={Icon(if(collections.isFavorite(t))Icons.Default.Favorite else Icons.Default.FavoriteBorder,null)},onClick={menu=false;collections.toggleFavorite(t)})
+                        DropdownMenuItem(text={Text(if(collections.isFavorite(t))"Remover dos favoritos" else "Adicionar aos favoritos")},leadingIcon={Icon(if(collections.isFavorite(t))Icons.Default.Favorite else Icons.Default.FavoriteBorder,null)},onClick={menu=false;scope.launch{collections.toggleFavorite(t)}})
                     }
                 }
             }
@@ -600,8 +603,9 @@ private fun selectLibrarySource(tracks:List<Track>,source:LibrarySource):List<Tr
 }
 
 @Composable private fun QueuePage(playback:NowPlaying,player:PlayerController,collections:LibraryCollections){
+    val scope=rememberCoroutineScope()
     var askSave by remember{mutableStateOf(false)};var playlistName by remember{mutableStateOf("")};var message by remember{mutableStateOf("")}
-    if(askSave)AlertDialog(onDismissRequest={askSave=false},title={Text("Salvar como playlist")},text={OutlinedTextField(playlistName,{playlistName=it},singleLine=true,label={Text("Nome da playlist")},colors=fieldColors())},confirmButton={TextButton(onClick={if(collections.savePlaylist(playlistName,playback.queue)){message="Playlist salva.";askSave=false;playlistName=""}else message="Escolha um nome novo e uma fila com faixas."}){Text("Salvar")}},dismissButton={TextButton(onClick={askSave=false}){Text("Cancelar")}})
+    if(askSave)AlertDialog(onDismissRequest={askSave=false},title={Text("Salvar como playlist")},text={OutlinedTextField(playlistName,{playlistName=it},singleLine=true,label={Text("Nome da playlist")},colors=fieldColors())},confirmButton={TextButton(onClick={scope.launch{if(collections.savePlaylist(playlistName,playback.queue)){message="Playlist salva.";askSave=false;playlistName=""}else message="Escolha um nome novo e uma fila com faixas."}}){Text("Salvar")}},dismissButton={TextButton(onClick={askSave=false}){Text("Cancelar")}})
     Column(Modifier.fillMaxSize()){Row(Modifier.fillMaxWidth().padding(start=20.dp,end=12.dp,top=16.dp,bottom=10.dp),verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){Text("A seguir",color=Tx,style=MaterialTheme.typography.headlineSmall,fontWeight=FontWeight.Bold);Text("${playback.queue.size} faixas na fila",color=Mu,style=MaterialTheme.typography.bodySmall)};TextButton(onClick={askSave},enabled=playback.queue.isNotEmpty()){Icon(Icons.Default.PlaylistAdd,null,tint=MaterialTheme.colorScheme.primary);Text("Salvar",color=Tx)};TextButton(onClick=player::clearQueue,enabled=playback.queue.isNotEmpty()){Icon(Icons.Default.DeleteOutline,null,tint=MaterialTheme.colorScheme.primary);Text("Limpar",color=Tx)}}
         if(message.isNotBlank())Text(message,color=MaterialTheme.colorScheme.primary,modifier=Modifier.padding(horizontal=20.dp,vertical=4.dp))
         if(playback.queue.isEmpty())EmptyState(Icons.Default.QueueMusic,"Sua fila está vazia","Escolha um álbum ou faixa e adicione à fila.")else LazyColumn(contentPadding=PaddingValues(bottom=12.dp)){items(playback.queue.size,key={i->"${playback.queue[i].id}-$i"}){i->val t=playback.queue[i];val current=i==playback.currentIndex;Row(Modifier.fillMaxWidth().background(if(current)CardBg else Color.Transparent).padding(start=16.dp,end=4.dp,top=3.dp,bottom=3.dp),verticalAlignment=Alignment.CenterVertically){Cover(t,Modifier.size(46.dp).clip(RoundedCornerShape(7.dp)));Column(Modifier.weight(1f).clickable{player.playAt(i)}.padding(horizontal=10.dp,vertical=8.dp)){Text(t.title,color=if(current)MaterialTheme.colorScheme.primary else Tx,maxLines=1,overflow=TextOverflow.Ellipsis);Text(t.artist,color=Mu,style=MaterialTheme.typography.bodySmall,maxLines=1,overflow=TextOverflow.Ellipsis)};IconButton(onClick={player.moveInQueue(i,i-1)},enabled=i>0){Icon(Icons.Default.KeyboardArrowUp,"Mover para cima",tint=Mu)};IconButton(onClick={player.moveInQueue(i,i+1)},enabled=i<playback.queue.lastIndex){Icon(Icons.Default.KeyboardArrowDown,"Mover para baixo",tint=Mu)};IconButton(onClick={player.removeFromQueue(i)}){Icon(Icons.Default.Close,"Remover",tint=Mu)}}}}
@@ -609,6 +613,7 @@ private fun selectLibrarySource(tracks:List<Track>,source:LibrarySource):List<Tr
 }
 
 @Composable private fun CollectionsPage(collections:LibraryCollections,onPlay:(List<Track>)->Unit,onQueue:(Track)->Unit,onDownloadBatch:(List<Track>,String)->Unit){
+    val scope=rememberCoroutineScope()
     LazyColumn(Modifier.fillMaxSize(),contentPadding=PaddingValues(start=16.dp,end=12.dp,bottom=20.dp)){
         item{Text("Minha coleção",color=Tx,style=MaterialTheme.typography.headlineSmall,fontWeight=FontWeight.Bold,modifier=Modifier.padding(top=16.dp,bottom=12.dp))}
         item{Row(Modifier.fillMaxWidth().padding(vertical=8.dp),verticalAlignment=Alignment.CenterVertically){Text("Favoritas",color=Tx,style=MaterialTheme.typography.titleMedium,fontWeight=FontWeight.SemiBold,modifier=Modifier.weight(1f));Text("${collections.favorites.size}",color=Mu);TextButton(onClick={onPlay(collections.favorites)},enabled=collections.favorites.isNotEmpty()){Icon(Icons.Default.PlayArrow,null);Text("Tocar")}}}
@@ -629,7 +634,7 @@ private fun selectLibrarySource(tracks:List<Track>,source:LibrarySource):List<Tr
                     DropdownMenu(expanded=menu,onDismissRequest={menu=false}){
                         DropdownMenuItem(text={Text("Adicionar à fila")},leadingIcon={Icon(Icons.Default.Add,null)},onClick={menu=false;playlist.tracks.forEach(onQueue)})
                         DropdownMenuItem(text={Text("Baixar para ouvir offline")},leadingIcon={Icon(Icons.Default.Download,null)},enabled=playlist.tracks.any{it.uri.scheme=="http"},onClick={menu=false;onDownloadBatch(playlist.tracks,"playlist ${playlist.name}")})
-                        DropdownMenuItem(text={Text("Excluir playlist")},leadingIcon={Icon(Icons.Default.DeleteOutline,null)},onClick={menu=false;collections.deletePlaylist(playlist.name)})
+                        DropdownMenuItem(text={Text("Excluir playlist")},leadingIcon={Icon(Icons.Default.DeleteOutline,null)},onClick={menu=false;scope.launch{collections.deletePlaylist(playlist.name)}})
                     }
                 }
                 IconButton(onClick={onPlay(playlist.tracks)},enabled=playlist.tracks.isNotEmpty()){Icon(Icons.Default.PlayArrow,"Reproduzir playlist",tint=MaterialTheme.colorScheme.primary)}
@@ -639,6 +644,7 @@ private fun selectLibrarySource(tracks:List<Track>,source:LibrarySource):List<Tr
 }
 
 @Composable private fun CollectionTrackRow(track:Track,collections:LibraryCollections,onQueue:(Track)->Unit){
+    val scope=rememberCoroutineScope()
     var menu by remember(track.uri){mutableStateOf(false)}
     Row(Modifier.fillMaxWidth().heightIn(min=60.dp),verticalAlignment=Alignment.CenterVertically){
         Cover(track,Modifier.size(42.dp).clip(RoundedCornerShape(7.dp)))
@@ -647,7 +653,7 @@ private fun selectLibrarySource(tracks:List<Track>,source:LibrarySource):List<Tr
             IconButton(onClick={menu=true}){Icon(Icons.Default.MoreVert,"Ações da faixa",tint=Mu)}
             DropdownMenu(expanded=menu,onDismissRequest={menu=false}){
                 DropdownMenuItem(text={Text("Adicionar à fila")},leadingIcon={Icon(Icons.Default.QueueMusic,null)},onClick={menu=false;onQueue(track)})
-                DropdownMenuItem(text={Text(if(collections.isFavorite(track))"Remover dos favoritos" else "Adicionar aos favoritos")},leadingIcon={Icon(if(collections.isFavorite(track))Icons.Default.Favorite else Icons.Default.FavoriteBorder,null)},onClick={menu=false;collections.toggleFavorite(track)})
+                DropdownMenuItem(text={Text(if(collections.isFavorite(track))"Remover dos favoritos" else "Adicionar aos favoritos")},leadingIcon={Icon(if(collections.isFavorite(track))Icons.Default.Favorite else Icons.Default.FavoriteBorder,null)},onClick={menu=false;scope.launch{collections.toggleFavorite(track)}})
             }
         }
     }
@@ -726,7 +732,7 @@ private fun selectLibrarySource(tracks:List<Track>,source:LibrarySource):List<Tr
                         IconButton(onClick={moreActionsExpanded=true}){Icon(Icons.Default.MoreVert,"Mais ações da faixa",tint=Mu)}
                         DropdownMenu(expanded=moreActionsExpanded,onDismissRequest={moreActionsExpanded=false}){
                             current?.let{track->
-                                DropdownMenuItem(text={Text(if(collections.isFavorite(track))"Remover dos favoritos" else "Adicionar aos favoritos")},leadingIcon={Icon(if(collections.isFavorite(track))Icons.Default.Favorite else Icons.Default.FavoriteBorder,null)},onClick={moreActionsExpanded=false;collections.toggleFavorite(track)})
+                                DropdownMenuItem(text={Text(if(collections.isFavorite(track))"Remover dos favoritos" else "Adicionar aos favoritos")},leadingIcon={Icon(if(collections.isFavorite(track))Icons.Default.Favorite else Icons.Default.FavoriteBorder,null)},onClick={moreActionsExpanded=false;lyricScope.launch{collections.toggleFavorite(track)}})
                                 DropdownMenuItem(text={Text("Adicionar à playlist")},leadingIcon={Icon(Icons.Default.PlaylistAdd,null)},onClick={moreActionsExpanded=false;showPlaylistDialog=true})
                                 DropdownMenuItem(text={Text("Buscar ou trocar capa")},leadingIcon={Icon(Icons.Default.Edit,null)},onClick={moreActionsExpanded=false;onChangeCover(track)})
                             }
@@ -795,9 +801,11 @@ private fun selectLibrarySource(tracks:List<Track>,source:LibrarySource):List<Tr
                 collections.playlists.forEach{playlist->
                     Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp)).clickable{
                         val alreadyThere=playlist.tracks.any{it.uri==current.uri}
-                        val added=collections.addTrackToPlaylist(playlist.name,current)
-                        showPlaylistDialog=false
-                        Toast.makeText(context,when{added->"Faixa adicionada a ${playlist.name}.";alreadyThere->"A faixa já está nesta playlist.";else->"Não consegui atualizar a playlist."},Toast.LENGTH_SHORT).show()
+                        lyricScope.launch{
+                            val added=collections.addTrackToPlaylist(playlist.name,current)
+                            showPlaylistDialog=false
+                            Toast.makeText(context,when{added->"Faixa adicionada a ${playlist.name}.";alreadyThere->"A faixa já está nesta playlist.";else->"Não consegui atualizar a playlist."},Toast.LENGTH_SHORT).show()
+                        }
                     }.padding(horizontal=10.dp,vertical=13.dp),verticalAlignment=Alignment.CenterVertically){
                         Icon(Icons.Default.QueueMusic,null,tint=MaterialTheme.colorScheme.primary)
                         Text(playlist.name,color=Tx,modifier=Modifier.padding(start=10.dp))
@@ -809,9 +817,11 @@ private fun selectLibrarySource(tracks:List<Track>,source:LibrarySource):List<Tr
         confirmButton={TextButton(onClick={
             val name=newPlaylistName.trim()
             if(name.isBlank()){showPlaylistDialog=false;return@TextButton}
-            val created=collections.savePlaylist(name,listOf(current))
-            if(created){newPlaylistName="";showPlaylistDialog=false;Toast.makeText(context,"Playlist criada com esta faixa.",Toast.LENGTH_SHORT).show()}
-            else Toast.makeText(context,"Nome já usado ou não foi possível criar a playlist.",Toast.LENGTH_SHORT).show()
+            lyricScope.launch{
+                val created=collections.savePlaylist(name,listOf(current))
+                if(created){newPlaylistName="";showPlaylistDialog=false;Toast.makeText(context,"Playlist criada com esta faixa.",Toast.LENGTH_SHORT).show()}
+                else Toast.makeText(context,"Nome já usado ou não foi possível criar a playlist.",Toast.LENGTH_SHORT).show()
+            }
         }){Text("Criar",color=MaterialTheme.colorScheme.primary)}},
         dismissButton={TextButton(onClick={showPlaylistDialog=false}){Text("Cancelar",color=Mu)}}
     )

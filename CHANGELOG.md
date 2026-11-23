@@ -1,5 +1,12 @@
 # Histórico de versões — Cobre Mobile
 
+## 0.38.0-rc.1 — coleções carregadas sem bloquear a interface
+
+- A primeira leitura do banco de favoritos, histórico, playlists e avaliações foi movida para I/O; os dados prontos são publicados em estado do app.
+- Salvar favoritos, editar playlists, avaliar álbuns, associar faixas remotas e registrar histórico também rodam fora da thread da interface.
+- Ações aguardam a inicialização única das coleções antes de gravar, protegendo os dados existentes no início do app.
+- Build, assinatura e publicação pendentes no GitHub Actions.
+
 ## 0.37.0-rc.1 — histórico sem travar a reprodução
 
 - Ao começar outra faixa, gravar a reprodução, limitar o histórico e atualizar a lista de recentes agora ocorre em I/O, sem consultas SQLite na thread da interface.

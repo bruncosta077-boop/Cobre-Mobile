@@ -1,5 +1,11 @@
 # Cobre Mobile — status
 
+## 0.38.0-rc.1 em preparação
+
+- Inicialização de favoritos, histórico, playlists e avaliações no banco movida para I/O.
+- Operações de salvar/alterar/excluir coleções e atualizar histórico também estão fora da thread da interface.
+- Build, assinatura estável e publicação pendentes.
+
 ## 0.37.0-rc.1 publicado — 23/11/2026
 
 - Escrita e atualização do histórico de reprodução movidas para I/O ao trocar de faixa.
