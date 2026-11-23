@@ -127,6 +127,27 @@ class MainActivity:ComponentActivity(){
     var activeBatchLabel by remember{mutableStateOf<String?>(null)};var batchTotal by remember{mutableIntStateOf(0)};var batchFinished by remember{mutableIntStateOf(0)};var batchSucceeded by remember{mutableIntStateOf(0)};var downloadBatchJob by remember{mutableStateOf<Job?>(null)}
     var batchResult by remember{mutableStateOf<String?>(null)}
     var offlineClearBusy by remember{mutableStateOf(false)};var offlineClearMessage by remember{mutableStateOf("")}
+    var backupBusy by remember{mutableStateOf(false)};var backupStatus by remember{mutableStateOf("")}
+    val exportSettingsBackup=rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")){uri->
+        if(uri!=null){
+            val contents=runCatching{MobileSettingsBackup.export(settings,context)}.getOrElse{backupStatus=it.message?:"Não foi possível preparar o backup.";return@rememberLauncherForActivityResult}
+            scope.launch{backupBusy=true;backupStatus="";runCatching{withContext(Dispatchers.IO){context.contentResolver.openOutputStream(uri,"wt")?.bufferedWriter(Charsets.UTF_8)?.use{it.write(contents)}?:error("Não foi possível gravar o arquivo de backup.")}}.onSuccess{backupStatus="Backup de configurações salvo."}.onFailure{backupStatus=it.message?:"Não foi possível salvar o backup."};backupBusy=false}
+        }
+    }
+    val importSettingsBackup=rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()){uri->
+        if(uri!=null)scope.launch{
+            backupBusy=true;backupStatus=""
+            runCatching{
+                val contents=withContext(Dispatchers.IO){context.contentResolver.openInputStream(uri)?.use{input->
+                    val output=java.io.ByteArrayOutputStream();val buffer=ByteArray(4096)
+                    while(true){val count=input.read(buffer);if(count<0)break;require(output.size()+count<=64*1024){"O arquivo de backup é maior que o permitido."};output.write(buffer,0,count)}
+                    output.toString(Charsets.UTF_8.name())
+                }?:error("Não foi possível abrir o arquivo de backup.")}
+                MobileSettingsBackup.import(contents,settings,context)
+            }.onSuccess{backupStatus="Aparência e ajustes de áudio restaurados. Reconecte o Cobre ID e escolha novamente a pasta da biblioteca."}.onFailure{backupStatus=it.message?:"Não foi possível importar o backup."}
+            backupBusy=false
+        }
+    }
     val mainHandler=remember{android.os.Handler(android.os.Looper.getMainLooper())}
     fun downloadTrack(track:Track){
         if(activeDownload!=null||activeBatchLabel!=null)return
@@ -369,7 +390,7 @@ class MainActivity:ComponentActivity(){
                             }.onFailure { error->account=account.copy(busy=false,message=error.message?:"Não foi possível conectar ao computador.",error=true) }
                         }
                     })
-                    Page.Settings->SettingsPage(settings,folderUri,desktopStatus,desktopTracks.size,offlineStorage,offlineClearBusy,offlineClearMessage,updateInfo?.let{"Atualização ${it.version} disponível."}?:updateStatus,BuildConfig.PLAY_DISTRIBUTION,updateBusy,updateProgress,updateFile!=null,{folderPicker.launch(folderUri?.let{Uri.parse(it)})},{folderUri?.let{old->runCatching{context.contentResolver.releasePersistableUriPermission(Uri.parse(old),Intent.FLAG_GRANT_READ_URI_PERMISSION)}};settings.setFolder(null);folderUri=null},{
+                    Page.Settings->SettingsPage(settings,folderUri,desktopStatus,desktopTracks.size,offlineStorage,offlineClearBusy,offlineClearMessage,backupStatus,backupBusy,{exportSettingsBackup.launch("cobre-mobile-configuracoes.json")},{importSettingsBackup.launch(arrayOf("application/json","text/json"))},updateInfo?.let{"Atualização ${it.version} disponível."}?:updateStatus,BuildConfig.PLAY_DISTRIBUTION,updateBusy,updateProgress,updateFile!=null,{folderPicker.launch(folderUri?.let{Uri.parse(it)})},{folderUri?.let{old->runCatching{context.contentResolver.releasePersistableUriPermission(Uri.parse(old),Intent.FLAG_GRANT_READ_URI_PERMISSION)}};settings.setFolder(null);folderUri=null},{
                         if(!offlineClearBusy){
                             val offlineUris=offlineTracks.mapTo(hashSetOf()){it.uri}
                             if(playback.playing&&playback.queue.getOrNull(playback.currentIndex)?.uri?.let{it in offlineUris}==true)player.toggle()

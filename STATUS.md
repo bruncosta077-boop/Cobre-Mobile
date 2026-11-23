@@ -1,5 +1,11 @@
 # Cobre Mobile — status
 
+## 0.32.0-rc.1 em publicação
+
+- Configurações exportáveis/importáveis: paleta, vinil, cores dinâmicas, equalizador, ReplayGain, reforço de graves e áudio espacial.
+- Backup versionado e validado; credenciais, concessões, endereços, permissões da pasta e áudio offline ficam fora do arquivo.
+- Versão de pacote 34 / 0.32.0-rc.1. A publicação depende do workflow de compilação e assinatura.
+
 ## 0.31.0-rc.1 publicado
 
 - Catálogo remoto salvo em banco privado do Mobile como metadados, vinculado ao endereço do Desktop e ao ID da concessão, sem salvar tokens ou arquivos de áudio.

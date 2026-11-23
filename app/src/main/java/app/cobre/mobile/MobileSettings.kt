@@ -43,6 +43,8 @@ class MobileSettings(context: Context) {
         private set
     var secureDesktopAccessRequired by mutableStateOf(accessPrefs.getBoolean("desktop_secure_access_required", false))
         private set
+    var portableRestoreRevision by mutableIntStateOf(0)
+        private set
 
     fun setAccent(primary: Int, secondary: Int) {
         accentPrimary = primary
@@ -74,4 +76,6 @@ class MobileSettings(context: Context) {
         secureDesktopAccessRequired = true
         accessPrefs.edit().putBoolean("desktop_secure_access_required", true).apply()
     }
+
+    fun notifyPortableRestore(){portableRestoreRevision++}
 }

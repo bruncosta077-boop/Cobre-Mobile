@@ -65,13 +65,14 @@ private val desktopAccents=listOf(
 )
 
 @Composable
-fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,desktopTrackCount:Int,offlineStorage:OfflineStorageSummary,offlineClearBusy:Boolean,offlineClearMessage:String,updateStatus:String,playDistribution:Boolean,updateBusy:Boolean,updateProgress:Int,updateReady:Boolean,onPickFolder:()->Unit,onClearFolder:()->Unit,onClearOffline:()->Unit,onOpenAccount:()->Unit,onRetryDesktop:()->Unit,onCheckUpdates:()->Unit,onInstallUpdate:()->Unit){
+fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,desktopTrackCount:Int,offlineStorage:OfflineStorageSummary,offlineClearBusy:Boolean,offlineClearMessage:String,backupStatus:String,backupBusy:Boolean,onExportBackup:()->Unit,onImportBackup:()->Unit,updateStatus:String,playDistribution:Boolean,updateBusy:Boolean,updateProgress:Int,updateReady:Boolean,onPickFolder:()->Unit,onClearFolder:()->Unit,onClearOffline:()->Unit,onOpenAccount:()->Unit,onRetryDesktop:()->Unit,onCheckUpdates:()->Unit,onInstallUpdate:()->Unit){
     val context=LocalContext.current
     val audio=context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
     var showReleaseNotes by remember{mutableStateOf(false)}
     var showOutputDetails by remember{mutableStateOf(false)}
     var showAdvancedAudio by remember{mutableStateOf(false)}
     var confirmClearOffline by remember{mutableStateOf(false)}
+    var confirmImportBackup by remember{mutableStateOf(false)}
     var volume by remember{mutableFloatStateOf(audio.getStreamVolume(AudioManager.STREAM_MUSIC).toFloat()*100f/maxOf(1,audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC)))}
     val audioPrefs=remember{context.getSharedPreferences(PlaybackService.AUDIO_PREFS,Context.MODE_PRIVATE)}
     val equalizerBands=remember{mutableStateListOf<Float>().apply{repeat(5){add(audioPrefs.getInt("eq_band_$it",0).toFloat())}}}
@@ -100,6 +101,13 @@ fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,
         audioPrefs.registerOnSharedPreferenceChangeListener(listener)
         onDispose{audioPrefs.unregisterOnSharedPreferenceChangeListener(listener)}
     }
+    LaunchedEffect(settings.portableRestoreRevision){
+        equalizerEnabled=audioPrefs.getBoolean("eq_enabled",false)
+        replayGainEnabled=audioPrefs.getBoolean("replaygain_enabled",false)
+        bassEnabled=audioPrefs.getBoolean("bass_enabled",false);bassStrength=audioPrefs.getInt("bass_strength",25).toFloat()
+        virtualizerEnabled=audioPrefs.getBoolean("virtualizer_enabled",false);virtualizerStrength=audioPrefs.getInt("virtualizer_strength",20).toFloat()
+        repeat(5){equalizerBands[it]=audioPrefs.getInt("eq_band_$it",0).toFloat()}
+    }
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal=18.dp,vertical=14.dp),verticalArrangement=Arrangement.spacedBy(14.dp)){
         Text("Configurações",color=Tx,style=MaterialTheme.typography.headlineMedium,fontWeight=FontWeight.Bold)
         Text("Ajuste a biblioteca, a aparência e o áudio do Cobre no celular.",color=Mu)
@@ -123,6 +131,17 @@ fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,
                 if(offlineClearBusy)CircularProgressIndicator(Modifier.size(18.dp),strokeWidth=2.dp)else Icon(Icons.Default.DeleteOutline,null,tint=MaterialTheme.colorScheme.primary)
                 Spacer(Modifier.width(7.dp));Text(if(offlineClearBusy)"Removendo downloads…" else "Remover todos os downloads",color=Tx)
             }
+        }
+        SettingsCard {
+            SectionHeading(Icons.Default.Settings,"Backup de configurações")
+            Text("Salva aparência, vinil, cores da capa e ajustes de áudio em um arquivo que você pode guardar e importar depois.",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=8.dp))
+            Text("Por segurança, o backup não inclui Cobre ID, tokens, endereço do computador, pasta autorizada ou músicas baixadas.",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=5.dp))
+            Row(Modifier.fillMaxWidth().padding(top=9.dp),horizontalArrangement=Arrangement.spacedBy(8.dp)){
+                OutlinedButton(onClick=onExportBackup,enabled=!backupBusy,modifier=Modifier.weight(1f),shape=RoundedCornerShape(22.dp)){Text("Exportar",color=Tx)}
+                OutlinedButton(onClick={confirmImportBackup=true},enabled=!backupBusy,modifier=Modifier.weight(1f),shape=RoundedCornerShape(22.dp)){Text("Importar",color=Tx)}
+            }
+            if(backupBusy)LinearProgressIndicator(modifier=Modifier.fillMaxWidth().padding(top=7.dp),color=MaterialTheme.colorScheme.primary,trackColor=Line)
+            if(backupStatus.isNotBlank())Text(backupStatus,color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=5.dp))
         }
         SettingsCard {
             SectionHeading(Icons.Default.Devices,"Conexão")
@@ -258,6 +277,13 @@ fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,
         text={Text("Isso apagará ${offlineStorage.trackCount} faixas e liberará ${formatStorage(offlineStorage.usedBytes)} neste celular. A biblioteca e os arquivos originais do computador permanecem intactos.")},
         confirmButton={TextButton(onClick={confirmClearOffline=false;onClearOffline()}){Text("Remover",color=MaterialTheme.colorScheme.primary)}},
         dismissButton={TextButton(onClick={confirmClearOffline=false}){Text("Cancelar",color=Tx)}},
+    )
+    if(confirmImportBackup)AlertDialog(
+        onDismissRequest={confirmImportBackup=false},
+        title={Text("Importar configurações?")},
+        text={Text("A aparência e os ajustes de áudio atuais serão substituídos. O backup não altera biblioteca, pasta, computador conectado ou conta Cobre ID.")},
+        confirmButton={TextButton(onClick={confirmImportBackup=false;onImportBackup()}){Text("Escolher backup",color=MaterialTheme.colorScheme.primary)}},
+        dismissButton={TextButton(onClick={confirmImportBackup=false}){Text("Cancelar",color=Tx)}},
     )
     if(showReleaseNotes)AlertDialog(
         onDismissRequest={showReleaseNotes=false},

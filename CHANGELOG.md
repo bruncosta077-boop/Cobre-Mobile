@@ -1,5 +1,12 @@
 # Histórico de versões — Cobre Mobile
 
+## 0.32.0-rc.1 — backup portátil de configurações
+
+- Configurações agora permitem exportar e importar cor, player de vinil, cores dinâmicas da capa, equalizador, ReplayGain, graves e áudio espacial.
+- O formato tem versão e valida os campos antes de gravar; importar exige confirmação e atualiza os controles do app sem reiniciar.
+- O arquivo não inclui conta Cobre ID, tokens, endereço do Desktop, permissão da pasta ou downloads offline.
+- Esta versão aguarda compilação e assinatura automáticas antes da publicação.
+
 ## 0.31.0-rc.1 — biblioteca do Desktop resiliente
 
 - O catálogo de faixas do computador fica salvo no banco privado do app, sem áudio ou tokens, e reaparece quando uma queda temporária impede a conexão.
