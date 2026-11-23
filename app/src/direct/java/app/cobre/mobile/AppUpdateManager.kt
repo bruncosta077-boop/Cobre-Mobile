@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
+import android.os.StatFs
 import android.provider.Settings
 import androidx.core.content.FileProvider
 import kotlinx.coroutines.Dispatchers
@@ -83,16 +84,23 @@ class AppUpdateManager(private val context: Context) {
             }
             val total = connection.contentLengthLong
             if (total > MAX_APK_BYTES) throw IllegalStateException("O arquivo de atualização excede o tamanho permitido.")
+            cleanupStaleDownloads()
+            requireFreeSpace(requiredForDownload(total))
             val digest = MessageDigest.getInstance("SHA-256")
             connection.inputStream.use { input ->
                 temporary.outputStream().buffered().use { output ->
                     val buffer = ByteArray(64 * 1024)
                     var copied = 0L
+                    var nextSpaceCheck = 1024L * 1024
                     while (true) {
                         val count = input.read(buffer)
                         if (count < 0) break
                         copied += count
                         if (copied > MAX_APK_BYTES) throw IllegalStateException("O arquivo de atualização excede o tamanho permitido.")
+                        if (copied >= nextSpaceCheck) {
+                            requireFreeSpace(INSTALL_RESERVE_BYTES)
+                            nextSpaceCheck = copied + 1024L * 1024
+                        }
                         digest.update(buffer, 0, count)
                         output.write(buffer, 0, count)
                         if (total > 0) onProgress((copied * 100 / total).toInt().coerceIn(0, 100))
@@ -118,6 +126,7 @@ class AppUpdateManager(private val context: Context) {
             if (installedSigners.isEmpty() || installedSigners != archiveSigners) {
                 throw IllegalStateException("A assinatura não corresponde à versão instalada. Para proteger seus dados, a atualização foi cancelada.")
             }
+            requireFreeSpace(requiredForInstall(temporary.length()))
             if (destination.exists()) destination.delete()
             if (!temporary.renameTo(destination)) throw IllegalStateException("Não foi possível preparar o arquivo de instalação.")
             destination
@@ -126,6 +135,32 @@ class AppUpdateManager(private val context: Context) {
             if (temporary.exists()) temporary.delete()
         }
     }
+
+    private fun cleanupStaleDownloads() {
+        context.cacheDir.listFiles()?.forEach { file ->
+            if (file.name.startsWith("Cobre-Mobile-") &&
+                (file.name.endsWith(".apk") || file.name.endsWith(".apk.part"))) {
+                runCatching { file.delete() }
+            }
+        }
+    }
+
+    private fun requireFreeSpace(requiredBytes: Long) {
+        val available = runCatching { StatFs(context.cacheDir.absolutePath).availableBytes }
+            .getOrElse { throw IllegalStateException("Não foi possível verificar o espaço livre do celular.") }
+        if (available < requiredBytes) {
+            val neededMb = ((requiredBytes - available) / (1024 * 1024) + 1).coerceAtLeast(1)
+            throw IllegalStateException("Pouco espaço no celular. Libere pelo menos ${neededMb} MB e tente novamente.")
+        }
+    }
+
+    private fun requiredForDownload(apkBytes: Long): Long {
+        val apkSize = apkBytes.takeIf { it > 0 } ?: MIN_APK_BYTES
+        // Keep room for the cached APK, Android's staging copy, and install overhead.
+        return apkSize * 2 + INSTALL_RESERVE_BYTES
+    }
+
+    private fun requiredForInstall(apkBytes: Long): Long = apkBytes + INSTALL_RESERVE_BYTES
 
     fun canInstallPackages(): Boolean = Build.VERSION.SDK_INT < 26 || context.packageManager.canRequestPackageInstalls()
     fun permissionSettingsIntent(): Intent = Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:${context.packageName}"))
@@ -172,6 +207,8 @@ class AppUpdateManager(private val context: Context) {
         private const val RELEASES_URL = "https://api.github.com/repos/bruncosta077-boop/Cobre-Mobile/releases?per_page=20"
         private const val CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000L
         private const val MAX_APK_BYTES = 250L * 1024 * 1024
+        private const val MIN_APK_BYTES = 20L * 1024 * 1024
+        private const val INSTALL_RESERVE_BYTES = 64L * 1024 * 1024
         private val RELEASE_TAG = Regex("mobile-v([0-9]+(?:\\.[0-9]+){1,2}(?:-(?:alpha|beta|rc)\\.[0-9]+)?)")
         private val VERSION = Regex("([0-9]+)\\.([0-9]+)(?:\\.([0-9]+))?(?:-(alpha|beta|rc)\\.([0-9]+))?")
     }

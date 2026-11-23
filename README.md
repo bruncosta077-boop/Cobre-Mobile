@@ -2,7 +2,7 @@
   <img src="assets/branding/cobre-logo.png" alt="Logo do Cobre" width="150">
   <h1>Cobre Mobile</h1>
   <p>Player Android integrado ao ecossistema Cobre</p>
-  <p><strong>Em desenvolvimento: 0.24.0-rc.1 — visualizador de espectro</strong></p>
+  <p><strong>Em desenvolvimento: 0.25.0-rc.1 — atualização protegida contra falta de espaço</strong></p>
 </div>
 
 O código do Cobre é proprietário e está disponível publicamente para inspeção. Consulte o [aviso de licença](LICENSE); componentes de terceiros mantêm suas próprias licenças.
@@ -11,9 +11,9 @@ Desenvolvimento principal: Bruno C S Moraes · Contribuição ao projeto: [@dilu
 
 Aplicativo Android do ecossistema Cobre. Interface escura com a paleta, o símbolo e a organização visual do Cobre Desktop, adaptados para toque.
 
-## Última versão publicada: 0.23.0-rc.1
+## Última versão publicada: 0.24.0-rc.1
 
-APK e AAB assinados, com checksums SHA-256, disponíveis em [Cobre Mobile 0.23.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.23.0-rc.1). É um pré-lançamento para avaliação em aparelho.
+APK e AAB assinados, com checksums SHA-256, disponíveis em [Cobre Mobile 0.24.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.24.0-rc.1). É um pré-lançamento para avaliação em aparelho.
 
 O app verifica novas versões ao abrir e em **Configurações → Aplicativo**. Quando encontra uma atualização, baixa e valida o APK assinado e abre a instalação do Android; o sistema pede autorização para instalar e confirmação final. As notas da versão aparecem antes e depois da atualização.
 
@@ -29,8 +29,9 @@ O app verifica novas versões ao abrir e em **Configurações → Aplicativo**. 
 - O player mostra letras do LRCLIB, acompanha letras sincronizadas e lê `.lrc`/`.txt` junto a faixas offline; a busca de letras usa cache local.
 - O áudio recebe perfis Plano/Rock/Metal/Voz/Jazz, reforço de graves e espacialização quando disponíveis no aparelho.
 - Na versão publicada 0.22.0-rc.1, o usuário pode escolher uma imagem como capa, avaliar álbuns de uma a cinco estrelas e ativar cores da arte no player. As avaliações e capas personalizadas ficam locais no Mobile.
-- Nesta versão em desenvolvimento 0.23.0-rc.1, a página do álbum pode consultar créditos e imagens de encarte por edição correspondente. O usuário escolhe o relançamento para evitar misturar dados de edições diferentes; a disponibilidade depende do cadastro comunitário.
-- Nesta versão em desenvolvimento 0.24.0-rc.1, o espectro de áudio é opcional e fica ligado apenas à sessão do Cobre. A permissão Android é pedida no momento da ativação; o app não grava nem envia áudio.
+- Na versão publicada 0.23.0-rc.1, a página do álbum pode consultar créditos e imagens de encarte por edição correspondente. O usuário escolhe o relançamento para evitar misturar dados de edições diferentes; a disponibilidade depende do cadastro comunitário.
+- Na versão publicada 0.24.0-rc.1, o espectro de áudio é opcional e fica ligado apenas à sessão do Cobre. A permissão Android é pedida no momento da ativação; o app não grava nem envia áudio.
+- Nesta versão em desenvolvimento 0.25.0-rc.1, o atualizador verifica o espaço livre antes do download e da instalação e explica quando é necessário liberar armazenamento.
 - O atualizador da edição direta agora encontra pré-lançamentos numerados (RC, beta e alpha) e compara versões estáveis acima da RC correspondente.
 - A página do álbum busca capas em Apple Music e MusicBrainz/Cover Art Archive. A escolha é salva em espaço privado do Mobile, sem alterar os arquivos de música ou o Desktop.
 - O player de vinil opcional coloca a capa no selo central e gira enquanto a faixa toca; a preferência permanece salva.
@@ -70,7 +71,7 @@ O refresh token do Cobre ID fica protegido pelo Android Keystore. Para conexões
 
 ## Funções do Desktop ainda ausentes no Mobile
 
-Estatísticas avançadas, edição de tags nos arquivos, crossfade, integração Last.fm, visualizador de espectro/VU e sincronização de playlists entre aparelhos ainda não estão implementados. Equalizador, graves reforçados, espacialização, letras, busca/seleção de capas, notas de álbum, cores dinâmicas e créditos/encarte por edição já existem no Mobile em versões de desenvolvimento.
+Estatísticas avançadas, edição de tags nos arquivos, crossfade, integração Last.fm e sincronização de playlists entre aparelhos ainda não estão implementados. Equalizador, graves reforçados, espacialização, letras, busca/seleção de capas, notas de álbum, cores dinâmicas, créditos/encarte por edição e visualizador de espectro opcional já existem no Mobile.
 
 ## Gerar APK de teste
 

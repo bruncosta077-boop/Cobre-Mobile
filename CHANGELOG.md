@@ -1,5 +1,12 @@
 # Histórico de versões — Cobre Mobile
 
+## 0.25.0-rc.1 — atualização protegida contra falta de espaço
+
+- Antes de baixar o APK, o app verifica se há espaço para o arquivo, para a cópia de instalação do Android e para uma reserva operacional. Se não houver, informa quantos MB precisam ser liberados.
+- Downloads temporários e APKs antigos do atualizador são removidos antes de iniciar uma nova transferência, evitando que versões incompletas ocupem armazenamento.
+- O espaço é verificado novamente antes de abrir o instalador, pois pode mudar durante o download.
+- A checagem não substitui a validação do checksum, pacote e certificado, que continua obrigatória.
+
 ## 0.24.0-rc.1 — visualizador de espectro opcional
 
 - Adicionado visualizador de espectro ligado à sessão de áudio do Cobre, com atualização leve e controles no player completo.
