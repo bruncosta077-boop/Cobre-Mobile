@@ -3,7 +3,7 @@
 ## 0.37.0-rc.1 — histórico sem travar a reprodução
 
 - Ao começar outra faixa, gravar a reprodução, limitar o histórico e atualizar a lista de recentes agora ocorre em I/O, sem consultas SQLite na thread da interface.
-- Build e assinatura/publicação pendentes no GitHub Actions.
+- Build, assinatura estável do APK/AAB e publicação com checksums SHA-256 passaram no [GitHub Actions](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45272086863). Pacote 39 / versionCode 39. A instalação em aparelho ainda não foi validada nesta rodada.
 
 ## 0.36.0-rc.1 — downloads offline sem bloquear a interface
 

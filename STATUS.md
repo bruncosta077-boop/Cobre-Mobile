@@ -1,9 +1,10 @@
 # Cobre Mobile — status
 
-## 0.37.0-rc.1 em preparação
+## 0.37.0-rc.1 publicado — 23/11/2026
 
 - Escrita e atualização do histórico de reprodução movidas para I/O ao trocar de faixa.
-- Build e publicação aguardando GitHub Actions.
+- Pacote 39 / versionCode 39. Build, assinatura estável APK/AAB, publicação e checksums passaram no [workflow 45272086863](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45272086863). Instalação em aparelho ainda não validada nesta rodada.
+- APK e AAB disponíveis na [release mobile-v0.37.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.37.0-rc.1).
 
 ## 0.36.0-rc.1 publicado — 23/11/2026
 
