@@ -23,6 +23,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AudioFile
 import androidx.compose.material.icons.filled.Devices
+import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Folder
@@ -64,12 +65,13 @@ private val desktopAccents=listOf(
 )
 
 @Composable
-fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,desktopTrackCount:Int,updateStatus:String,playDistribution:Boolean,updateBusy:Boolean,updateProgress:Int,updateReady:Boolean,onPickFolder:()->Unit,onClearFolder:()->Unit,onOpenAccount:()->Unit,onRetryDesktop:()->Unit,onCheckUpdates:()->Unit,onInstallUpdate:()->Unit){
+fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,desktopTrackCount:Int,offlineStorage:OfflineStorageSummary,offlineClearBusy:Boolean,offlineClearMessage:String,updateStatus:String,playDistribution:Boolean,updateBusy:Boolean,updateProgress:Int,updateReady:Boolean,onPickFolder:()->Unit,onClearFolder:()->Unit,onClearOffline:()->Unit,onOpenAccount:()->Unit,onRetryDesktop:()->Unit,onCheckUpdates:()->Unit,onInstallUpdate:()->Unit){
     val context=LocalContext.current
     val audio=context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
     var showReleaseNotes by remember{mutableStateOf(false)}
     var showOutputDetails by remember{mutableStateOf(false)}
     var showAdvancedAudio by remember{mutableStateOf(false)}
+    var confirmClearOffline by remember{mutableStateOf(false)}
     var volume by remember{mutableFloatStateOf(audio.getStreamVolume(AudioManager.STREAM_MUSIC).toFloat()*100f/maxOf(1,audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC)))}
     val audioPrefs=remember{context.getSharedPreferences(PlaybackService.AUDIO_PREFS,Context.MODE_PRIVATE)}
     val equalizerBands=remember{mutableStateListOf<Float>().apply{repeat(5){add(audioPrefs.getInt("eq_band_$it",0).toFloat())}}}
@@ -110,6 +112,17 @@ fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,
                 if(folderUri!=null)TextButton(onClick=onClearFolder){Text("Mostrar tudo",color=Mu)}
             }
             Text("A biblioteca passa a mostrar somente músicas dentro da pasta escolhida.",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=5.dp))
+        }
+        SettingsCard {
+            SectionHeading(Icons.Default.AudioFile,"Downloads offline")
+            Text("${offlineStorage.trackCount} faixas · ${formatStorage(offlineStorage.usedBytes)} de ${formatStorage(offlineStorage.limitBytes)}",color=Tx,fontWeight=FontWeight.SemiBold,modifier=Modifier.padding(top=10.dp))
+            LinearProgressIndicator(progress={(offlineStorage.usedBytes.toFloat()/offlineStorage.limitBytes.coerceAtLeast(1L)).coerceIn(0f,1f)},modifier=Modifier.fillMaxWidth().padding(top=9.dp),color=MaterialTheme.colorScheme.primary,trackColor=Line)
+            Text("Downloads privados do Cobre. Os arquivos originais no computador não são alterados.",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=7.dp))
+            if(offlineClearMessage.isNotBlank())Text(offlineClearMessage,color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=5.dp))
+            OutlinedButton(onClick={confirmClearOffline=true},enabled=offlineStorage.trackCount>0&&!offlineClearBusy,modifier=Modifier.fillMaxWidth().padding(top=8.dp),shape=RoundedCornerShape(22.dp),border=BorderStroke(1.dp,Line)){
+                if(offlineClearBusy)CircularProgressIndicator(Modifier.size(18.dp),strokeWidth=2.dp)else Icon(Icons.Default.DeleteOutline,null,tint=MaterialTheme.colorScheme.primary)
+                Spacer(Modifier.width(7.dp));Text(if(offlineClearBusy)"Removendo downloads…" else "Remover todos os downloads",color=Tx)
+            }
         }
         SettingsCard {
             SectionHeading(Icons.Default.Devices,"Conexão")
@@ -239,6 +252,13 @@ fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,
         }
         Spacer(Modifier.height(10.dp))
     }
+    if(confirmClearOffline)AlertDialog(
+        onDismissRequest={confirmClearOffline=false},
+        title={Text("Remover downloads offline?")},
+        text={Text("Isso apagará ${offlineStorage.trackCount} faixas e liberará ${formatStorage(offlineStorage.usedBytes)} neste celular. A biblioteca e os arquivos originais do computador permanecem intactos.")},
+        confirmButton={TextButton(onClick={confirmClearOffline=false;onClearOffline()}){Text("Remover",color=MaterialTheme.colorScheme.primary)}},
+        dismissButton={TextButton(onClick={confirmClearOffline=false}){Text("Cancelar",color=Tx)}},
+    )
     if(showReleaseNotes)AlertDialog(
         onDismissRequest={showReleaseNotes=false},
         title={Text("Cobre Mobile ${BuildConfig.VERSION_NAME}")},
@@ -267,4 +287,5 @@ fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,
 @Composable private fun SettingsCard(content:@Composable ColumnScope.()->Unit){Card(colors=CardDefaults.cardColors(containerColor=Panel),shape=RoundedCornerShape(17.dp)){Column(Modifier.fillMaxWidth().padding(16.dp),content=content)}}
 @Composable private fun SectionHeading(icon:androidx.compose.ui.graphics.vector.ImageVector,title:String){Row(verticalAlignment=Alignment.CenterVertically){Icon(icon,null,tint=MaterialTheme.colorScheme.primary,modifier=Modifier.size(21.dp));Text(title,color=Tx,fontWeight=FontWeight.SemiBold,modifier=Modifier.padding(start=9.dp))}}
 private fun folderLabel(value:String):String=runCatching{val id=DocumentsContract.getTreeDocumentId(Uri.parse(value));id.substringAfter(':',id).trim('/').ifBlank{"Raiz do armazenamento"}}.getOrDefault("Pasta escolhida")
+private fun formatStorage(bytes:Long):String=when{bytes>=1024L*1024*1024->"${"%.1f".format(java.util.Locale.ROOT,bytes.toDouble()/(1024.0*1024*1024))} GB";bytes>=1024L*1024->"${"%.0f".format(java.util.Locale.ROOT,bytes.toDouble()/(1024.0*1024))} MB";else->"${bytes/1024} KB"}
 private fun outputName(type:Int,index:Int):String=when(type){AudioDeviceInfo.TYPE_BUILTIN_SPEAKER->"Alto-falante do celular";AudioDeviceInfo.TYPE_BUILTIN_EARPIECE->"Alto-falante de chamadas";AudioDeviceInfo.TYPE_WIRED_HEADSET->"Fone com fio e microfone";AudioDeviceInfo.TYPE_WIRED_HEADPHONES->"Fone com fio";AudioDeviceInfo.TYPE_BLUETOOTH_A2DP->"Bluetooth estéreo";AudioDeviceInfo.TYPE_BLUETOOTH_SCO->"Bluetooth de chamadas";AudioDeviceInfo.TYPE_USB_DEVICE,AudioDeviceInfo.TYPE_USB_HEADSET->"Áudio USB";AudioDeviceInfo.TYPE_HDMI,AudioDeviceInfo.TYPE_HDMI_ARC,AudioDeviceInfo.TYPE_HDMI_EARC->"HDMI";else->"Saída de áudio ${index+1}"}

@@ -1,5 +1,11 @@
 # Cobre Mobile — status
 
+## 0.30.0-rc.1 em publicação
+
+- Ajustes agora mostram o espaço usado pelos downloads offline e permitem limpar as cópias com confirmação, sem tocar na biblioteca do Desktop.
+- Arquivos temporários interrompidos também são limpos; faixas offline removidas da fila e a faixa atual é pausada antes da exclusão.
+- Versão de pacote 32 / 0.30.0-rc.1. A publicação depende do workflow de compilação e assinatura.
+
 ## 0.29.0-rc.1 publicado
 
 - Implementados downloads offline em lote para álbuns e playlists do Desktop, com fila sequencial, progresso, cancelamento e retomada que preserva arquivos já concluídos.

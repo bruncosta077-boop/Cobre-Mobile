@@ -2,7 +2,7 @@
   <img src="assets/branding/cobre-logo.png" alt="Logo do Cobre" width="150">
   <h1>Cobre Mobile</h1>
   <p>Player Android integrado ao ecossistema Cobre</p>
-  <p><strong>Versão publicada: 0.29.0-rc.1 — downloads offline de álbuns e playlists</strong></p>
+  <p><strong>Versão em publicação: 0.30.0-rc.1 — controle de espaço offline</strong></p>
 </div>
 
 O código do Cobre é proprietário e está disponível publicamente para inspeção. Consulte o [aviso de licença](LICENSE); componentes de terceiros mantêm suas próprias licenças.
@@ -13,9 +13,9 @@ Aplicativo Android do ecossistema Cobre. Interface escura com a paleta, o símbo
 
 ## Última versão publicada: 0.29.0-rc.1
 
-APK e AAB assinados, com checksums SHA-256, disponíveis em [Cobre Mobile 0.29.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.29.0-rc.1). É um pré-lançamento para avaliação em aparelho.
+Próxima versão em publicação: 0.30.0-rc.1, com indicação do espaço ocupado por downloads offline e limpeza segura pelo app.
 
-APK e AAB assinados, com checksums SHA-256, disponíveis em [Cobre Mobile 0.28.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.28.0-rc.1). É um pré-lançamento para avaliação em aparelho.
+APK e AAB assinados, com checksums SHA-256, disponíveis em [Cobre Mobile 0.29.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.29.0-rc.1). É um pré-lançamento para avaliação em aparelho.
 
 O app verifica novas versões ao abrir e em **Configurações → Aplicativo**. Quando encontra uma atualização, baixa e valida o APK assinado e abre a instalação do Android; o sistema pede autorização para instalar e confirmação final. As notas da versão aparecem antes e depois da atualização.
 

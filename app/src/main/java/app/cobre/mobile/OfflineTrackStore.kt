@@ -16,6 +16,8 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.security.MessageDigest
 
+data class OfflineStorageSummary(val trackCount:Int,val usedBytes:Long,val limitBytes:Long)
+
 /** Private, app-managed offline copies of tracks streamed directly from a paired Desktop. */
 class OfflineTrackStore(context: Context) {
     private val appContext = context.applicationContext
@@ -26,6 +28,20 @@ class OfflineTrackStore(context: Context) {
     fun contains(track: Track): Boolean = db.readableDatabase
         .query("offline_tracks", arrayOf("source_key"), "source_key=?", arrayOf(track.libraryIdentity()), null, null, null)
         .use { it.moveToFirst() }
+
+    fun storageSummary():OfflineStorageSummary = db.readableDatabase.rawQuery("SELECT COUNT(*), COALESCE(SUM(byte_size),0) FROM offline_tracks",null).use{cursor->
+        if(cursor.moveToFirst())OfflineStorageSummary(cursor.getInt(0),cursor.getLong(1),MAX_LIBRARY_BYTES)else OfflineStorageSummary(0,0,MAX_LIBRARY_BYTES)
+    }
+
+    suspend fun clearAll():Int=withContext(Dispatchers.IO){
+        val paths=db.readableDatabase.query("offline_tracks",arrayOf("file_path"),null,null,null,null,null).use{cursor->buildList(cursor.count){while(cursor.moveToNext())add(cursor.getString(0))}}
+        db.writableDatabase.delete("offline_tracks",null,null)
+        val directory=File(appContext.filesDir,"offline-audio").canonicalFile
+        paths.forEach{path->runCatching{File(path).canonicalFile.takeIf{it.parentFile==directory}?.delete()}}
+        directory.listFiles()?.filter{it.isFile&&it.name.endsWith(".part")&&runCatching{it.canonicalFile.parentFile==directory}.getOrDefault(false)}?.forEach{it.delete()}
+        tracks=readAll()
+        paths.size
+    }
 
     suspend fun download(track: Track, grantToken: String, expectedDesktopUrl: String, onProgress: (Int) -> Unit = {}): Track = withContext(Dispatchers.IO) {
         val source = track.sourceUri ?: track.uri

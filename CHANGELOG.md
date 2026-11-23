@@ -1,5 +1,13 @@
 # Histórico de versões — Cobre Mobile
 
+## 0.30.0-rc.1 — controle de espaço offline
+
+- Configurações agora mostram quantas faixas offline estão salvas, o espaço usado e o limite de 2 GB.
+- Adicionada remoção total de downloads com confirmação clara; ela apaga somente cópias privadas do Cobre no celular e não altera os originais do Desktop.
+- A limpeza também remove arquivos temporários de downloads interrompidos.
+- Faixas baixadas removidas da biblioteca offline são retiradas da fila; se a faixa atual for apagada, o player é pausado antes da remoção.
+- Esta versão aguarda compilação e assinatura automáticas antes da publicação.
+
 ## 0.29.0-rc.1 — downloads offline de álbuns e playlists
 
 - Álbuns e playlists do Desktop podem ser baixados em lote para ouvir offline, sem baixar faixa por faixa manualmente.

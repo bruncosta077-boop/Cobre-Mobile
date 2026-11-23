@@ -110,6 +110,7 @@ class MainActivity:ComponentActivity(){
     var desktopAuthorizationRevision by remember{mutableIntStateOf(0)}
     var librarySource by remember{mutableStateOf(LibrarySource.All)}
     val offlineTracks=offlineStore.tracks
+    val offlineStorage=remember(offlineTracks){offlineStore.storageSummary()}
     val catalogIdentity=IdentityKey(localTracks,offlineTracks,desktopTracks)
     val allTracks=remember(catalogIdentity){localTracks?.plus(offlineTracks)?.plus(desktopTracks)}
     val allTracksIdentity=IdentityKey(allTracks)
@@ -124,6 +125,7 @@ class MainActivity:ComponentActivity(){
     var activeDownload by remember{mutableStateOf<String?>(null)}; var downloadProgress by remember{mutableIntStateOf(0)}; var downloadMessage by remember{mutableStateOf("")}
     var activeBatchLabel by remember{mutableStateOf<String?>(null)};var batchTotal by remember{mutableIntStateOf(0)};var batchFinished by remember{mutableIntStateOf(0)};var batchSucceeded by remember{mutableIntStateOf(0)};var downloadBatchJob by remember{mutableStateOf<Job?>(null)}
     var batchResult by remember{mutableStateOf<String?>(null)}
+    var offlineClearBusy by remember{mutableStateOf(false)};var offlineClearMessage by remember{mutableStateOf("")}
     val mainHandler=remember{android.os.Handler(android.os.Looper.getMainLooper())}
     fun downloadTrack(track:Track){
         if(activeDownload!=null||activeBatchLabel!=null)return
@@ -351,7 +353,15 @@ class MainActivity:ComponentActivity(){
                             }.onFailure { error->account=account.copy(busy=false,message=error.message?:"Não foi possível conectar ao computador.",error=true) }
                         }
                     })
-                    Page.Settings->SettingsPage(settings,folderUri,desktopStatus,desktopTracks.size,updateInfo?.let{"Atualização ${it.version} disponível."}?:updateStatus,BuildConfig.PLAY_DISTRIBUTION,updateBusy,updateProgress,updateFile!=null,{folderPicker.launch(folderUri?.let{Uri.parse(it)})},{folderUri?.let{old->runCatching{context.contentResolver.releasePersistableUriPermission(Uri.parse(old),Intent.FLAG_GRANT_READ_URI_PERMISSION)}};settings.setFolder(null);folderUri=null},{page=Page.Account;search=false},{desktopRefreshKey++},{checkForMobileUpdate(true)},{downloadOrInstallUpdate()})
+                    Page.Settings->SettingsPage(settings,folderUri,desktopStatus,desktopTracks.size,offlineStorage,offlineClearBusy,offlineClearMessage,updateInfo?.let{"Atualização ${it.version} disponível."}?:updateStatus,BuildConfig.PLAY_DISTRIBUTION,updateBusy,updateProgress,updateFile!=null,{folderPicker.launch(folderUri?.let{Uri.parse(it)})},{folderUri?.let{old->runCatching{context.contentResolver.releasePersistableUriPermission(Uri.parse(old),Intent.FLAG_GRANT_READ_URI_PERMISSION)}};settings.setFolder(null);folderUri=null},{
+                        if(!offlineClearBusy){
+                            val offlineUris=offlineTracks.mapTo(hashSetOf()){it.uri}
+                            if(playback.playing&&playback.queue.getOrNull(playback.currentIndex)?.uri?.let{it in offlineUris}==true)player.toggle()
+                            playback.queue.indices.reversed().filter{playback.queue[it].uri in offlineUris}.forEach(player::removeFromQueue)
+                            offlineClearBusy=true;offlineClearMessage=""
+                            scope.launch{runCatching{offlineStore.clearAll()}.onSuccess{count->offlineClearMessage=if(count==0)"Nenhum download estava salvo." else "$count faixas removidas e espaço liberado."}.onFailure{offlineClearMessage=it.message?:"Não foi possível remover os downloads."};offlineClearBusy=false}
+                        }
+                    },{page=Page.Account;search=false},{desktopRefreshKey++},{checkForMobileUpdate(true)},{downloadOrInstallUpdate()})
                 }
             }
             if(playback.hasItem) MiniPlayer(playback,player){fullPlayer=true}
