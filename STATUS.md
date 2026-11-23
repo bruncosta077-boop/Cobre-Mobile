@@ -1,5 +1,12 @@
 # Cobre Mobile — status
 
+## 0.24.0-rc.1 em preparação
+
+- Implementado visualizador de espectro opcional ligado à sessão Media3 do Cobre; sem captura de microfone ambiente, gravação ou envio de dados.
+- `RECORD_AUDIO` só é solicitado depois de tocar em Ativar e confirmar a explicação. A disponibilidade depende do efeito Visualizer do Android e da rota de áudio.
+- Corrigido o atualizador da variante direta: agora reconhece e compara corretamente tags de pré-lançamento, mantendo versões estáveis acima da RC equivalente.
+- Próximo pacote versionCode 26; build, assinatura e teste em aparelho ainda pendentes.
+
 ## 0.23.0-rc.1 em preparação
 
 - Adicionada consulta de edições exatas e créditos por faixa, com seleção explícita de edição e imagens de encarte/contracapa quando a comunidade cadastrou material.

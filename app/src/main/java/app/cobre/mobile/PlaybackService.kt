@@ -52,6 +52,7 @@ class PlaybackService : MediaSessionService() {
     }
     private val audioSessionListener = object : AnalyticsListener {
         override fun onAudioSessionIdChanged(eventTime: AnalyticsListener.EventTime, audioSessionId: Int) {
+            audioPrefs.edit().putInt("audio_session_id", audioSessionId).apply()
             configureEqualizer(audioSessionId)
         }
     }
@@ -115,7 +116,7 @@ class PlaybackService : MediaSessionService() {
         httpFactory = cobreHttpFactory
         grantSecretPrefs.registerOnSharedPreferenceChangeListener(grantSecretListener)
         audioPrefs.registerOnSharedPreferenceChangeListener(audioPrefsListener)
-        audioPrefs.edit().putBoolean("audio_session_ready", false).putBoolean("eq_available", false)
+        audioPrefs.edit().putInt("audio_session_id", 0).putBoolean("audio_session_ready", false).putBoolean("eq_available", false)
             .putBoolean("bass_available", false).putBoolean("virtualizer_available", false).apply()
         updateGrantHeader(cobreHttpFactory)
         val dataSourceFactory = DefaultDataSource.Factory(this, cobreHttpFactory).setTransferListener(streamTransfers)
@@ -150,7 +151,7 @@ class PlaybackService : MediaSessionService() {
         releaseBassBoost()
         releaseVirtualizer()
         if (audioSessionId <= 0) {
-            audioPrefs.edit().putBoolean("audio_session_ready", false).apply()
+            audioPrefs.edit().putInt("audio_session_id", 0).putBoolean("audio_session_ready", false).apply()
             return
         }
         audioPrefs.edit().putBoolean("audio_session_ready", true).apply()
@@ -271,7 +272,7 @@ class PlaybackService : MediaSessionService() {
         releaseEqualizer()
         releaseBassBoost()
         releaseVirtualizer()
-        audioPrefs.edit().putBoolean("audio_session_ready", false).apply()
+        audioPrefs.edit().putInt("audio_session_id", 0).putBoolean("audio_session_ready", false).apply()
         session = null
         super.onDestroy()
     }

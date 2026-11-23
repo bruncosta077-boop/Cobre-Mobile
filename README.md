@@ -2,7 +2,7 @@
   <img src="assets/branding/cobre-logo.png" alt="Logo do Cobre" width="150">
   <h1>Cobre Mobile</h1>
   <p>Player Android integrado ao ecossistema Cobre</p>
-  <p><strong>Em desenvolvimento: 0.23.0-rc.1 — créditos e encarte por edição</strong></p>
+  <p><strong>Em desenvolvimento: 0.24.0-rc.1 — visualizador de espectro</strong></p>
 </div>
 
 O código do Cobre é proprietário e está disponível publicamente para inspeção. Consulte o [aviso de licença](LICENSE); componentes de terceiros mantêm suas próprias licenças.
@@ -11,9 +11,9 @@ Desenvolvimento principal: Bruno C S Moraes · Contribuição ao projeto: [@dilu
 
 Aplicativo Android do ecossistema Cobre. Interface escura com a paleta, o símbolo e a organização visual do Cobre Desktop, adaptados para toque.
 
-## Última versão publicada: 0.22.0-rc.1
+## Última versão publicada: 0.23.0-rc.1
 
-APK e AAB assinados, com checksums SHA-256, disponíveis em [Cobre Mobile 0.22.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.22.0-rc.1). É um pré-lançamento para avaliação em aparelho.
+APK e AAB assinados, com checksums SHA-256, disponíveis em [Cobre Mobile 0.23.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.23.0-rc.1). É um pré-lançamento para avaliação em aparelho.
 
 O app verifica novas versões ao abrir e em **Configurações → Aplicativo**. Quando encontra uma atualização, baixa e valida o APK assinado e abre a instalação do Android; o sistema pede autorização para instalar e confirmação final. As notas da versão aparecem antes e depois da atualização.
 
@@ -30,6 +30,8 @@ O app verifica novas versões ao abrir e em **Configurações → Aplicativo**. 
 - O áudio recebe perfis Plano/Rock/Metal/Voz/Jazz, reforço de graves e espacialização quando disponíveis no aparelho.
 - Na versão publicada 0.22.0-rc.1, o usuário pode escolher uma imagem como capa, avaliar álbuns de uma a cinco estrelas e ativar cores da arte no player. As avaliações e capas personalizadas ficam locais no Mobile.
 - Nesta versão em desenvolvimento 0.23.0-rc.1, a página do álbum pode consultar créditos e imagens de encarte por edição correspondente. O usuário escolhe o relançamento para evitar misturar dados de edições diferentes; a disponibilidade depende do cadastro comunitário.
+- Nesta versão em desenvolvimento 0.24.0-rc.1, o espectro de áudio é opcional e fica ligado apenas à sessão do Cobre. A permissão Android é pedida no momento da ativação; o app não grava nem envia áudio.
+- O atualizador da edição direta agora encontra pré-lançamentos numerados (RC, beta e alpha) e compara versões estáveis acima da RC correspondente.
 - A página do álbum busca capas em Apple Music e MusicBrainz/Cover Art Archive. A escolha é salva em espaço privado do Mobile, sem alterar os arquivos de música ou o Desktop.
 - O player de vinil opcional coloca a capa no selo central e gira enquanto a faixa toca; a preferência permanece salva.
 - Faixas autorizadas do Desktop podem ser baixadas para ouvir offline. Em **Biblioteca → Computador → Faixas**, toque no ícone de download; elas aparecem em **Baixadas** e o mesmo controle as remove. Os arquivos ficam privados no app e há limite de 2 GB no total e 512 MB por faixa.

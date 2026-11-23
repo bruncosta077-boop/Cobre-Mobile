@@ -512,6 +512,13 @@ private fun selectLibrarySource(tracks:List<Track>,source:LibrarySource):List<Tr
     var volume by remember{mutableFloatStateOf(audio.getStreamVolume(AudioManager.STREAM_MUSIC).toFloat()/maxVolume)}
     var scrubbing by remember{mutableStateOf(false)};var preview by remember{mutableFloatStateOf(0f)}
     val current=s.queue.getOrNull(s.currentIndex)
+    val audioPrefs=remember{context.getSharedPreferences(PlaybackService.AUDIO_PREFS,android.content.Context.MODE_PRIVATE)}
+    var audioSessionId by remember{mutableIntStateOf(audioPrefs.getInt("audio_session_id",0))}
+    DisposableEffect(audioPrefs){
+        val listener=android.content.SharedPreferences.OnSharedPreferenceChangeListener{prefs,key->if(key=="audio_session_id")audioSessionId=prefs.getInt("audio_session_id",0)}
+        audioPrefs.registerOnSharedPreferenceChangeListener(listener)
+        onDispose{audioPrefs.unregisterOnSharedPreferenceChangeListener(listener)}
+    }
     val coverSourceRepository=remember{DesktopLibraryRepository()}
     val remoteCover=current?.let(coverSourceRepository::coverUri)
     val artworkRevision by CoverArtworkEvents.revision.collectAsState()
@@ -559,6 +566,7 @@ private fun selectLibrarySource(tracks:List<Track>,source:LibrarySource):List<Tr
                 }
                 Spacer(Modifier.height(16.dp))
                 Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(15.dp)).background(Color.White.copy(alpha=.055f)).padding(horizontal=13.dp,vertical=4.dp),verticalAlignment=Alignment.CenterVertically){Icon(Icons.Default.VolumeDown,"Volume",tint=Mu,modifier=Modifier.size(20.dp));Slider(value=volume,onValueChange={volume=it;audio.setStreamVolume(AudioManager.STREAM_MUSIC,(it*maxVolume).toInt().coerceIn(0,maxVolume),0)},modifier=Modifier.weight(1f).padding(horizontal=10.dp),valueRange=0f..1f,colors=SliderDefaults.colors(thumbColor=albumAccent,activeTrackColor=albumAccent,inactiveTrackColor=Line));Text("${(volume*100).toInt()}%",color=Mu,style=MaterialTheme.typography.labelSmall,modifier=Modifier.width(38.dp),textAlign=TextAlign.End)}
+                AudioSpectrumVisualizer(audioSessionId,s.playing)
                 Row(Modifier.fillMaxWidth().padding(top=4.dp),verticalAlignment=Alignment.CenterVertically){TextButton(onClick=::requestLyrics){Icon(Icons.Default.MusicNote,null,tint=MaterialTheme.colorScheme.primary);Spacer(Modifier.width(5.dp));Text("Letra",color=Tx)};Spacer(Modifier.weight(1f));if(vinylEnabled)Text("PLAYER DE VINIL",color=Mu,style=MaterialTheme.typography.labelSmall)else Text("CAPA DO ÁLBUM",color=Mu,style=MaterialTheme.typography.labelSmall)}
                 if(hasDesktopGrant&&desktopTrackId!=null){
                     Spacer(Modifier.height(8.dp))

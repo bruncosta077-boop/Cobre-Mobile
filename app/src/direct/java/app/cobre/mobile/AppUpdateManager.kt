@@ -149,19 +149,30 @@ class AppUpdateManager(private val context: Context) {
     }
 
     private fun compareVersions(left: String, right: String): Int {
-        val a = left.split('.').map { it.toIntOrNull() ?: 0 }
-        val b = right.split('.').map { it.toIntOrNull() ?: 0 }
-        for (index in 0 until maxOf(a.size, b.size)) {
-            val comparison = a.getOrElse(index) { 0 }.compareTo(b.getOrElse(index) { 0 })
+        val a = VERSION.matchEntire(left) ?: return left.compareTo(right)
+        val b = VERSION.matchEntire(right) ?: return left.compareTo(right)
+        for (index in 1..3) {
+            val comparison = (a.groupValues[index].toIntOrNull() ?: 0).compareTo(b.groupValues[index].toIntOrNull() ?: 0)
             if (comparison != 0) return comparison
         }
-        return 0
+        val aStage = a.groupValues[4].ifBlank { null }
+        val bStage = b.groupValues[4].ifBlank { null }
+        if (aStage == null || bStage == null) return when {
+            aStage == null && bStage == null -> 0
+            aStage == null -> 1 // A stable release ranks above any preview of the same version.
+            else -> -1
+        }
+        val stageOrder = mapOf("alpha" to 0, "beta" to 1, "rc" to 2)
+        val stageComparison = (stageOrder[aStage] ?: -1).compareTo(stageOrder[bStage] ?: -1)
+        if (stageComparison != 0) return stageComparison
+        return a.groupValues[5].toInt().compareTo(b.groupValues[5].toInt())
     }
 
     companion object {
         private const val RELEASES_URL = "https://api.github.com/repos/bruncosta077-boop/Cobre-Mobile/releases?per_page=20"
         private const val CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000L
         private const val MAX_APK_BYTES = 250L * 1024 * 1024
-        private val RELEASE_TAG = Regex("mobile-v([0-9]+(?:\\.[0-9]+){1,2})")
+        private val RELEASE_TAG = Regex("mobile-v([0-9]+(?:\\.[0-9]+){1,2}(?:-(?:alpha|beta|rc)\\.[0-9]+)?)")
+        private val VERSION = Regex("([0-9]+)\\.([0-9]+)(?:\\.([0-9]+))?(?:-(alpha|beta|rc)\\.([0-9]+))?")
     }
 }

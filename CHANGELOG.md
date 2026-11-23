@@ -1,5 +1,13 @@
 # Histórico de versões — Cobre Mobile
 
+## 0.24.0-rc.1 — visualizador de espectro opcional
+
+- Adicionado visualizador de espectro ligado à sessão de áudio do Cobre, com atualização leve e controles no player completo.
+- A permissão Android de áudio só é solicitada quando o usuário tenta ativar o visualizador. A captura fica no aparelho e não é gravada nem enviada; desligar o recurso libera a sessão do Visualizer.
+- O Android pode não oferecer o efeito em certos aparelhos, sessões ou rotas Bluetooth/USB; nesse caso o app mostra indisponibilidade em vez de afetar a reprodução.
+- Corrigido o atualizador direto para reconhecer releases `-alpha`, `-beta` e `-rc` e comparar corretamente prévias com versões estáveis. A partir desta versão, novas prévias publicadas podem aparecer dentro do app.
+- Falta validação física em diferentes aparelhos/saídas e conferência do fluxo de permissão Android antes de tratar o recurso como estável.
+
 ## 0.23.0-rc.1 — créditos e encarte por edição
 
 - A página do álbum agora permite consultar edições correspondentes no MusicBrainz e escolher qual edição consultar. O app exige correspondência exata do álbum e do artista antes de apresentar dados, e mostra ano, país, formato e gravadora quando disponíveis.
