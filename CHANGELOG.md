@@ -1,11 +1,18 @@
 # Histórico de versões — Cobre Mobile
 
+## 0.21.0 — controles de áudio e perfis do equalizador (em desenvolvimento)
+
+- Adicionados perfis de equalização Plano, Rock, Metal, Voz e Jazz, aplicados às cinco bandas do mecanismo Android e preservados entre sessões.
+- Incluídos reforço de graves e espacialização estéreo com intensidade ajustável. Cada efeito usa a sessão real de reprodução e a tela mostra quando ainda não há faixa ativa ou quando o aparelho não oferece suporte.
+- A disponibilidade é reavaliada quando a sessão muda; os efeitos antigos são liberados para evitar manter recursos de áudio nativos presos.
+- Incluída a permissão normal do Android para os controles de áudio. Não exige confirmação adicional do usuário.
+- O workflow deve compilar as variantes antes de disponibilizar o APK assinado para teste no aparelho.
+
 ## 0.20.0 — letras, busca de capas e player de vinil (em desenvolvimento)
 
 - O player completo pode buscar letras sincronizadas ou simples no LRCLIB e lê arquivos `.lrc`/`.txt` ao lado de faixas offline. Letras sincronizadas acompanham a posição da música; as letras encontradas ficam em cache privado por 12 horas.
 - A página de álbum permite procurar capas por correspondência exata no Apple Music e no MusicBrainz/Cover Art Archive. A imagem escolhida é reduzida, validada e salva no armazenamento privado do celular; ela não altera tags nem o Desktop.
 - Adicionado modo visual de vinil, configurável e persistente. O disco gira enquanto a faixa toca e pausa junto com a reprodução; a capa ocupa o selo central.
-- Ampliados os controles de áudio com reforço de graves e espacialização, além do equalizador. Os efeitos ficam ligados à sessão real do Android, reaplicam os ajustes quando a sessão de reprodução muda e são desativados na interface quando o aparelho não oferece suporte.
 - A validação desta versão ainda vai cobrir busca sem rede, metadados com caracteres acentuados, LRC, capa local/da rede e restauração da preferência de vinil.
 
 ## 0.19.0 — downloads offline, retomada e controle do Desktop (pré-release)

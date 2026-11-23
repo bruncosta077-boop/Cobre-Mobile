@@ -1,9 +1,9 @@
 # Cobre Mobile — status
 
-## 0.20.0 em desenvolvimento
+## 0.21.0 em desenvolvimento
 
-- Implementados nesta branch: busca e escolha local de capas, letras LRCLIB/LRC, modo de player de vinil com preferência salva, equalizador e efeitos de graves/espacialização conectados à sessão de áudio Android.
-- Versão de desenvolvimento ajustada para 0.20.0 (versionCode 22). O workflow de build das variantes debug passou em [45091447299](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45091447299); o APK/AAB assinados de teste estão sendo gerados em um workflow separado. Ainda falta validar a experiência no aparelho antes de marcar a versão como pronta.
+- Implementados: perfis de equalização Plano/Rock/Metal/Voz/Jazz, reforço de graves e espacialização ligados à sessão ativa do Android, com indicação de suporte; também permanecem letras, busca de capas e player de vinil da etapa anterior.
+- Versão ajustada para 0.21.0 (versionCode 23) para permitir instalação por cima do APK 0.20.0. Build e pacote assinado estão em validação no GitHub Actions; efeitos ainda precisam de teste físico em diferentes saídas antes da pré-release.
 
 ## Pré-release GitHub 0.19.0 — Google Play ainda pendente
 

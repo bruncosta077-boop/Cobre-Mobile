@@ -11,6 +11,7 @@ import android.os.Looper
 import android.provider.DocumentsContract
 import android.provider.Settings
 import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -43,6 +44,14 @@ import androidx.compose.ui.unit.sp
 import kotlin.math.roundToInt
 
 private data class AccentChoice(val name:String,val primary:Int,val secondary:Int)
+private data class EqPreset(val name:String,val bands:List<Int>)
+private val equalizerPresets=listOf(
+    EqPreset("Plano",listOf(0,0,0,0,0)),
+    EqPreset("Rock",listOf(3,2,0,2,3)),
+    EqPreset("Metal",listOf(2,1,-2,2,3)),
+    EqPreset("Voz",listOf(-1,0,3,2,0)),
+    EqPreset("Jazz",listOf(2,1,0,2,2)),
+)
 private val desktopAccents=listOf(
     AccentChoice("Cobre",0xFFC9773F.toInt(),0xFFE6A06A.toInt()),
     AccentChoice("Rosa suave",0xFFD99AA9.toInt(),0xFFF1C4CE.toInt()),
@@ -165,7 +174,19 @@ fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,
             if(equalizerEnabled&&equalizerAvailable){
                 val labels=listOf("Subgrave","Graves","Médios","Presença","Agudos")
                 labels.forEachIndexed{index,label->Column(Modifier.fillMaxWidth().padding(top=3.dp)){Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Text(label,color=Tx,style=MaterialTheme.typography.bodySmall);Text("${if(equalizerBands[index]>0)"+" else ""}${equalizerBands[index].toInt()} dB",color=MaterialTheme.colorScheme.primary,style=MaterialTheme.typography.labelSmall)};Slider(value=equalizerBands[index],onValueChange={value->equalizerBands[index]=value;audioPrefs.edit().putInt("eq_band_$index",value.toInt()).apply()},valueRange=-12f..12f,steps=23,colors=SliderDefaults.colors(thumbColor=MaterialTheme.colorScheme.primary,activeTrackColor=MaterialTheme.colorScheme.primary,inactiveTrackColor=Line))}}
-                TextButton(onClick={for(index in 0..4){equalizerBands[index]=0f};audioPrefs.edit().putInt("eq_band_0",0).putInt("eq_band_1",0).putInt("eq_band_2",0).putInt("eq_band_3",0).putInt("eq_band_4",0).apply()}){Text("Restaurar som plano",color=MaterialTheme.colorScheme.primary)}
+            }
+            val selectedPreset=equalizerPresets.firstOrNull{preset->equalizerBands.indices.all{equalizerBands[it].toInt()==preset.bands[it]}}?.name?:"Personalizado"
+            Text("Perfis de som · $selectedPreset",color=Tx,fontWeight=FontWeight.SemiBold,modifier=Modifier.padding(top=9.dp))
+            Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),horizontalArrangement=Arrangement.spacedBy(7.dp)){
+                equalizerPresets.forEach{preset->
+                    val selected=selectedPreset==preset.name
+                    OutlinedButton(onClick={
+                        preset.bands.forEachIndexed{index,value->equalizerBands[index]=value.toFloat()}
+                        audioPrefs.edit().apply{preset.bands.forEachIndexed{index,value->putInt("eq_band_$index",value)}}.apply()
+                    },colors=ButtonDefaults.outlinedButtonColors(containerColor=if(selected)MaterialTheme.colorScheme.primary.copy(alpha=.18f)else Color.Transparent,contentColor=if(selected)MaterialTheme.colorScheme.primary else Tx),border=BorderStroke(1.dp,if(selected)MaterialTheme.colorScheme.primary else Line),contentPadding=PaddingValues(horizontal=14.dp,vertical=5.dp)){
+                        Text(preset.name)
+                    }
+                }
             }
             Text("A quantidade e a faixa de frequências disponíveis dependem do aparelho. O equalizador só altera o áudio reproduzido pelo Cobre.",color=Mu,style=MaterialTheme.typography.bodySmall)
             HorizontalDivider(Modifier.padding(vertical=10.dp),color=Line)
