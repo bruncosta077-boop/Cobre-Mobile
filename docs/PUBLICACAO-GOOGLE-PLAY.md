@@ -4,12 +4,13 @@
 
 - A variante `play` compila para API 36 e remove a permissão `REQUEST_INSTALL_PACKAGES`, que a política da loja proíbe usar para atualizar o próprio app. Essa variante não baixa nem instala APKs externos.
 - A variante `direct` preserva o canal atual de APK e o atualizador por GitHub.
-- A pré-release assinada `mobile-v0.19.0` já contém APK direto, AAB Play e checksums SHA-256; o workflow terminou com sucesso em 23/11/2026. O AAB está tecnicamente assinado, mas a vinculação da chave à configuração Play App Signing ainda precisa ser concluída na Play Console.
+- A pré-release assinada `mobile-v0.19.0` já contém APK direto, AAB Play e checksums SHA-256; o workflow terminou com sucesso. O AAB está tecnicamente assinado, mas a vinculação da chave à configuração Play App Signing ainda precisa ser concluída na Play Console.
 - O pacote `app.cobre.mobile` já foi distribuído fora da loja. A chave usada nos APKs diretos precisa ser preservada ao configurar Play App Signing para que os dois canais possam atualizar a mesma instalação.
 
 ## Estado do lançamento
 
 - **GitHub:** `0.19.0` está publicada como pré-release. Para promovê-la a release estável no GitHub, não falta uma nova compilação; falta decidir se a transferência para o Desktop e os downloads/retomada offline podem ser declarados estáveis sem validação física. A compilação assinada foi verificada pelo CI, mas essas funções novas ainda não foram exercitadas num aparelho nesta versão.
+- Corrigi o fluxo para que futuras tags numeradas sem sufixo (`mobile-v0.20.0`) saiam como releases estáveis no GitHub; tags com `-rc`, `-beta` ou `-alpha` continuam pré-releases. A 0.19.0 já publicada não muda retroativamente.
 - **Google Play:** o aplicativo ainda não foi enviado à Play Console. “Release estável no GitHub” e “disponível na Play Store” são etapas diferentes.
 
 ## Itens obrigatórios antes do envio

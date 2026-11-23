@@ -159,7 +159,7 @@ jobs:
         with:
           name: Cobre Mobile ${{ github.ref_name }}
           tag_name: ${{ github.ref_name }}
-          prerelease: true
+          prerelease: ${{ contains(github.ref_name, '-rc') || contains(github.ref_name, '-beta') || contains(github.ref_name, '-alpha') }}
           body_path: release-notes.md
           files: |
             release/Cobre-Mobile-*.apk
