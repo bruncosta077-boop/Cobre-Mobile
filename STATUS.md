@@ -1,5 +1,10 @@
 # Cobre Mobile — status
 
+## 0.41.0-rc.1 em preparação
+
+- Escritas nas coleções serializadas e comparação de URLs alinhada à URL salva.
+- Build, assinatura estável e publicação aguardando GitHub Actions.
+
 ## 0.40.0-rc.1 publicado — 23/11/2026
 
 - Playlists lidas em uma consulta SQL agrupada; novas ordenações indexadas via migração do banco v4.

@@ -1,5 +1,11 @@
 # Histórico de versões — Cobre Mobile
 
+## 0.41.0-rc.1 — gravações locais consistentes
+
+- Gravações de favoritos, avaliações, playlists, histórico e reassociação do catálogo agora compartilham uma trava assíncrona; ações simultâneas não leem estado intermediário e se sobrescrevem.
+- Remover favorito e impedir faixas repetidas em playlists usam a URL normalizada sem query nem fragmento, igual à chave salva no banco.
+- Build, assinatura e publicação pendentes no GitHub Actions.
+
 ## 0.40.0-rc.1 — leitura eficiente das coleções
 
 - Leitura de playlists agora usa um `LEFT JOIN` ordenado em uma consulta, eliminando uma consulta extra por playlist e preservando playlists vazias.

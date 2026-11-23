@@ -19,6 +19,7 @@ data class SavedPlaylist(val name: String, val tracks: List<Track>)
 class LibraryCollections(context: Context) {
     private val database = CollectionsDatabase(context.applicationContext)
     private val initialization = Mutex()
+    private val mutations = Mutex()
     private var initialized = false
     var favorites by mutableStateOf(emptyList<Track>())
         private set
@@ -47,7 +48,7 @@ class LibraryCollections(context: Context) {
 
     suspend fun rebindRemoteTracks(available:List<Track>){
         ensureLoaded()
-        val snapshot=withContext(Dispatchers.IO){
+        val snapshot=mutations.withLock { withContext(Dispatchers.IO){
             val currentByIdentity=available.asSequence().filter{it.uri.scheme=="http"}.associateBy{it.libraryIdentity()}
             if(currentByIdentity.isEmpty())return@withContext null
             val db=database.writableDatabase
@@ -75,7 +76,7 @@ class LibraryCollections(context: Context) {
                 db.setTransactionSuccessful()
             }finally{db.endTransaction()}
             CollectionSnapshot(readTracks("favorites","saved_at DESC"),readTracks("history","played_at DESC",200),readPlaylists())
-        }?:return
+        }}?:return
         favorites=snapshot.favorites
         history=snapshot.history
         playlists=snapshot.playlists
@@ -83,7 +84,7 @@ class LibraryCollections(context: Context) {
 
     suspend fun setRating(album: Album, rating: Int) {
         ensureLoaded()
-        withContext(Dispatchers.IO) {
+        mutations.withLock { withContext(Dispatchers.IO) {
         val key = albumIdentity(album)
         val db = database.writableDatabase
         if (rating <= 0) db.delete("album_ratings", "album_key = ?", arrayOf(key))
@@ -91,7 +92,7 @@ class LibraryCollections(context: Context) {
             put("album_key", key); put("rating", rating.coerceIn(1, 5)); put("updated_at", System.currentTimeMillis())
         }, SQLiteDatabase.CONFLICT_REPLACE)
         albumRatings = readAlbumRatings()
-        }
+        }}
     }
 
     private fun readAlbumRatings(): Map<String, Int> {
@@ -112,17 +113,18 @@ class LibraryCollections(context: Context) {
 
     suspend fun toggleFavorite(track: Track) {
         ensureLoaded()
-        withContext(Dispatchers.IO) {
+        mutations.withLock { withContext(Dispatchers.IO) {
         val db = database.writableDatabase
-        if (isFavorite(track)) db.delete("favorites", "uri = ?", arrayOf(track.uri.toString()))
+        val storedUri = safeStoredTrackUri(track.uri)
+        if (isFavorite(track)) db.delete("favorites", "uri = ?", arrayOf(storedUri))
         else db.insertWithOnConflict("favorites", null, trackValues(track).apply { put("saved_at", System.currentTimeMillis()) }, SQLiteDatabase.CONFLICT_REPLACE)
         favorites = readTracks("favorites", "saved_at DESC")
-        }
+        }}
     }
 
     suspend fun savePlaylist(name: String, tracks: List<Track>): Boolean {
         ensureLoaded()
-        return withContext(Dispatchers.IO) {
+        return mutations.withLock { withContext(Dispatchers.IO) {
         val cleanName = name.trim().take(60)
         if (cleanName.isBlank() || tracks.isEmpty() || playlists.any { it.name.equals(cleanName, ignoreCase = true) }) return@withContext false
         val db = database.writableDatabase
@@ -139,7 +141,7 @@ class LibraryCollections(context: Context) {
             return@withContext false
         } finally {
             db.endTransaction()
-        }
+        }}
         playlists = readPlaylists()
         true
         }
@@ -147,11 +149,11 @@ class LibraryCollections(context: Context) {
 
     suspend fun addTrackToPlaylist(name: String, track: Track): Boolean {
         ensureLoaded()
-        return withContext(Dispatchers.IO) {
+        return mutations.withLock { withContext(Dispatchers.IO) {
         val db = database.writableDatabase
         val playlistId = db.query("playlists", arrayOf("_id"), "name = ? COLLATE NOCASE", arrayOf(name), null, null, null)
             .use { cursor -> if (cursor.moveToFirst()) cursor.getLong(0) else return@withContext false }
-        val alreadyAdded = db.query("playlist_tracks", arrayOf("position"), "playlist_id = ? AND uri = ?", arrayOf(playlistId.toString(), track.uri.toString()), null, null, null)
+        val alreadyAdded = db.query("playlist_tracks", arrayOf("position"), "playlist_id = ? AND uri = ?", arrayOf(playlistId.toString(), safeStoredTrackUri(track.uri)), null, null, null)
             .use { it.moveToFirst() }
         if (alreadyAdded) return@withContext false
         val nextPosition = db.query("playlist_tracks", arrayOf("COALESCE(MAX(position), -1) + 1"), "playlist_id = ?", arrayOf(playlistId.toString()), null, null, null)
@@ -161,23 +163,25 @@ class LibraryCollections(context: Context) {
         }) != -1L
         if (inserted) playlists = readPlaylists()
         inserted
-        }
+        }}
     }
 
     suspend fun deletePlaylist(name: String) {
         ensureLoaded()
-        withContext(Dispatchers.IO) {
+        mutations.withLock { withContext(Dispatchers.IO) {
             database.writableDatabase.delete("playlists", "name = ?", arrayOf(name))
             playlists = readPlaylists()
-        }
+        }}
     }
 
-    suspend fun recordPlayed(track: Track) = withContext(Dispatchers.IO) {
+    suspend fun recordPlayed(track: Track) {
         ensureLoaded()
-        val db = database.writableDatabase
-        db.insertWithOnConflict("history", null, trackValues(track).apply { put("played_at", System.currentTimeMillis()) }, SQLiteDatabase.CONFLICT_REPLACE)
-        db.execSQL("DELETE FROM history WHERE uri NOT IN (SELECT uri FROM history ORDER BY played_at DESC LIMIT 200)")
-        history = readTracks("history", "played_at DESC", 200)
+        mutations.withLock { withContext(Dispatchers.IO) {
+            val db = database.writableDatabase
+            db.insertWithOnConflict("history", null, trackValues(track).apply { put("played_at", System.currentTimeMillis()) }, SQLiteDatabase.CONFLICT_REPLACE)
+            db.execSQL("DELETE FROM history WHERE uri NOT IN (SELECT uri FROM history ORDER BY played_at DESC LIMIT 200)")
+            history = readTracks("history", "played_at DESC", 200)
+        }}
     }
 
     private fun readTracks(table: String, order: String, limit: Int? = null): List<Track> {
