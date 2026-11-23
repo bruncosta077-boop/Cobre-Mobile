@@ -1,5 +1,11 @@
 # Histórico de versões — Cobre Mobile
 
+## 0.42.0-rc.1 — caminhos offline protegidos
+
+- Arquivos baixados só são reconhecidos como offline quando o caminho canônico está na pasta privada `offline-audio` e o nome corresponde ao hash gerado pelo app.
+- Remover e limpar downloads nunca excluem caminhos externos ou links simbólicos que escapem dessa pasta; referências inválidas são removidas do banco sem apagar o arquivo apontado.
+- Build, assinatura e publicação pendentes no GitHub Actions.
+
 ## 0.41.0-rc.1 — gravações locais consistentes
 
 - Gravações de favoritos, avaliações, playlists, histórico e reassociação do catálogo agora compartilham uma trava assíncrona; ações simultâneas não leem estado intermediário e se sobrescrevem.

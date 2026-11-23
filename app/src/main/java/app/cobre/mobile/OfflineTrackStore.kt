@@ -45,9 +45,9 @@ class OfflineTrackStore(context: Context) {
     suspend fun clearAll():Int=withContext(Dispatchers.IO){
         val paths=db.readableDatabase.query("offline_tracks",arrayOf("file_path"),null,null,null,null,null).use{cursor->buildList(cursor.count){while(cursor.moveToNext())add(cursor.getString(0))}}
         db.writableDatabase.delete("offline_tracks",null,null)
-        val directory=File(appContext.filesDir,"offline-audio").canonicalFile
-        paths.forEach{path->runCatching{File(path).canonicalFile.takeIf{it.parentFile==directory}?.delete()}}
-        directory.listFiles()?.filter{it.isFile&&it.name.endsWith(".part")&&runCatching{it.canonicalFile.parentFile==directory}.getOrDefault(false)}?.forEach{it.delete()}
+        paths.forEach{path->ownedAudioFile(path)?.delete()}
+        val directory=offlineDirectory()
+        directory.listFiles()?.filter{it.isFile&&it.name.matches(PART_FILE_NAME)&&runCatching{it.canonicalFile.parentFile==directory}.getOrDefault(false)}?.forEach{it.delete()}
         tracks=readAll()
         paths.size
     }
@@ -62,11 +62,13 @@ class OfflineTrackStore(context: Context) {
         val key = sha256(sourceKey)
         val existing = db.readableDatabase.query("offline_tracks", arrayOf("file_path"), "source_key=?", arrayOf(sourceKey), null, null, null)
             .use { if (it.moveToFirst()) it.getString(0) else null }
-        if (existing != null && File(existing).let { it.isFile && it.length() > 0 }) {
+        val existingFile=existing?.let(::ownedAudioFile)
+        if (existingFile != null && existingFile.isFile && existingFile.length() > 0) {
             db.writableDatabase.update("offline_tracks", ContentValues().apply { put("source_uri", uri.toString()) }, "source_key=?", arrayOf(sourceKey))
             tracks = readAll()
-            return@withContext track.copy(id = -key.take(15).toLong(16), uri = Uri.fromFile(File(existing)), sourceUri = uri)
+            return@withContext track.copy(id = -key.take(15).toLong(16), uri = Uri.fromFile(existingFile), sourceUri = uri)
         }
+        if(existing!=null)db.writableDatabase.delete("offline_tracks","source_key=?",arrayOf(sourceKey))
 
         val diskUsed = db.readableDatabase.rawQuery("SELECT COALESCE(SUM(byte_size),0) FROM offline_tracks", null).use { if (it.moveToFirst()) it.getLong(0) else 0L }
         if (diskUsed >= MAX_LIBRARY_BYTES) error("O limite de 2 GB para músicas offline foi atingido. Remova algumas faixas e tente novamente.")
@@ -161,7 +163,7 @@ class OfflineTrackStore(context: Context) {
         val path = db.readableDatabase.query("offline_tracks", arrayOf("file_path"), "source_key=?", arrayOf(key), null, null, null)
             .use { if (it.moveToFirst()) it.getString(0) else null }
         db.writableDatabase.delete("offline_tracks", "source_key=?", arrayOf(key))
-        path?.let(::File)?.delete()
+        path?.let(::ownedAudioFile)?.delete()
         tracks = readAll()
     }
 
@@ -171,10 +173,11 @@ class OfflineTrackStore(context: Context) {
         val result = db.readableDatabase.query("offline_tracks", columns, null, null, null, null, "saved_at DESC").use { cursor ->
             buildList(cursor.count) {
                 while (cursor.moveToNext()) {
-                    val file = File(cursor.getString(1))
+                    val storedPath=cursor.getString(1)
+                    val file = ownedAudioFile(storedPath)
                     val source = Uri.parse(cursor.getString(0))
-                    if (!file.isFile || file.length() == 0L) {
-                        missingFiles += file.absolutePath
+                    if (file==null || !file.isFile || file.length() == 0L) {
+                        missingFiles += storedPath
                         continue
                     }
                     add(Track(cursor.getLong(2), Uri.fromFile(file), cursor.getString(3), cursor.getString(4), cursor.getString(5),
@@ -185,6 +188,13 @@ class OfflineTrackStore(context: Context) {
         missingFiles.forEach { db.writableDatabase.delete("offline_tracks", "file_path=?", arrayOf(it)) }
         return result
     }
+
+    private fun offlineDirectory()=File(appContext.filesDir,"offline-audio").canonicalFile
+
+    private fun ownedAudioFile(path:String):File?=runCatching{
+        val file=File(path).canonicalFile
+        file.takeIf{it.parentFile==offlineDirectory()&&it.name.matches(AUDIO_FILE_NAME)}
+    }.getOrNull()
 
     private fun validateStreamUri(uri: Uri, expectedDesktopUrl: String): Uri {
         val host = uri.host.orEmpty().split('.').map { it.toIntOrNull() ?: return invalidStream() }
@@ -214,6 +224,8 @@ class OfflineTrackStore(context: Context) {
     }
 
     private companion object {
+        val AUDIO_FILE_NAME=Regex("[a-f0-9]{64}\\.(mp3|flac|wav|ogg|m4a|aac|audio)")
+        val PART_FILE_NAME=Regex("[a-f0-9]{64}\\.part")
         const val MAX_TRACK_BYTES = 512L * 1024 * 1024
         const val MAX_LIBRARY_BYTES = 2L * 1024 * 1024 * 1024
         const val MIN_FREE_BYTES = 64L * 1024 * 1024
