@@ -4,7 +4,7 @@
 
 - Gravações de favoritos, avaliações, playlists, histórico e reassociação do catálogo agora compartilham uma trava assíncrona; ações simultâneas não leem estado intermediário e se sobrescrevem.
 - Remover favorito e impedir faixas repetidas em playlists usam a URL normalizada sem query nem fragmento, igual à chave salva no banco.
-- Build, assinatura e publicação pendentes no GitHub Actions.
+- Build, assinatura estável do APK/AAB e publicação com checksums SHA-256 passaram no [GitHub Actions](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45278169561). Pacote 43 / versionCode 43. Toques simultâneos e migração ainda não foram validados em aparelho nesta rodada.
 
 ## 0.40.0-rc.1 — leitura eficiente das coleções
 
