@@ -33,12 +33,14 @@
 
 ## Próximo passo
 
-Compilar e validar o 0.8.0 no aparelho, em especial as medições durante stream. Depois, avançar a paridade local prioritária:
+O foco do Mobile é paridade funcional com o Desktop, sem trabalho de Play Store nesta etapa:
 
-1. Validar em aparelho os downloads offline e a restauração da fila, inclusive fontes locais e Desktop.
-2. Letras locais e sincronizadas; artista do álbum, disco e total de faixas por tags.
-3. Busca e gestão de encartes/metadados.
-4. Equalizador, volume prévio, crossfade e efeitos DSP medidos no Android.
+1. Concluir a compilação assinada do 0.20.0 e validar no celular letras (sincronizadas, sem resultado e offline), busca/seleção de capa, rotação do vinil e preservação da reprodução existente.
+2. Avançar metadados e organização da biblioteca: créditos/encartes, edição local de capa sem alterar os arquivos e sincronização clara entre fontes Celular e Computador.
+3. Completar recursos de reprodução Android que têm efeito real: equalizador/efeitos, gapless e crossfade, com limites explícitos do que o sistema e o hardware permitem.
+4. Consolidar sincronização entre aparelhos: IDs estáveis, playlists/favoritos/histórico e transferência da sessão/fila, mantendo o áudio direto entre Desktop e Mobile.
+
+Cada bloco deve compilar e manter as funções atuais antes de seguir para o próximo; distribuição para a loja permanece fora do escopo imediato.
 
 ## Streaming e sincronização: ordem técnica
 
