@@ -1,10 +1,10 @@
 # Cobre Mobile — status
 
-## 0.34.0-rc.1 em publicação
+## 0.34.0-rc.1 publicado — 23/11/2026
 
 - Migração do banco de coleções sanitiza URLs legadas com chave; novas gravações de favoritos, histórico e playlists persistem URLs sem query/fragmento.
 - Endereço salvo do Desktop também é normalizado. Se havia chave antiga, o Mobile solicita pareamento seguro pelo Cobre ID.
-- Versão de pacote 36 / 0.34.0-rc.1. A publicação depende da compilação e validação da assinatura no GitHub Actions.
+- Versão de pacote 36 / 0.34.0-rc.1. CI compilou, validou assinaturas e publicou APK/AAB com checksums SHA-256.
 
 ## 0.33.0-rc.1 publicado — 23/11/2026
 
