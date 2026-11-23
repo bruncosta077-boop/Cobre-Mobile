@@ -187,17 +187,26 @@ class LibraryCollections(context: Context) {
 
     private fun readPlaylists(): List<SavedPlaylist> {
         val db = database.readableDatabase
-        val result = mutableListOf<SavedPlaylist>()
-        db.query("playlists", arrayOf("_id", "name"), null, null, null, null, "created_at ASC").use { playlistsCursor ->
-            while (playlistsCursor.moveToNext()) {
-                val id = playlistsCursor.getLong(0)
-                val name = playlistsCursor.getString(1)
-                val cursor = db.query("playlist_tracks", TRACK_COLUMNS, "playlist_id = ?", arrayOf(id.toString()), null, null, "position ASC")
-                val tracks = cursor.use { c -> buildList(c.count) { while (c.moveToNext()) add(c.toTrack()) } }
-                result += SavedPlaylist(name, tracks)
+        val columns = TRACK_COLUMNS.joinToString(", ") { "pt.$it" }
+        val names = linkedMapOf<Long, String>()
+        val tracksByPlaylist = linkedMapOf<Long, MutableList<Track>>()
+        db.rawQuery(
+            "SELECT p._id AS playlist_id, p.name AS playlist_name, $columns, pt.position " +
+                "FROM playlists p LEFT JOIN playlist_tracks pt ON pt.playlist_id = p._id " +
+                "ORDER BY p.created_at ASC, pt.position ASC",
+            null,
+        ).use { cursor ->
+            val idIndex = cursor.getColumnIndexOrThrow("playlist_id")
+            val nameIndex = cursor.getColumnIndexOrThrow("playlist_name")
+            val uriIndex = cursor.getColumnIndexOrThrow("uri")
+            while (cursor.moveToNext()) {
+                val id = cursor.getLong(idIndex)
+                names[id] = cursor.getString(nameIndex)
+                val playlistTracks = tracksByPlaylist.getOrPut(id) { mutableListOf() }
+                if (!cursor.isNull(uriIndex)) playlistTracks += cursor.toTrack()
             }
         }
-        return result
+        return names.map { (id, name) -> SavedPlaylist(name, tracksByPlaylist[id].orEmpty()) }
     }
 
     private data class CollectionSnapshot(val favorites:List<Track>,val history:List<Track>,val playlists:List<SavedPlaylist>)
@@ -217,7 +226,7 @@ class LibraryCollections(context: Context) {
         durationMs = getLong(getColumnIndexOrThrow("duration_ms")), year = getInt(getColumnIndexOrThrow("year")),
     )
 
-    private class CollectionsDatabase(context: Context) : SQLiteOpenHelper(context, "cobre-mobile-library.db", null, 3) {
+    private class CollectionsDatabase(context: Context) : SQLiteOpenHelper(context, "cobre-mobile-library.db", null, 4) {
         override fun onCreate(db: SQLiteDatabase) {
             val trackFields = "uri TEXT NOT NULL, media_id INTEGER NOT NULL, title TEXT NOT NULL, artist TEXT NOT NULL, album_artist TEXT NOT NULL, album TEXT NOT NULL, track_number INTEGER NOT NULL, disc_number INTEGER NOT NULL, duration_ms INTEGER NOT NULL, year INTEGER NOT NULL"
             db.execSQL("CREATE TABLE favorites ($trackFields, saved_at INTEGER NOT NULL, PRIMARY KEY(uri))")
@@ -226,6 +235,7 @@ class LibraryCollections(context: Context) {
             db.execSQL("CREATE TABLE playlist_tracks (playlist_id INTEGER NOT NULL REFERENCES playlists(_id) ON DELETE CASCADE, position INTEGER NOT NULL, $trackFields, PRIMARY KEY(playlist_id, position))")
             db.execSQL("CREATE INDEX ix_playlist_order ON playlist_tracks(playlist_id, position)")
             db.execSQL("CREATE TABLE album_ratings (album_key TEXT PRIMARY KEY NOT NULL, rating INTEGER NOT NULL CHECK(rating BETWEEN 1 AND 5), updated_at INTEGER NOT NULL)")
+            createCollectionIndexes(db)
         }
 
         override fun onConfigure(db: SQLiteDatabase) { db.setForeignKeyConstraintsEnabled(true) }
@@ -233,6 +243,13 @@ class LibraryCollections(context: Context) {
         override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
             if (oldVersion < 2) db.execSQL("CREATE TABLE album_ratings (album_key TEXT PRIMARY KEY NOT NULL, rating INTEGER NOT NULL CHECK(rating BETWEEN 1 AND 5), updated_at INTEGER NOT NULL)")
             if (oldVersion < 3) scrubLegacyDesktopUris(db)
+            if (oldVersion < 4) createCollectionIndexes(db)
+        }
+
+        private fun createCollectionIndexes(db: SQLiteDatabase) {
+            db.execSQL("CREATE INDEX IF NOT EXISTS ix_favorites_saved_at ON favorites(saved_at DESC)")
+            db.execSQL("CREATE INDEX IF NOT EXISTS ix_history_played_at ON history(played_at DESC)")
+            db.execSQL("CREATE INDEX IF NOT EXISTS ix_playlists_created_at ON playlists(created_at ASC)")
         }
 
         private fun scrubLegacyDesktopUris(db:SQLiteDatabase){

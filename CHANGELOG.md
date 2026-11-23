@@ -1,5 +1,11 @@
 # Histórico de versões — Cobre Mobile
 
+## 0.40.0-rc.1 — leitura eficiente das coleções
+
+- Leitura de playlists agora usa um `LEFT JOIN` ordenado em uma consulta, eliminando uma consulta extra por playlist e preservando playlists vazias.
+- Migração de banco v4 cria índices de ordenação para favoritos, histórico e playlists sem remover registros existentes.
+- Build, assinatura e publicação pendentes no GitHub Actions.
+
 ## 0.39.0-rc.1 — atualização direta mais confiável
 
 - A edição de instalação direta volta a mostrar a atualização já encontrada se o app for fechado/reaberto dentro do intervalo de consulta, incluindo as notas da release.

@@ -1,5 +1,10 @@
 # Cobre Mobile — status
 
+## 0.40.0-rc.1 em preparação
+
+- Playlists lidas em uma consulta SQL agrupada; novas ordenações indexadas via migração do banco v4.
+- Dados locais existentes preservados; build e publicação aguardando GitHub Actions.
+
 ## 0.39.0-rc.1 publicado — 23/11/2026
 
 - Atualização encontrada e notas persistem entre aberturas do app; consulta automática ao iniciar e a cada hora enquanto aberto.
