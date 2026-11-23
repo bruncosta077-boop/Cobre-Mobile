@@ -1,5 +1,11 @@
 # Cobre Mobile — status
 
+## 0.28.0-rc.1 em preparação
+
+- Navegação inferior em três áreas, ações de faixa em menus contextuais, mini player simplificado e controles avançados de áudio recolhidos por padrão.
+- Busca, filtragem e agrupamento de biblioteca calculados fora da thread visual; removidas buscas repetidas de posição nas listas.
+- Build, assinatura e validação no celular pendentes.
+
 ## 0.27.0-rc.1 publicado
 
 - Menu de ações do player substitui a ação duplicada de fila por favoritos, playlists, capas, encarte/créditos, letras, modo vinil e compartilhamento local.

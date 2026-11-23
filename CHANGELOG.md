@@ -1,5 +1,15 @@
 # Histórico de versões — Cobre Mobile
 
+## 0.28.0-rc.1 — navegação enxuta e biblioteca mais leve
+
+- A barra inferior agora tem três áreas: Início, Buscar e Ajustes. Fila e Minha coleção ficam acessíveis por atalhos no cabeçalho da biblioteca; conexões Cobre ID continuam dentro de Ajustes.
+- Busca unificada continua encontrando faixa, álbum e artista, com o filtro e a organização de álbuns/artistas executados fora da thread de interface.
+- As listas de faixas e de favoritos/recente agora mostram título e artista com um único menu de ações para fila, favoritos, download offline e compartilhamento quando disponível. As ações de fila seguem também no player e em sua aba própria.
+- Mini player reduzido a capa, faixa, progresso e reproduzir/pausar. A fila permanece no botão específico da tela completa.
+- Equalizador, graves e espacialização ficam recolhidos por padrão nas configurações; ReplayGain permanece visível como ajuste simples de volume.
+- Toque em Buscar para abrir a pesquisa; atalhos de fila e coleção ficam no Início. Agrupamento e filtragem são calculados em segundo plano e as linhas usam seus índices diretos, evitando buscas repetidas ao tocar em faixas.
+- Build, assinatura e validação em aparelho ainda pendentes.
+
 ## 0.27.0-rc.1 — ações úteis no player e ReplayGain
 
 - O menu de três pontos agora reúne ações da faixa: favoritos, adicionar/criar playlist, buscar ou trocar capa, créditos/encarte, letra, visual de vinil e compartilhamento do arquivo local quando o Android permite. A fila permanece nos controles próprios de fila.

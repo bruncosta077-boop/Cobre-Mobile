@@ -77,7 +77,9 @@ class LocalLibrary(private val context: Context) {
             Album(sorted.first().albumArtist, sorted.first().album, sorted.map(Track::year).firstOrNull { it > 0 } ?: 0, sorted)
         }.sortedWith(compareBy({ it.artist.lowercase() }, { it.title.lowercase() }))
 
-    fun artists(tracks: List<Track>): List<Artist> = albums(tracks).groupBy { it.artist.lowercase() }
+    fun artists(tracks: List<Track>): List<Artist> = artistsFromAlbums(albums(tracks))
+
+    fun artistsFromAlbums(albums: List<Album>): List<Artist> = albums.groupBy { it.artist.lowercase() }
         .map { (_, albums) -> Artist(albums.first().artist, albums, albums.flatMap(Album::tracks)) }
         .sortedBy { it.name.lowercase() }
 }

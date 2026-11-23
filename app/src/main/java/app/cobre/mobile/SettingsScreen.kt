@@ -69,6 +69,7 @@ fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,
     val audio=context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
     var showReleaseNotes by remember{mutableStateOf(false)}
     var showOutputDetails by remember{mutableStateOf(false)}
+    var showAdvancedAudio by remember{mutableStateOf(false)}
     var volume by remember{mutableFloatStateOf(audio.getStreamVolume(AudioManager.STREAM_MUSIC).toFloat()*100f/maxOf(1,audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC)))}
     val audioPrefs=remember{context.getSharedPreferences(PlaybackService.AUDIO_PREFS,Context.MODE_PRIVATE)}
     val equalizerBands=remember{mutableStateListOf<Float>().apply{repeat(5){add(audioPrefs.getInt("eq_band_$it",0).toFloat())}}}
@@ -171,8 +172,13 @@ fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,
             }
         }
         SettingsCard {
-            SectionHeading(Icons.Default.AudioFile,"Equalizador de 5 bandas")
+            SectionHeading(Icons.Default.AudioFile,"Áudio")
             Row(Modifier.fillMaxWidth().padding(top=8.dp),verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){Text("Normalizar volume (ReplayGain)",color=Tx,fontWeight=FontWeight.SemiBold);Text("Lê ganho e pico gravados nas tags da faixa. Sem tags, mantém o volume original.",color=Mu,style=MaterialTheme.typography.bodySmall)};Switch(checked=replayGainEnabled,onCheckedChange={replayGainEnabled=it;audioPrefs.edit().putBoolean("replaygain_enabled",it).apply()})}
+            TextButton(onClick={showAdvancedAudio=!showAdvancedAudio},modifier=Modifier.fillMaxWidth()){
+                Icon(if(showAdvancedAudio)Icons.Default.ExpandLess else Icons.Default.ExpandMore,null,tint=MaterialTheme.colorScheme.primary)
+                Text(if(showAdvancedAudio)"Ocultar equalizador e efeitos" else "Equalizador, graves e áudio espacial",color=Tx)
+            }
+            if(showAdvancedAudio){
             Text("Ajuste o timbre da reprodução local e das faixas recebidas do Desktop.",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=6.dp))
             Row(Modifier.fillMaxWidth().padding(top=8.dp),verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){Text("Equalizador",color=Tx,fontWeight=FontWeight.SemiBold);Text(when{equalizerAvailable->"Aplicado pelo mecanismo de áudio do Android";!audioSessionReady->"Inicie uma faixa para verificar suporte nesta saída";else->"Este aparelho não disponibilizou o efeito de equalização"},color=Mu,style=MaterialTheme.typography.bodySmall)};Switch(checked=equalizerEnabled,onCheckedChange={equalizerEnabled=it;audioPrefs.edit().putBoolean("eq_enabled",it).apply()})}
             if(equalizerEnabled&&equalizerAvailable){
@@ -208,6 +214,7 @@ fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,
                 onStrength={virtualizerStrength=it;audioPrefs.edit().putInt("virtualizer_strength",it.toInt()).apply()},
             )
             Text("Os efeitos são vinculados à sessão de áudio. Alguns aparelhos ou saídas podem não oferecer graves reforçados ou áudio espacial; nesses casos o Cobre informa a indisponibilidade.",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=5.dp))
+            }
         }
         SettingsCard {
             SectionHeading(Icons.Default.Refresh,"Aplicativo")

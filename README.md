@@ -15,6 +15,8 @@ Aplicativo Android do ecossistema Cobre. Interface escura com a paleta, o símbo
 
 APK e AAB assinados, com checksums SHA-256, disponíveis em [Cobre Mobile 0.27.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.27.0-rc.1). É um pré-lançamento para avaliação em aparelho.
 
+> A versão 0.28.0-rc.1 está em preparação e ainda não foi publicada.
+
 O app verifica novas versões ao abrir e em **Configurações → Aplicativo**. Quando encontra uma atualização, baixa e valida o APK assinado e abre a instalação do Android; o sistema pede autorização para instalar e confirmação final. As notas da versão aparecem antes e depois da atualização.
 
 - Biblioteca local com álbuns, artistas, faixas, capas e busca.
