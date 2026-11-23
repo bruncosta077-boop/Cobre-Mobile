@@ -1,11 +1,13 @@
 # Cobre Mobile — status
 
-## 0.27.0-rc.1 em preparação
+## 0.27.0-rc.1 publicado
 
 - Menu de ações do player substitui a ação duplicada de fila por favoritos, playlists, capas, encarte/créditos, letras, modo vinil e compartilhamento local.
-- Normalização ReplayGain opcional lê metadados reconhecidos e limita o pico; build e teste auditivo ainda pendentes.
+- Normalização ReplayGain opcional lê metadados reconhecidos e limita o pico; build e assinatura passaram. Falta teste auditivo do autor com faixas que tenham tags ReplayGain.
 - Capas usam cache de memória, decodificação reduzida e limites de espera mais curtos para reduzir travamentos ao navegar.
 - Não anuncia suporte novo a DSD/MQA/APE/WMA/WavPack: codecs dedicados ainda não foram adicionados.
+- Build de prévia [45217722021](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45217722021) passou; APK verificado: pacote `app.cobre.mobile`, versionCode 29, versionName 0.27.0-rc.1 e assinatura estável correta.
+- Release disponível em [mobile-v0.27.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.27.0-rc.1).
 
 ## 0.26.0-rc.1 publicado
 
