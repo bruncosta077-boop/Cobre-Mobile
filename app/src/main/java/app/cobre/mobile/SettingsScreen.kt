@@ -143,6 +143,7 @@ fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,
                 };repeat(4-row.size){Spacer(Modifier.weight(1f))}}}
             }
             Row(Modifier.fillMaxWidth().padding(top=10.dp),verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){Text("Player de vinil",color=Tx,fontWeight=FontWeight.SemiBold);Text("Capa no centro de um disco animado durante a reprodução.",color=Mu,style=MaterialTheme.typography.bodySmall)};Switch(checked=settings.vinylPlayer,onCheckedChange=settings::saveVinylPlayer)}
+            Row(Modifier.fillMaxWidth().padding(top=10.dp),verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){Text("Cores da capa no player",color=Tx,fontWeight=FontWeight.SemiBold);Text("Adapta o fundo e o destaque à capa da faixa atual.",color=Mu,style=MaterialTheme.typography.bodySmall)};Switch(checked=settings.dynamicAlbumColors,onCheckedChange=settings::saveDynamicAlbumColors)}
         }
         SettingsCard {
             SectionHeading(Icons.Default.VolumeUp,"Áudio")

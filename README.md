@@ -2,7 +2,7 @@
   <img src="assets/branding/cobre-logo.png" alt="Logo do Cobre" width="150">
   <h1>Cobre Mobile</h1>
   <p>Player Android integrado ao ecossistema Cobre</p>
-  <p><strong>Em desenvolvimento: 0.21.0 — áudio e perfis do equalizador</strong></p>
+  <p><strong>Em desenvolvimento: 0.22.0-rc.1 — capas, avaliações e cores dinâmicas</strong></p>
 </div>
 
 O código do Cobre é proprietário e está disponível publicamente para inspeção. Consulte o [aviso de licença](LICENSE); componentes de terceiros mantêm suas próprias licenças.
@@ -28,6 +28,7 @@ O app verifica novas versões ao abrir e em **Configurações → Aplicativo**. 
 - Biblioteca combinada com faixas do Cobre Desktop e reprodução direta pela rede local.
 - Nesta versão em desenvolvimento 0.20.0, o player mostra letras do LRCLIB, acompanha letras sincronizadas e lê `.lrc`/`.txt` junto a faixas offline; a busca de letras usa cache local.
 - Nesta versão em desenvolvimento 0.21.0, o áudio recebe perfis Plano/Rock/Metal/Voz/Jazz, reforço de graves e espacialização quando disponíveis no aparelho.
+- Nesta versão em desenvolvimento 0.22.0-rc.1, o usuário pode escolher uma imagem como capa, avaliar álbuns de uma a cinco estrelas e ativar cores da arte no player. As avaliações e capas personalizadas ficam locais no Mobile.
 - A página do álbum busca capas em Apple Music e MusicBrainz/Cover Art Archive. A escolha é salva em espaço privado do Mobile, sem alterar os arquivos de música ou o Desktop.
 - O player de vinil opcional coloca a capa no selo central e gira enquanto a faixa toca; a preferência permanece salva.
 - Faixas autorizadas do Desktop podem ser baixadas para ouvir offline. Em **Biblioteca → Computador → Faixas**, toque no ícone de download; elas aparecem em **Baixadas** e o mesmo controle as remove. Os arquivos ficam privados no app e há limite de 2 GB no total e 512 MB por faixa.
@@ -66,7 +67,7 @@ O refresh token do Cobre ID fica protegido pelo Android Keystore. Para conexões
 
 ## Funções do Desktop ainda ausentes no Mobile
 
-Estatísticas, edição de metadados, créditos de encarte, equalizador e efeitos DSP, crossfade e sincronização de bibliotecas/playlists entre aparelhos. Letras e busca de capas estão sendo incorporadas à 0.20.0.
+Estatísticas avançadas, edição de metadados nos arquivos, créditos/encarte, crossfade, integração Last.fm, visualizador de espectro/VU e sincronização de playlists entre aparelhos ainda não estão implementados. Equalizador, graves reforçados, espacialização, letras, busca de capas e capas locais já existem no Mobile.
 
 ## Gerar APK de teste
 

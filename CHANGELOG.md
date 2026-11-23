@@ -1,5 +1,13 @@
 # Histórico de versões — Cobre Mobile
 
+## 0.22.0-rc.1 — capas, avaliações e cor dinâmica
+
+- A página do álbum permite escolher uma imagem do celular como capa e restaurar a arte original. A imagem é validada, reduzida e guardada no espaço privado do Cobre Mobile; os arquivos de música e o Desktop não são alterados.
+- Adicionada avaliação local de álbuns de uma a cinco estrelas, com remoção ao tocar novamente na nota atual. Uma migração SQLite aditiva preserva favoritos, histórico e playlists existentes.
+- Player pode adaptar o fundo e os controles à cor dominante da capa atual. A opção fica desligada por padrão e pode ser ligada em Ajustes → Aparência.
+- O 0.21.0-rc.1 permanece disponível para teste enquanto esta próxima etapa é validada.
+- Falta validação pelo autor em aparelho físico, especialmente seleção de imagem de diferentes provedores Android, migração do banco existente e troca de cores em faixa local e transmitida do Desktop.
+
 ## 0.21.0-rc.1 — pacote de teste de áudio e visual do player
 
 - Pré-lançamento instalável que reúne letras, busca de capas, player de vinil, perfis de equalização, reforço de graves e espacialização.

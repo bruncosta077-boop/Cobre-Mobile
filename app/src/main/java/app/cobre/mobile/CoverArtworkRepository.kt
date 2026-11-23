@@ -1,6 +1,7 @@
 package app.cobre.mobile
 
 import android.content.Context
+import android.net.Uri
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import kotlinx.coroutines.Dispatchers
@@ -68,16 +69,82 @@ class CoverArtworkRepository(context: Context) {
     }
 
     suspend fun save(track: Track, candidate: CoverCandidate): Boolean = withContext(Dispatchers.IO) {
-        val bitmap = decodeCover(candidate.bytes) ?: return@withContext false
+        saveBytes(track, candidate.bytes)
+    }
+
+    suspend fun saveFromUri(track: Track, uri: Uri): Boolean = withContext(Dispatchers.IO) {
+        val bytes = runCatching {
+            app.contentResolver.openInputStream(uri)?.use { input ->
+                val output = ByteArrayOutputStream()
+                val buffer = ByteArray(8_192)
+                var total = 0
+                while (true) {
+                    val count = input.read(buffer)
+                    if (count < 0) break
+                    total += count
+                    if (total > MAX_DOWNLOAD_BYTES) return@withContext false
+                    output.write(buffer, 0, count)
+                }
+                output.toByteArray()
+            }
+        }.getOrNull() ?: return@withContext false
+        saveBytes(track, bytes)
+    }
+
+    suspend fun dominantColor(track: Track, remoteCover: Uri?, grantToken: String?): Int? = withContext(Dispatchers.IO) {
+        val custom = coverFile(track)
+        val bitmap = runCatching {
+            when {
+                custom != null -> BitmapFactory.decodeFile(custom.absolutePath)
+                remoteCover != null -> {
+                    val connection = (URL(remoteCover.toString()).openConnection() as HttpURLConnection).apply {
+                        connectTimeout = 5_000; readTimeout = 7_000; instanceFollowRedirects = false
+                        if (remoteCover.path?.startsWith("/v1/") == true && !grantToken.isNullOrBlank()) setRequestProperty("Authorization", "Bearer $grantToken")
+                    }
+                    try { if (connection.responseCode == HttpURLConnection.HTTP_OK) connection.inputStream.use(BitmapFactory::decodeStream) else null }
+                    finally { connection.disconnect() }
+                }
+                else -> app.contentResolver.loadThumbnail(track.uri, android.util.Size(96, 96), null)
+            }
+        }.getOrNull() ?: return@withContext null
+        try {
+            val width = minOf(bitmap.width, 48); val height = minOf(bitmap.height, 48)
+            if (width <= 0 || height <= 0) return@withContext null
+            val pixels = IntArray(width * height)
+            bitmap.getPixels(pixels, 0, width, 0, 0, width, height)
+            var red = 0.0; var green = 0.0; var blue = 0.0; var weight = 0.0
+            pixels.forEach { pixel ->
+                val r = android.graphics.Color.red(pixel); val g = android.graphics.Color.green(pixel); val b = android.graphics.Color.blue(pixel)
+                val max = maxOf(r, g, b); val min = minOf(r, g, b)
+                val saturation = (max - min).toDouble() / maxOf(1, max)
+                val w = .25 + saturation * 1.5 + max / 1_000.0
+                red += r * w; green += g * w; blue += b * w; weight += w
+            }
+            if (weight <= 0) null else android.graphics.Color.rgb((red / weight).toInt(), (green / weight).toInt(), (blue / weight).toInt())
+        } finally { bitmap.recycle() }
+    }
+
+    fun resetCover(track: Track) {
+        val key = albumKey(track.albumArtist.ifBlank { track.artist }, track.album)
+        val file = coverFile(track)
+        val root = File(app.filesDir, "album-art").canonicalFile
+        if (file != null) runCatching { if (file.canonicalFile.parentFile == root) file.delete() }
+        prefs.edit().remove(key).apply()
+        CoverArtworkEvents.changed()
+    }
+
+    private fun saveBytes(track: Track, bytes: ByteArray): Boolean {
+        val normalized = normalizeCover(bytes) ?: return false
+        val bitmap = BitmapFactory.decodeByteArray(normalized, 0, normalized.size) ?: return false
         val file = File(app.filesDir, "album-art/${albumKey(track.albumArtist.ifBlank { track.artist }, track.album)}.jpg")
-        if (!file.parentFile?.exists().let { it == true || file.parentFile?.mkdirs() == true }) return@withContext false
+        if (!file.parentFile?.exists().let { it == true || file.parentFile?.mkdirs() == true }) { bitmap.recycle(); return false }
         val saved = runCatching { file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.JPEG, 90, it) } }.getOrDefault(false)
         bitmap.recycle()
         if (saved) {
             prefs.edit().putString(albumKey(track.albumArtist.ifBlank { track.artist }, track.album), file.absolutePath).apply()
             CoverArtworkEvents.changed()
         }
-        saved
+        return saved
     }
 
     private fun addCandidate(into: MutableMap<String, CoverCandidate>, address: String, source: String) {

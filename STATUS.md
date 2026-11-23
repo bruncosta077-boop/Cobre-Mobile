@@ -1,5 +1,16 @@
 # Cobre Mobile — status
 
+## 0.22.0-rc.1 em preparação
+
+- Implementados nesta etapa: capa escolhida pelo usuário com restauração segura, nota local de 1–5 estrelas por álbum e cor dominante da arte no player com controle em Ajustes.
+- Migração SQLite da versão 1 para 2 é aditiva; favoritos, histórico e playlists existentes permanecem nas tabelas atuais.
+- O próximo pacote é 0.22.0-rc.1 (versionCode 24). Build e publicação ainda dependem de compilação e assinatura no GitHub Actions; depois, falta teste físico do autor.
+
+## 0.21.0-rc.1 publicado
+
+- APK direto e AAB assinados disponíveis em [mobile-v0.21.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.21.0-rc.1). A compilação e a assinatura do pacote passaram no workflow de publicação.
+- Perfis e efeitos de áudio foram incorporados junto com letras, busca de capas e player de vinil; funcionamento de equalização/efeitos depende do aparelho e da saída e ainda precisa de confirmação física.
+
 ## 0.21.0 em desenvolvimento
 
 - Implementados: perfis de equalização Plano/Rock/Metal/Voz/Jazz, reforço de graves e espacialização ligados à sessão ativa do Android, com indicação de suporte; também permanecem letras, busca de capas e player de vinil da etapa anterior.

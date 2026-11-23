@@ -2,6 +2,8 @@ package app.cobre.mobile
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -31,6 +33,17 @@ internal fun CoverSearchDialog(album: Album, repository: CoverArtworkRepository,
     var loading by remember(album.key) { mutableStateOf(true) }
     var saving by remember { mutableStateOf(false) }
     var message by remember { mutableStateOf("") }
+    val imagePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        val track = album.tracks.firstOrNull() ?: return@rememberLauncherForActivityResult
+        if (uri != null) {
+            saving = true
+            scope.launch {
+                val saved = runCatching { repository.saveFromUri(track, uri) }.getOrDefault(false)
+                saving = false
+                if (saved) onDismiss() else message = "Não consegui usar essa imagem. Escolha uma imagem quadrada com pelo menos 150 px."
+            }
+        }
+    }
     LaunchedEffect(album.key) {
         loading = true
         candidates = runCatching { repository.search(album.artist, album.title) }.getOrDefault(emptyList())
@@ -42,6 +55,13 @@ internal fun CoverSearchDialog(album: Album, repository: CoverArtworkRepository,
         text = {
             Column(Modifier.fillMaxWidth().heightIn(max = 510.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(9.dp)) {
                 Text("A capa escolhida fica salva somente no Cobre Mobile e não altera os arquivos nem a biblioteca do Desktop.", color = Mu, style = MaterialTheme.typography.bodySmall)
+                CoverActionRow("Escolher imagem do celular", "Usar uma imagem JPG, PNG ou WebP deste aparelho", enabled = !saving) { imagePicker.launch("image/*") }
+                if (album.tracks.firstOrNull()?.let(repository::coverFile) != null) {
+                    CoverActionRow("Restaurar capa original", "Remover a capa personalizada", enabled = !saving) {
+                        repository.resetCover(album.tracks.first())
+                        onDismiss()
+                    }
+                }
                 if (loading) Row(Modifier.fillMaxWidth().padding(vertical = 28.dp), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
                     CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp, color = MaterialTheme.colorScheme.primary)
                     Text("Procurando em fontes de música…", color = Mu, modifier = Modifier.padding(start = 12.dp))
@@ -63,6 +83,18 @@ internal fun CoverSearchDialog(album: Album, repository: CoverArtworkRepository,
         },
         confirmButton = { TextButton(onClick = onDismiss, enabled = !saving) { Text("Fechar", color = MaterialTheme.colorScheme.primary) } },
     )
+}
+
+@Composable
+private fun CoverActionRow(title: String, subtitle: String, enabled: Boolean, onClick: () -> Unit) {
+    Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp)).background(CardBg).clickable(enabled = enabled, onClick = onClick).padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+        Icon(Icons.Default.Album, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
+        Column(Modifier.weight(1f).padding(start = 11.dp)) {
+            Text(title, color = Tx, fontWeight = FontWeight.Medium)
+            Text(subtitle, color = Mu, style = MaterialTheme.typography.bodySmall)
+        }
+        if (!enabled) CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
+    }
 }
 
 @Composable

@@ -35,6 +35,8 @@ class MobileSettings(context: Context) {
         private set
     var vinylPlayer by mutableStateOf(appearancePrefs.getBoolean("vinyl_player", false))
         private set
+    var dynamicAlbumColors by mutableStateOf(appearancePrefs.getBoolean("dynamic_album_colors", false))
+        private set
     var folderUri by mutableStateOf(accessPrefs.getString("library_folder", null))
         private set
     var desktopUrl by mutableStateOf(accessPrefs.getString("desktop_library_url", null))
@@ -51,6 +53,11 @@ class MobileSettings(context: Context) {
     fun saveVinylPlayer(enabled: Boolean) {
         vinylPlayer = enabled
         appearancePrefs.edit().putBoolean("vinyl_player", enabled).apply()
+    }
+
+    fun saveDynamicAlbumColors(enabled: Boolean) {
+        dynamicAlbumColors = enabled
+        appearancePrefs.edit().putBoolean("dynamic_album_colors", enabled).apply()
     }
 
     fun setFolder(uri: String?) {

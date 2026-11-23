@@ -20,6 +20,32 @@ class LibraryCollections(context: Context) {
         private set
     var playlists by mutableStateOf(readPlaylists())
         private set
+    private var albumRatings by mutableStateOf(readAlbumRatings())
+    fun rating(album: Album): Int = albumRatings[albumIdentity(album)] ?: 0
+
+    fun setRating(album: Album, rating: Int) {
+        val key = albumIdentity(album)
+        val db = database.writableDatabase
+        if (rating <= 0) db.delete("album_ratings", "album_key = ?", arrayOf(key))
+        else db.insertWithOnConflict("album_ratings", null, ContentValues().apply {
+            put("album_key", key); put("rating", rating.coerceIn(1, 5)); put("updated_at", System.currentTimeMillis())
+        }, SQLiteDatabase.CONFLICT_REPLACE)
+        albumRatings = readAlbumRatings()
+    }
+
+    private fun readAlbumRatings(): Map<String, Int> {
+        val result = mutableMapOf<String, Int>()
+        database.readableDatabase.query("album_ratings", arrayOf("album_key", "rating"), null, null, null, null, null).use { c ->
+            while (c.moveToNext()) result[c.getString(0)] = c.getInt(1)
+        }
+        return result
+    }
+
+    private fun albumIdentity(album: Album): String {
+        fun norm(value: String) = java.text.Normalizer.normalize(value.trim().lowercase(), java.text.Normalizer.Form.NFD)
+            .replace(Regex("\\p{Mn}+"), "").replace(Regex("[^a-z0-9]+"), "")
+        return "${norm(album.artist)}|${norm(album.title)}"
+    }
 
     fun isFavorite(track: Track) = favorites.any { it.uri == track.uri }
 
@@ -99,7 +125,7 @@ class LibraryCollections(context: Context) {
         durationMs = getLong(getColumnIndexOrThrow("duration_ms")), year = getInt(getColumnIndexOrThrow("year")),
     )
 
-    private class CollectionsDatabase(context: Context) : SQLiteOpenHelper(context, "cobre-mobile-library.db", null, 1) {
+    private class CollectionsDatabase(context: Context) : SQLiteOpenHelper(context, "cobre-mobile-library.db", null, 2) {
         override fun onCreate(db: SQLiteDatabase) {
             val trackFields = "uri TEXT NOT NULL, media_id INTEGER NOT NULL, title TEXT NOT NULL, artist TEXT NOT NULL, album_artist TEXT NOT NULL, album TEXT NOT NULL, track_number INTEGER NOT NULL, disc_number INTEGER NOT NULL, duration_ms INTEGER NOT NULL, year INTEGER NOT NULL"
             db.execSQL("CREATE TABLE favorites ($trackFields, saved_at INTEGER NOT NULL, PRIMARY KEY(uri))")
@@ -107,12 +133,13 @@ class LibraryCollections(context: Context) {
             db.execSQL("CREATE TABLE playlists (_id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL COLLATE NOCASE UNIQUE, created_at INTEGER NOT NULL)")
             db.execSQL("CREATE TABLE playlist_tracks (playlist_id INTEGER NOT NULL REFERENCES playlists(_id) ON DELETE CASCADE, position INTEGER NOT NULL, $trackFields, PRIMARY KEY(playlist_id, position))")
             db.execSQL("CREATE INDEX ix_playlist_order ON playlist_tracks(playlist_id, position)")
+            db.execSQL("CREATE TABLE album_ratings (album_key TEXT PRIMARY KEY NOT NULL, rating INTEGER NOT NULL CHECK(rating BETWEEN 1 AND 5), updated_at INTEGER NOT NULL)")
         }
 
         override fun onConfigure(db: SQLiteDatabase) { db.setForeignKeyConstraintsEnabled(true) }
 
         override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-            // No schema migrations are needed in version 1. Add explicit migrations before bumping the DB version.
+            if (oldVersion < 2) db.execSQL("CREATE TABLE album_ratings (album_key TEXT PRIMARY KEY NOT NULL, rating INTEGER NOT NULL CHECK(rating BETWEEN 1 AND 5), updated_at INTEGER NOT NULL)")
         }
     }
 
