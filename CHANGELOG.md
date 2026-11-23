@@ -1,5 +1,13 @@
 # Histórico de versões — Cobre Mobile
 
+## 0.26.0-rc.1 — vinil contínuo e controles mais claros
+
+- Corrigido o vinil: a animação agora continua girando a cada volta enquanto a faixa toca e mantém a posição ao pausar.
+- Incluído no player um botão sobre a arte para buscar uma capa ou escolher uma imagem do celular, sem sair da tela Tocando agora.
+- O player agora permite alternar entre capa e visual de vinil diretamente na tela.
+- Aleatório e repetição ganharam rótulos visíveis; a repetição informa se está desligada, na fila ou em uma faixa.
+- Build, assinatura e validação física ainda pendentes.
+
 ## 0.25.0-rc.1 — atualização protegida contra falta de espaço
 
 - Antes e durante o download do APK, o app verifica se há espaço para o arquivo, para a cópia de instalação do Android e para uma reserva operacional. Se não houver, informa quantos MB precisam ser liberados.

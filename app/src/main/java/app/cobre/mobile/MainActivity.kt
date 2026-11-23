@@ -230,7 +230,7 @@ class MainActivity:ComponentActivity(){
                     }
                     .onFailure { Toast.makeText(context,it.message?:"Não foi possível enviar a faixa ao Desktop.",Toast.LENGTH_LONG).show() }
             }
-        })
+        },{track->coverSearchAlbum=Album(track.albumArtist.ifBlank{track.artist},track.album,track.year,listOf(track))})
         else {
             Header(page,search,query,{query=it},{search=!search;query="";tab=LibraryTab.Tracks;album=null;artist=null},{scope.launch{granted=ContextCompat.checkSelfPermission(context,permission)==PackageManager.PERMISSION_GRANTED;localTracks=if(granted)runCatching{library.load(folderUri?.let{Uri.parse(it)})}.getOrDefault(emptyList()) else emptyList();desktopRefreshKey++}})
             Box(Modifier.weight(1f).fillMaxWidth()){
@@ -505,7 +505,7 @@ private fun selectLibrarySource(tracks:List<Track>,source:LibrarySource):List<Tr
     Column(Modifier.fillMaxWidth().background(Panel)){Row(Modifier.fillMaxWidth().height(68.dp).padding(horizontal=11.dp),verticalAlignment=Alignment.CenterVertically){Cover(s.queue.getOrNull(s.currentIndex),Modifier.size(46.dp).clip(RoundedCornerShape(8.dp)).clickable(onClick=onOpen));Column(Modifier.weight(1f).clickable(onClick=onOpen).padding(horizontal=10.dp)){Text(s.title.ifBlank{"Reproduzindo"},color=Tx,maxLines=1,overflow=TextOverflow.Ellipsis,fontWeight=FontWeight.Medium);Text(s.artist,color=Mu,style=MaterialTheme.typography.bodySmall,maxLines=1,overflow=TextOverflow.Ellipsis)};IconButton(onClick=player::previous){Icon(Icons.Default.SkipPrevious,"Anterior",tint=Tx,modifier=Modifier.size(21.dp))};IconButton(onClick=player::toggle){Icon(if(s.playing)Icons.Default.Pause else Icons.Default.PlayArrow,"Reproduzir ou pausar",tint=MaterialTheme.colorScheme.primary,modifier=Modifier.size(27.dp))};IconButton(onClick=player::next){Icon(Icons.Default.SkipNext,"Próxima",tint=Tx,modifier=Modifier.size(21.dp))}};val progress=if(s.durationMs>0)(s.positionMs.toFloat()/s.durationMs).coerceIn(0f,1f)else 0f;Box(Modifier.fillMaxWidth().height(2.dp).background(Line)){Box(Modifier.fillMaxWidth(progress).fillMaxHeight().background(MaterialTheme.colorScheme.primary))}}
 }
 
-@Composable private fun PlayerPage(s:NowPlaying,player:PlayerController,desktopOrigin:String,hasDesktopGrant:Boolean,vinylEnabled:Boolean,dynamicAlbumColors:Boolean,artworkRepository:CoverArtworkRepository,grantToken:String?,onVinylToggle:(Boolean)->Unit,onClose:()->Unit,onQueue:()->Unit,onPlayOnDesktop:(Int)->Unit){
+@Composable private fun PlayerPage(s:NowPlaying,player:PlayerController,desktopOrigin:String,hasDesktopGrant:Boolean,vinylEnabled:Boolean,dynamicAlbumColors:Boolean,artworkRepository:CoverArtworkRepository,grantToken:String?,onVinylToggle:(Boolean)->Unit,onClose:()->Unit,onQueue:()->Unit,onPlayOnDesktop:(Int)->Unit,onChangeCover:(Track)->Unit){
     val context=LocalContext.current
     val audio=context.getSystemService(android.content.Context.AUDIO_SERVICE) as AudioManager
     val maxVolume=audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC).coerceAtLeast(1)
@@ -546,7 +546,12 @@ private fun selectLibrarySource(tracks:List<Track>,source:LibrarySource):List<Tr
             }
             Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal=26.dp),horizontalAlignment=Alignment.CenterHorizontally){
                 Spacer(Modifier.height(12.dp))
-                Box(Modifier.fillMaxWidth(.86f).aspectRatio(1f).clip(RoundedCornerShape(18.dp)).background(CardBg),contentAlignment=Alignment.Center){if(vinylEnabled)VinylRecord(current,s.playing,Modifier.fillMaxSize())else Cover(current,Modifier.fillMaxSize())}
+                Box(Modifier.fillMaxWidth(.86f).aspectRatio(1f).clip(RoundedCornerShape(18.dp)).background(CardBg),contentAlignment=Alignment.Center){
+                    if(vinylEnabled)VinylRecord(current,s.playing,Modifier.fillMaxSize())else Cover(current,Modifier.fillMaxSize())
+                    if(current!=null)IconButton(onClick={onChangeCover(current)},modifier=Modifier.align(Alignment.TopEnd).padding(9.dp).size(42.dp).background(Color.Black.copy(alpha=.68f),CircleShape)){
+                        Icon(Icons.Default.Edit,"Alterar capa",tint=Color.White,modifier=Modifier.size(19.dp))
+                    }
+                }
                 Spacer(Modifier.height(24.dp))
                 Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically){
                     Column(Modifier.weight(1f)){Text(s.title,color=Tx,style=MaterialTheme.typography.titleLarge,fontWeight=FontWeight.Bold,maxLines=1,overflow=TextOverflow.Ellipsis);Text(s.artist,color=Mu,style=MaterialTheme.typography.titleMedium,maxLines=1,overflow=TextOverflow.Ellipsis);Text(buildString{append(current?.album?:"Álbum desconhecido");if((current?.year?:0)>0)append(" · ${current?.year}");if((current?.trackNumber?:0)>0)append(" · Faixa ${current?.trackNumber}")},color=Mu.copy(alpha=.8f),style=MaterialTheme.typography.bodySmall,maxLines=1,overflow=TextOverflow.Ellipsis,modifier=Modifier.padding(top=3.dp))}
@@ -557,17 +562,25 @@ private fun selectLibrarySource(tracks:List<Track>,source:LibrarySource):List<Tr
                 Slider(value=p.coerceIn(0f,s.durationMs.coerceAtLeast(1).toFloat()),onValueChange={preview=it;scrubbing=true},onValueChangeFinished={player.seekTo(preview.toLong());scrubbing=false},valueRange=0f..s.durationMs.coerceAtLeast(1).toFloat(),colors=SliderDefaults.colors(thumbColor=albumAccent,activeTrackColor=albumAccent,inactiveTrackColor=Line))
                 Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Text(time(p.toLong()),color=Mu,style=MaterialTheme.typography.labelSmall);Text("-${time((s.durationMs-p.toLong()).coerceAtLeast(0))}",color=Mu,style=MaterialTheme.typography.labelSmall)}
                 Spacer(Modifier.height(12.dp))
-                Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){
-                    IconButton(onClick=player::toggleShuffle){Icon(Icons.Default.Shuffle,"Aleatório",tint=if(s.shuffleEnabled)albumAccent else Mu)}
+                Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.Center,verticalAlignment=Alignment.CenterVertically){
                     IconButton(onClick=player::previous,modifier=Modifier.size(52.dp)){Icon(Icons.Default.SkipPrevious,"Anterior",tint=Tx,modifier=Modifier.size(31.dp))}
+                    Spacer(Modifier.width(22.dp))
                     Box(Modifier.size(66.dp).clip(CircleShape).background(albumAccent).clickable{player.toggle()},contentAlignment=Alignment.Center){Icon(if(s.playing)Icons.Default.Pause else Icons.Default.PlayArrow,"Reproduzir ou pausar",tint=Color.White,modifier=Modifier.size(34.dp))}
+                    Spacer(Modifier.width(22.dp))
                     IconButton(onClick=player::next,modifier=Modifier.size(52.dp)){Icon(Icons.Default.SkipNext,"Próxima",tint=Tx,modifier=Modifier.size(31.dp))}
-                    IconButton(onClick=player::cycleRepeat){Icon(if(s.repeatMode==androidx.media3.common.Player.REPEAT_MODE_ONE)Icons.Default.RepeatOne else Icons.Default.Repeat,"Repetir",tint=if(s.repeatMode==androidx.media3.common.Player.REPEAT_MODE_OFF)Mu else MaterialTheme.colorScheme.primary)}
+                }
+                Row(Modifier.fillMaxWidth().padding(top=5.dp),horizontalArrangement=Arrangement.SpaceEvenly,verticalAlignment=Alignment.CenterVertically){
+                    FilterChip(selected=s.shuffleEnabled,onClick=player::toggleShuffle,label={Text("Aleatório")})
+                    FilterChip(selected=s.repeatMode!=androidx.media3.common.Player.REPEAT_MODE_OFF,onClick=player::cycleRepeat,label={Text(when(s.repeatMode){androidx.media3.common.Player.REPEAT_MODE_ONE->"Repetir faixa";androidx.media3.common.Player.REPEAT_MODE_ALL->"Repetir fila";else->"Repetir"})})
                 }
                 Spacer(Modifier.height(16.dp))
                 Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(15.dp)).background(Color.White.copy(alpha=.055f)).padding(horizontal=13.dp,vertical=4.dp),verticalAlignment=Alignment.CenterVertically){Icon(Icons.Default.VolumeDown,"Volume",tint=Mu,modifier=Modifier.size(20.dp));Slider(value=volume,onValueChange={volume=it;audio.setStreamVolume(AudioManager.STREAM_MUSIC,(it*maxVolume).toInt().coerceIn(0,maxVolume),0)},modifier=Modifier.weight(1f).padding(horizontal=10.dp),valueRange=0f..1f,colors=SliderDefaults.colors(thumbColor=albumAccent,activeTrackColor=albumAccent,inactiveTrackColor=Line));Text("${(volume*100).toInt()}%",color=Mu,style=MaterialTheme.typography.labelSmall,modifier=Modifier.width(38.dp),textAlign=TextAlign.End)}
                 AudioSpectrumVisualizer(audioSessionId,s.playing)
-                Row(Modifier.fillMaxWidth().padding(top=4.dp),verticalAlignment=Alignment.CenterVertically){TextButton(onClick=::requestLyrics){Icon(Icons.Default.MusicNote,null,tint=MaterialTheme.colorScheme.primary);Spacer(Modifier.width(5.dp));Text("Letra",color=Tx)};Spacer(Modifier.weight(1f));if(vinylEnabled)Text("PLAYER DE VINIL",color=Mu,style=MaterialTheme.typography.labelSmall)else Text("CAPA DO ÁLBUM",color=Mu,style=MaterialTheme.typography.labelSmall)}
+                Row(Modifier.fillMaxWidth().padding(top=4.dp),verticalAlignment=Alignment.CenterVertically){
+                    TextButton(onClick=::requestLyrics){Icon(Icons.Default.MusicNote,null,tint=MaterialTheme.colorScheme.primary);Spacer(Modifier.width(5.dp));Text("Letra",color=Tx)}
+                    Spacer(Modifier.weight(1f))
+                    TextButton(onClick={onVinylToggle(!vinylEnabled)}){Icon(Icons.Default.Album,null,tint=MaterialTheme.colorScheme.primary);Spacer(Modifier.width(5.dp));Text(if(vinylEnabled)"Mostrar capa" else "Ativar vinil",color=Tx)}
+                }
                 if(hasDesktopGrant&&desktopTrackId!=null){
                     Spacer(Modifier.height(8.dp))
                     OutlinedButton(onClick={confirmDesktopPlayback=true},modifier=Modifier.fillMaxWidth(),shape=RoundedCornerShape(14.dp)){
@@ -594,7 +607,7 @@ private fun selectLibrarySource(tracks:List<Track>,source:LibrarySource):List<Tr
 
 @Composable private fun VinylRecord(track:Track?,playing:Boolean,modifier:Modifier=Modifier){
     val rotation=remember{Animatable(0f)}
-    LaunchedEffect(playing){if(playing){while(isActive){val target=(rotation.value%360f)+360f;rotation.animateTo(target,tween(durationMillis=8_000,easing=LinearEasing))}}else rotation.stop()}
+    LaunchedEffect(playing){if(playing){while(isActive){rotation.animateTo(rotation.value+360f,tween(durationMillis=8_000,easing=LinearEasing))}}else rotation.stop()}
     Box(modifier.graphicsLayer{rotationZ=rotation.value},contentAlignment=Alignment.Center){
         androidx.compose.foundation.Canvas(Modifier.fillMaxSize().padding(5.dp)){
             val radius=size.minDimension/2f

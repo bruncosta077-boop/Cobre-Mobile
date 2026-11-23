@@ -1,5 +1,10 @@
 # Cobre Mobile — status
 
+## 0.26.0-rc.1 em preparação
+
+- Correção do giro contínuo do vinil, opção de trocar capa dentro do player e rótulos mais claros para aleatório/repetição.
+- Build, assinatura, publicação e teste em aparelho pendentes.
+
 ## 0.25.0-rc.1 publicado
 
 - O atualizador verifica o espaço livre antes e durante o download e antes de instalar, mostra quanto precisa ser liberado e limpa APKs e arquivos temporários antigos do atualizador.
