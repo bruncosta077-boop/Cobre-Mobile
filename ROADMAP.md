@@ -37,7 +37,7 @@ O foco do Mobile é paridade funcional com o Desktop, sem trabalho de Play Store
 
 1. Concluir a compilação assinada do 0.20.0 e validar no celular letras (sincronizadas, sem resultado e offline), busca/seleção de capa, rotação do vinil e preservação da reprodução existente.
 2. Avançar metadados e organização da biblioteca: créditos/encartes, edição local de capa sem alterar os arquivos e sincronização clara entre fontes Celular e Computador.
-3. Completar recursos de reprodução Android que têm efeito real: equalizador/efeitos, gapless e crossfade, com limites explícitos do que o sistema e o hardware permitem.
+3. Completar recursos de reprodução Android que têm efeito real: gapless e crossfade, com limites explícitos do que o sistema e o hardware permitem. O equalizador, o reforço de graves e a espacialização já controlam efeitos da sessão Android quando compatíveis.
 4. Consolidar sincronização entre aparelhos: IDs estáveis, playlists/favoritos/histórico e transferência da sessão/fila, mantendo o áudio direto entre Desktop e Mobile.
 
 Cada bloco deve compilar e manter as funções atuais antes de seguir para o próximo; distribuição para a loja permanece fora do escopo imediato.

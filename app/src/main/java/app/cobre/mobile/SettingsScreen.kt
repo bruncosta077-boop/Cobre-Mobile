@@ -63,7 +63,14 @@ fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,
     val audioPrefs=remember{context.getSharedPreferences(PlaybackService.AUDIO_PREFS,Context.MODE_PRIVATE)}
     val equalizerBands=remember{mutableStateListOf<Float>().apply{repeat(5){add(audioPrefs.getInt("eq_band_$it",0).toFloat())}}}
     var equalizerEnabled by remember{mutableStateOf(audioPrefs.getBoolean("eq_enabled",false))}
-    var equalizerAvailable by remember{mutableStateOf(audioPrefs.getBoolean("eq_available",true))}
+    var equalizerAvailable by remember{mutableStateOf(audioPrefs.getBoolean("eq_available",false))}
+    var audioSessionReady by remember{mutableStateOf(audioPrefs.getBoolean("audio_session_ready",false))}
+    var bassEnabled by remember{mutableStateOf(audioPrefs.getBoolean("bass_enabled",false))}
+    var bassAvailable by remember{mutableStateOf(audioPrefs.getBoolean("bass_available",false))}
+    var bassStrength by remember{mutableFloatStateOf(audioPrefs.getInt("bass_strength",25).toFloat())}
+    var virtualizerEnabled by remember{mutableStateOf(audioPrefs.getBoolean("virtualizer_enabled",false))}
+    var virtualizerAvailable by remember{mutableStateOf(audioPrefs.getBoolean("virtualizer_available",false))}
+    var virtualizerStrength by remember{mutableFloatStateOf(audioPrefs.getInt("virtualizer_strength",20).toFloat())}
     var outputs by remember{mutableStateOf(audio.getDevices(AudioManager.GET_DEVICES_OUTPUTS).toList())}
     val maxVolume=audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC).coerceAtLeast(1)
     DisposableEffect(audio){
@@ -75,7 +82,7 @@ fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,
         onDispose{audio.unregisterAudioDeviceCallback(callback)}
     }
     DisposableEffect(audioPrefs){
-        val listener=android.content.SharedPreferences.OnSharedPreferenceChangeListener{_,key->if(key=="eq_available")equalizerAvailable=audioPrefs.getBoolean("eq_available",false)}
+        val listener=android.content.SharedPreferences.OnSharedPreferenceChangeListener{_,key->when(key){"eq_available"->equalizerAvailable=audioPrefs.getBoolean("eq_available",false);"audio_session_ready"->audioSessionReady=audioPrefs.getBoolean("audio_session_ready",false);"bass_available"->bassAvailable=audioPrefs.getBoolean("bass_available",false);"virtualizer_available"->virtualizerAvailable=audioPrefs.getBoolean("virtualizer_available",false)}}
         audioPrefs.registerOnSharedPreferenceChangeListener(listener)
         onDispose{audioPrefs.unregisterOnSharedPreferenceChangeListener(listener)}
     }
@@ -154,13 +161,28 @@ fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,
         SettingsCard {
             SectionHeading(Icons.Default.AudioFile,"Equalizador de 5 bandas")
             Text("Ajuste o timbre da reprodução local e das faixas recebidas do Desktop.",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=6.dp))
-            Row(Modifier.fillMaxWidth().padding(top=8.dp),verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){Text("Equalizador",color=Tx,fontWeight=FontWeight.SemiBold);Text(if(equalizerAvailable)"Aplicado pelo mecanismo de áudio do Android" else "Este aparelho não disponibilizou o efeito de equalização",color=Mu,style=MaterialTheme.typography.bodySmall)};Switch(checked=equalizerEnabled,onCheckedChange={equalizerEnabled=it;audioPrefs.edit().putBoolean("eq_enabled",it).apply()})}
+            Row(Modifier.fillMaxWidth().padding(top=8.dp),verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){Text("Equalizador",color=Tx,fontWeight=FontWeight.SemiBold);Text(when{equalizerAvailable->"Aplicado pelo mecanismo de áudio do Android";!audioSessionReady->"Inicie uma faixa para verificar suporte nesta saída";else->"Este aparelho não disponibilizou o efeito de equalização"},color=Mu,style=MaterialTheme.typography.bodySmall)};Switch(checked=equalizerEnabled,onCheckedChange={equalizerEnabled=it;audioPrefs.edit().putBoolean("eq_enabled",it).apply()})}
             if(equalizerEnabled&&equalizerAvailable){
                 val labels=listOf("Subgrave","Graves","Médios","Presença","Agudos")
                 labels.forEachIndexed{index,label->Column(Modifier.fillMaxWidth().padding(top=3.dp)){Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Text(label,color=Tx,style=MaterialTheme.typography.bodySmall);Text("${if(equalizerBands[index]>0)"+" else ""}${equalizerBands[index].toInt()} dB",color=MaterialTheme.colorScheme.primary,style=MaterialTheme.typography.labelSmall)};Slider(value=equalizerBands[index],onValueChange={value->equalizerBands[index]=value;audioPrefs.edit().putInt("eq_band_$index",value.toInt()).apply()},valueRange=-12f..12f,steps=23,colors=SliderDefaults.colors(thumbColor=MaterialTheme.colorScheme.primary,activeTrackColor=MaterialTheme.colorScheme.primary,inactiveTrackColor=Line))}}
                 TextButton(onClick={for(index in 0..4){equalizerBands[index]=0f};audioPrefs.edit().putInt("eq_band_0",0).putInt("eq_band_1",0).putInt("eq_band_2",0).putInt("eq_band_3",0).putInt("eq_band_4",0).apply()}){Text("Restaurar som plano",color=MaterialTheme.colorScheme.primary)}
             }
             Text("A quantidade e a faixa de frequências disponíveis dependem do aparelho. O equalizador só altera o áudio reproduzido pelo Cobre.",color=Mu,style=MaterialTheme.typography.bodySmall)
+            HorizontalDivider(Modifier.padding(vertical=10.dp),color=Line)
+            AudioEffectControl(
+                title="Graves reforçados", description="Dá mais presença às frequências baixas.", available=bassAvailable, sessionReady=audioSessionReady,
+                enabled=bassEnabled, strength=bassStrength, strengthLabel="Intensidade",
+                onEnabled={bassEnabled=it;audioPrefs.edit().putBoolean("bass_enabled",it).apply()},
+                onStrength={bassStrength=it;audioPrefs.edit().putInt("bass_strength",it.toInt()).apply()},
+            )
+            HorizontalDivider(Modifier.padding(vertical=10.dp),color=Line)
+            AudioEffectControl(
+                title="Áudio espacial", description="Amplia a sensação estéreo; o resultado depende da saída.", available=virtualizerAvailable, sessionReady=audioSessionReady,
+                enabled=virtualizerEnabled, strength=virtualizerStrength, strengthLabel="Largura",
+                onEnabled={virtualizerEnabled=it;audioPrefs.edit().putBoolean("virtualizer_enabled",it).apply()},
+                onStrength={virtualizerStrength=it;audioPrefs.edit().putInt("virtualizer_strength",it.toInt()).apply()},
+            )
+            Text("Os efeitos são vinculados à sessão de áudio. Alguns aparelhos ou saídas podem não oferecer graves reforçados ou áudio espacial; nesses casos o Cobre informa a indisponibilidade.",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=5.dp))
         }
         SettingsCard {
             SectionHeading(Icons.Default.Refresh,"Aplicativo")
@@ -191,6 +213,23 @@ fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,
         text={Text("Cobre Mobile reúne a biblioteca do celular e do computador, com autorização Cobre ID, transmissão local, controles de reprodução e volume sempre visível. O Cobre Server aprova o acesso e não recebe os arquivos de áudio.")},
         confirmButton={TextButton(onClick={showReleaseNotes=false}){Text("Entendi")}},
     )
+}
+
+@Composable private fun AudioEffectControl(
+    title:String,description:String,available:Boolean,sessionReady:Boolean,enabled:Boolean,strength:Float,strengthLabel:String,
+    onEnabled:(Boolean)->Unit,onStrength:(Float)->Unit,
+){
+    Row(Modifier.fillMaxWidth().padding(top=4.dp),verticalAlignment=Alignment.CenterVertically){
+        Column(Modifier.weight(1f)){
+            Text(title,color=Tx,fontWeight=FontWeight.SemiBold)
+            Text(when{available->description;!sessionReady->"Inicie uma faixa para verificar suporte nesta saída";else->"Não disponível nesta saída de áudio"},color=Mu,style=MaterialTheme.typography.bodySmall)
+        }
+        Switch(checked=enabled,onCheckedChange=onEnabled,enabled=available)
+    }
+    if(enabled&&available){
+        Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Text(strengthLabel,color=Mu,style=MaterialTheme.typography.bodySmall);Text("${strength.toInt()}%",color=MaterialTheme.colorScheme.primary,style=MaterialTheme.typography.labelSmall)}
+        Slider(value=strength,onValueChange=onStrength,valueRange=0f..100f,steps=19,colors=SliderDefaults.colors(thumbColor=MaterialTheme.colorScheme.primary,activeTrackColor=MaterialTheme.colorScheme.primary,inactiveTrackColor=Line))
+    }
 }
 
 @Composable private fun SettingsCard(content:@Composable ColumnScope.()->Unit){Card(colors=CardDefaults.cardColors(containerColor=Panel),shape=RoundedCornerShape(17.dp)){Column(Modifier.fillMaxWidth().padding(16.dp),content=content)}}

@@ -2,7 +2,7 @@
 
 ## 0.20.0 em desenvolvimento
 
-- Implementados nesta branch: busca e escolha local de capas, letras LRCLIB/LRC e modo de player de vinil com preferência salva.
+- Implementados nesta branch: busca e escolha local de capas, letras LRCLIB/LRC, modo de player de vinil com preferência salva, equalizador e efeitos de graves/espacialização conectados à sessão de áudio Android.
 - Versão de desenvolvimento ajustada para 0.20.0 (versionCode 22). O workflow de build das variantes debug passou em [45091447299](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45091447299); o APK/AAB assinados de teste estão sendo gerados em um workflow separado. Ainda falta validar a experiência no aparelho antes de marcar a versão como pronta.
 
 ## Pré-release GitHub 0.19.0 — Google Play ainda pendente

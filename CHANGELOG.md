@@ -5,6 +5,7 @@
 - O player completo pode buscar letras sincronizadas ou simples no LRCLIB e lê arquivos `.lrc`/`.txt` ao lado de faixas offline. Letras sincronizadas acompanham a posição da música; as letras encontradas ficam em cache privado por 12 horas.
 - A página de álbum permite procurar capas por correspondência exata no Apple Music e no MusicBrainz/Cover Art Archive. A imagem escolhida é reduzida, validada e salva no armazenamento privado do celular; ela não altera tags nem o Desktop.
 - Adicionado modo visual de vinil, configurável e persistente. O disco gira enquanto a faixa toca e pausa junto com a reprodução; a capa ocupa o selo central.
+- Ampliados os controles de áudio com reforço de graves e espacialização, além do equalizador. Os efeitos ficam ligados à sessão real do Android, reaplicam os ajustes quando a sessão de reprodução muda e são desativados na interface quando o aparelho não oferece suporte.
 - A validação desta versão ainda vai cobrir busca sem rede, metadados com caracteres acentuados, LRC, capa local/da rede e restauração da preferência de vinil.
 
 ## 0.19.0 — downloads offline, retomada e controle do Desktop (pré-release)
