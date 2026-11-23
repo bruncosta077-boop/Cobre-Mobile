@@ -5,7 +5,7 @@
 - A edição de instalação direta volta a mostrar a atualização já encontrada se o app for fechado/reaberto dentro do intervalo de consulta, incluindo as notas da release.
 - A consulta automática ocorre ao abrir e uma vez por hora enquanto o app permanece aberto; a janela de cache caiu de seis para uma hora.
 - APKs baixados continuam sujeitos à verificação de hash quando informado, nome do pacote, versão superior e assinatura igual à instalada antes de chamar o instalador Android.
-- Build, assinatura e publicação pendentes no GitHub Actions.
+- Build, assinatura estável do APK/AAB e publicação com checksums SHA-256 passaram no [GitHub Actions](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45275413913). Pacote 41 / versionCode 41. A instalação em aparelho ainda não foi validada nesta rodada.
 
 ## 0.38.0-rc.1 — coleções carregadas sem bloquear a interface
 
