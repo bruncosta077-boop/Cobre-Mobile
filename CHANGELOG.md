@@ -5,7 +5,7 @@
 - A primeira leitura do banco de favoritos, histórico, playlists e avaliações foi movida para I/O; os dados prontos são publicados em estado do app.
 - Salvar favoritos, editar playlists, avaliar álbuns, associar faixas remotas e registrar histórico também rodam fora da thread da interface.
 - Ações aguardam a inicialização única das coleções antes de gravar, protegendo os dados existentes no início do app.
-- Build, assinatura e publicação pendentes no GitHub Actions.
+- Build, assinatura estável do APK/AAB e publicação com checksums SHA-256 passaram no [GitHub Actions](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45273969194). Pacote 40 / versionCode 40. A instalação em aparelho ainda não foi validada nesta rodada.
 
 ## 0.37.0-rc.1 — histórico sem travar a reprodução
 

@@ -1,10 +1,11 @@
 # Cobre Mobile — status
 
-## 0.38.0-rc.1 em preparação
+## 0.38.0-rc.1 publicado — 23/11/2026
 
 - Inicialização de favoritos, histórico, playlists e avaliações no banco movida para I/O.
 - Operações de salvar/alterar/excluir coleções e atualizar histórico também estão fora da thread da interface.
-- Build, assinatura estável e publicação pendentes.
+- Pacote 40 / versionCode 40. Build, assinatura estável APK/AAB, publicação e checksums passaram no [workflow 45273969194](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45273969194). Instalação em aparelho ainda não validada nesta rodada.
+- APK e AAB disponíveis na [release mobile-v0.38.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.38.0-rc.1).
 
 ## 0.37.0-rc.1 publicado — 23/11/2026
 
