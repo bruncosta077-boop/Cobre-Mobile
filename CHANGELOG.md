@@ -1,5 +1,12 @@
 # Histórico de versões — Cobre Mobile
 
+## 0.20.0 — letras, busca de capas e player de vinil (em desenvolvimento)
+
+- O player completo pode buscar letras sincronizadas ou simples no LRCLIB e lê arquivos `.lrc`/`.txt` ao lado de faixas offline. Letras sincronizadas acompanham a posição da música; as letras encontradas ficam em cache privado por 12 horas.
+- A página de álbum permite procurar capas por correspondência exata no Apple Music e no MusicBrainz/Cover Art Archive. A imagem escolhida é reduzida, validada e salva no armazenamento privado do celular; ela não altera tags nem o Desktop.
+- Adicionado modo visual de vinil, configurável e persistente. O disco gira enquanto a faixa toca e pausa junto com a reprodução; a capa ocupa o selo central.
+- A validação desta versão ainda vai cobrir busca sem rede, metadados com caracteres acentuados, LRC, capa local/da rede e restauração da preferência de vinil.
+
 ## 0.19.0 — downloads offline, retomada e controle do Desktop (pré-release)
 
 - No player, uma faixa da biblioteca autorizada do Desktop pode ser enviada para tocar no computador. O app confirma antes, informa que a ação substitui a fila do Desktop e pausa o celular somente depois da aceitação; faixa local ou de outro host não oferece essa ação.

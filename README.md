@@ -2,7 +2,7 @@
   <img src="assets/branding/cobre-logo.png" alt="Logo do Cobre" width="150">
   <h1>Cobre Mobile</h1>
   <p>Player Android integrado ao ecossistema Cobre</p>
-  <p><strong>Em desenvolvimento: 0.19.0 — preparação para Google Play</strong></p>
+  <p><strong>Em desenvolvimento: 0.20.0 — letras, capas e player de vinil</strong></p>
 </div>
 
 O código do Cobre é proprietário e está disponível publicamente para inspeção. Consulte o [aviso de licença](LICENSE); componentes de terceiros mantêm suas próprias licenças.
@@ -11,9 +11,9 @@ Desenvolvimento principal: Bruno C S Moraes · Contribuição ao projeto: [@dilu
 
 Aplicativo Android do ecossistema Cobre. Interface escura com a paleta, o símbolo e a organização visual do Cobre Desktop, adaptados para toque.
 
-## Última versão publicada: 0.18.0
+## Última versão publicada: 0.19.0
 
-APK assinado e checksum SHA-256 disponíveis em [Cobre Mobile 0.18.0](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.18.0). Build, assinatura e publicação passaram no [GitHub Actions](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45052837954). A release é pré-release; a instalação é manual e não usa a Play Store.
+APK assinado e checksum SHA-256 disponíveis em [Cobre Mobile 0.19.0](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.19.0). Build, assinatura e publicação passaram no [GitHub Actions](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45086261665). A release continua pré-release enquanto as funções novas são avaliadas no aparelho.
 
 O app verifica novas versões ao abrir e em **Configurações → Aplicativo**. Quando encontra uma atualização, baixa e valida o APK assinado e abre a instalação do Android; o sistema pede autorização para instalar e confirmação final. As notas da versão aparecem antes e depois da atualização.
 
@@ -26,7 +26,10 @@ O app verifica novas versões ao abrir e em **Configurações → Aplicativo**. 
 - Aba de configurações com paletas do Desktop, volume de música e detalhes das saídas informadas pelo Android.
 - Favoritos, histórico recente e playlists locais persistidos em SQLite.
 - Biblioteca combinada com faixas do Cobre Desktop e reprodução direta pela rede local.
-- Nesta versão em desenvolvimento 0.19.0, faixas autorizadas do Desktop podem ser baixadas para ouvir offline. Em **Biblioteca → Computador → Faixas**, toque no ícone de download; elas aparecem em **Baixadas** e o mesmo controle as remove. Os arquivos ficam privados no app e há limite de 2 GB no total e 512 MB por faixa.
+- Nesta versão em desenvolvimento 0.20.0, o player mostra letras do LRCLIB, acompanha letras sincronizadas e lê `.lrc`/`.txt` junto a faixas offline; a busca de letras usa cache local.
+- A página do álbum busca capas em Apple Music e MusicBrainz/Cover Art Archive. A escolha é salva em espaço privado do Mobile, sem alterar os arquivos de música ou o Desktop.
+- O player de vinil opcional coloca a capa no selo central e gira enquanto a faixa toca; a preferência permanece salva.
+- Faixas autorizadas do Desktop podem ser baixadas para ouvir offline. Em **Biblioteca → Computador → Faixas**, toque no ícone de download; elas aparecem em **Baixadas** e o mesmo controle as remove. Os arquivos ficam privados no app e há limite de 2 GB no total e 512 MB por faixa.
 - Descoberta automática do Desktop na mesma rede local enquanto a tela Conexões estiver aberta; QR continua disponível.
 - Status da conexão Desktop exibe tempo de resposta do catálogo e quantidade de faixas carregadas.
 - Filtro entre biblioteca do celular, biblioteca do computador ou visão conjunta sem faixas repetidas; totais e estado Desktop aparecem na biblioteca.
@@ -62,13 +65,13 @@ O refresh token do Cobre ID fica protegido pelo Android Keystore. Para conexões
 
 ## Funções do Desktop ainda ausentes no Mobile
 
-Estatísticas, letras sincronizadas, edição de metadados, créditos de encarte, equalizador e efeitos DSP, crossfade e sincronização de bibliotecas/playlists entre aparelhos.
+Estatísticas, edição de metadados, créditos de encarte, equalizador e efeitos DSP, crossfade e sincronização de bibliotecas/playlists entre aparelhos. Letras e busca de capas estão sendo incorporadas à 0.20.0.
 
 ## Gerar APK de teste
 
 O APK é o instalador padrão do Android. Baixe o arquivo em [Releases](https://github.com/bruncosta077-boop/Cobre-Mobile/releases), abra-o no celular e confirme a instalação. O Android pode pedir permissão para instalar apps baixados pelo navegador.
 
-As versões de desenvolvimento são compiladas pelo GitHub Actions; tags `mobile-v*` publicam o APK de instalação direta e o AAB da variante Play. A versão 0.19.0 ainda está em preparação e não está publicada na Google Play.
+As versões de desenvolvimento são compiladas pelo GitHub Actions; uma tag numerada `mobile-v*` publica o APK direto e o AAB da variante Play. Sufixos `-rc`, `-beta` ou `-alpha` mantêm a release como pré-release; tags sem sufixo criam release estável. Use o workflow **Build APK** com `signed_candidate` para um APK assinado de teste sem publicar uma release.
 
 Para gerar um pacote assinado para teste físico sem criar uma release pública, use o workflow **Build APK** em **Actions** e habilite **signed_candidate**. O APK e o AAB ficam como artefatos temporários daquela execução.
 

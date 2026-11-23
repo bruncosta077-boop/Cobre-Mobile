@@ -1,5 +1,12 @@
 # Cobre Mobile — roadmap de paridade com Desktop
 
+## 0.20.0 em desenvolvimento — letras, capas e player
+
+- Busca de letras sincronizadas e simples no LRCLIB, cache local e suporte a arquivos `.lrc`/`.txt` ao lado de faixas offline.
+- Busca de capas com correspondência exata e escolha manual em Apple Music e MusicBrainz/Cover Art Archive; capas ficam no celular e não modificam a biblioteca do Desktop.
+- Modo visual de vinil com giro enquanto toca e preferência persistente.
+- Próxima etapa: validar compilação, leitura dos estados vazio/sem internet e comportamento do painel de letras e da capa escolhida.
+
 ## 0.19.0 — publicada como pré-release no GitHub
 
 - Exclusão de conta Cobre ID com senha atual, remoção de sessões e permissões no Server e limpeza de tokens no Mobile.

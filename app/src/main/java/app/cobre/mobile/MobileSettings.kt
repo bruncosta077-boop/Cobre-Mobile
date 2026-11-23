@@ -33,6 +33,8 @@ class MobileSettings(context: Context) {
         private set
     var accentSecondary by mutableIntStateOf(appearancePrefs.getInt("accent_secondary", 0xFFE6A06A.toInt()))
         private set
+    var vinylPlayer by mutableStateOf(appearancePrefs.getBoolean("vinyl_player", false))
+        private set
     var folderUri by mutableStateOf(accessPrefs.getString("library_folder", null))
         private set
     var desktopUrl by mutableStateOf(accessPrefs.getString("desktop_library_url", null))
@@ -44,6 +46,11 @@ class MobileSettings(context: Context) {
         accentPrimary = primary
         accentSecondary = secondary
         appearancePrefs.edit().putInt("accent_primary", primary).putInt("accent_secondary", secondary).apply()
+    }
+
+    fun setVinylPlayer(enabled: Boolean) {
+        vinylPlayer = enabled
+        appearancePrefs.edit().putBoolean("vinyl_player", enabled).apply()
     }
 
     fun setFolder(uri: String?) {

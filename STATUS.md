@@ -1,5 +1,10 @@
 # Cobre Mobile — status
 
+## 0.20.0 em desenvolvimento
+
+- Implementados nesta branch: busca e escolha local de capas, letras LRCLIB/LRC e modo de player de vinil com preferência salva.
+- Versão de desenvolvimento ajustada para 0.20.0 (versionCode 22). Compilação e teste no Android ainda aguardam o workflow e a validação no aparelho.
+
 ## Pré-release GitHub 0.19.0 — Google Play ainda pendente
 
 - O player permite enviar ao Desktop a faixa atual da biblioteca autorizada. A ação confere host e porta pareados, confirma que a fila do computador será substituída e pausa o áudio do celular só depois que o Desktop aceita o comando. A compilação passou no [workflow 45066267659](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45066267659); ainda precisa ser validado com um Desktop ativo em aparelho.

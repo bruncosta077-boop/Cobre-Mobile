@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -40,6 +41,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.asImageBitmap
@@ -57,6 +59,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.isActive
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
 import java.io.File
 import java.net.HttpURLConnection
 import java.net.URL
@@ -86,7 +92,7 @@ class MainActivity:ComponentActivity(){
 }
 
 @Composable private fun App(player:PlayerController,settings:MobileSettings){
-    val context=LocalContext.current; val library=remember{LocalLibrary(context)}; val collections=remember{LibraryCollections(context)}; val offlineStore=remember{OfflineTrackStore(context)}; val accountRepo=remember{CobreIdRepository(context)}
+     val context=LocalContext.current; val library=remember{LocalLibrary(context)}; val collections=remember{LibraryCollections(context)}; val offlineStore=remember{OfflineTrackStore(context)}; val accountRepo=remember{CobreIdRepository(context)};val coverArtwork=remember{CoverArtworkRepository(context)}
     val permission=if(Build.VERSION.SDK_INT>=33) Manifest.permission.READ_MEDIA_AUDIO else Manifest.permission.READ_EXTERNAL_STORAGE
     var granted by remember{mutableStateOf(ContextCompat.checkSelfPermission(context,permission)==PackageManager.PERMISSION_GRANTED)}
     val askAudio=rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()){granted=it}
@@ -107,7 +113,7 @@ class MainActivity:ComponentActivity(){
     val desktopLibrary=remember{DesktopLibraryRepository()}
     var search by remember{mutableStateOf(false)}; var query by remember{mutableStateOf("")}
     var page by remember{mutableStateOf(Page.Library)}; var tab by remember{mutableStateOf(LibraryTab.Albums)}
-    var album by remember{mutableStateOf<Album?>(null)}; var artist by remember{mutableStateOf<Artist?>(null)}; var fullPlayer by remember{mutableStateOf(false)}
+     var album by remember{mutableStateOf<Album?>(null)}; var artist by remember{mutableStateOf<Artist?>(null)}; var fullPlayer by remember{mutableStateOf(false)};var coverSearchAlbum by remember{mutableStateOf<Album?>(null)}
     val playback by player.state.collectAsState(); var account by remember{mutableStateOf(AccountUi(email=accountRepo.savedEmail))}; val scope=rememberCoroutineScope()
     var activeDownload by remember{mutableStateOf<String?>(null)}; var downloadProgress by remember{mutableIntStateOf(0)}; var downloadMessage by remember{mutableStateOf("")}
     val mainHandler=remember{android.os.Handler(android.os.Looper.getMainLooper())}
@@ -214,7 +220,7 @@ class MainActivity:ComponentActivity(){
     LaunchedEffect(playback.playing,fullPlayer){while(playback.playing&&fullPlayer){delay(450);player.refreshPosition()}}
     LaunchedEffect(playback.currentIndex,playback.queue){playback.queue.getOrNull(playback.currentIndex)?.let(collections::recordPlayed)}
     Column(Modifier.fillMaxSize().background(Bg).statusBarsPadding()){
-        if(fullPlayer&&playback.hasItem) PlayerPage(playback,player,settings.desktopUrl.orEmpty(),accountRepo.desktopGrantId()!=null,{fullPlayer=false},{fullPlayer=false;page=Page.Queue},{trackId->
+         if(fullPlayer&&playback.hasItem) PlayerPage(playback,player,settings.desktopUrl.orEmpty(),accountRepo.desktopGrantId()!=null,settings.vinylPlayer,settings::setVinylPlayer,{fullPlayer=false},{fullPlayer=false;page=Page.Queue},{trackId->
             scope.launch {
                 runCatching { accountRepo.sendDesktopCommand(settings.desktopUrl.orEmpty(),"play",trackId.toDouble()) }
                     .onSuccess {
@@ -235,7 +241,7 @@ class MainActivity:ComponentActivity(){
                         else->LibraryPage(tracks.orEmpty(),library,collections,offlineTracks,downloadMessage,downloadProgress,activeDownload,::downloadTrack,tab,query,album,artist,librarySource,sourceCounts,desktopStatus,{page=Page.Account;search=false},{librarySource=it},{tab=it;album=null;artist=null},{album=it},{artist=it},{album=null;artist=null},{list,index->
                             if(Build.VERSION.SDK_INT>=33&&ContextCompat.checkSelfPermission(context,Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED)askNotifications.launch(Manifest.permission.POST_NOTIFICATIONS)
                             player.play(list,index)
-                        },player::addToQueue)
+                         },player::addToQueue,{selectedAlbum->coverSearchAlbum=selectedAlbum})
                     }
                     Page.Queue->QueuePage(playback,player,collections)
                     Page.Collections->CollectionsPage(collections,{list->player.play(list,0)},{track->player.addToQueue(track)})
@@ -308,6 +314,7 @@ class MainActivity:ComponentActivity(){
             }
         }
     }
+    coverSearchAlbum?.let{selected->CoverSearchDialog(selected,coverArtwork,{coverSearchAlbum=null})}
     if(showUpdatePrompt&&updateInfo!=null){
         val latest=updateInfo!!
         AlertDialog(
@@ -350,8 +357,8 @@ private suspend fun sendMeasuredPresence(repository:CobreIdRepository,context:an
     }
 }
 
-@Composable private fun LibraryPage(tracks:List<Track>,library:LocalLibrary,collections:LibraryCollections,offlineTracks:List<Track>,downloadMessage:String,downloadProgress:Int,activeDownload:String?,onDownload:(Track)->Unit,tab:LibraryTab,query:String,album:Album?,artist:Artist?,source:LibrarySource,sourceCounts:Map<LibrarySource,Int>,desktopStatus:String,onOpenConnections:()->Unit,onSource:(LibrarySource)->Unit,onTab:(LibraryTab)->Unit,onAlbum:(Album)->Unit,onArtist:(Artist)->Unit,onBack:()->Unit,onPlay:(List<Track>,Int)->Unit,onQueue:(Track)->Unit){
-    if(album!=null){AlbumPage(album,onBack,onPlay,onQueue);return}
+@Composable private fun LibraryPage(tracks:List<Track>,library:LocalLibrary,collections:LibraryCollections,offlineTracks:List<Track>,downloadMessage:String,downloadProgress:Int,activeDownload:String?,onDownload:(Track)->Unit,tab:LibraryTab,query:String,album:Album?,artist:Artist?,source:LibrarySource,sourceCounts:Map<LibrarySource,Int>,desktopStatus:String,onOpenConnections:()->Unit,onSource:(LibrarySource)->Unit,onTab:(LibraryTab)->Unit,onAlbum:(Album)->Unit,onArtist:(Artist)->Unit,onBack:()->Unit,onPlay:(List<Track>,Int)->Unit,onQueue:(Track)->Unit,onSearchCovers:(Album)->Unit){
+    if(album!=null){AlbumPage(album,onBack,onPlay,onQueue){onSearchCovers(album)};return}
     if(artist!=null){Column{Row(Modifier.fillMaxWidth().padding(16.dp),verticalAlignment=Alignment.CenterVertically){IconButton(onClick=onBack){Icon(Icons.Default.ArrowBack,"Voltar",tint=MaterialTheme.colorScheme.primary)};Column{Text(artist.name,color=Tx,style=MaterialTheme.typography.titleLarge);Text("${artist.albums.size} álbuns · ${artist.tracks.size} faixas",color=Mu,style=MaterialTheme.typography.bodySmall)}};AlbumGrid(artist.albums,onAlbum,{onPlay(it,0)},{albumTracks->albumTracks.forEach(onQueue)})};return}
     val q=query.trim().lowercase();val filtered=remember(tracks,q){if(q.isBlank())tracks else tracks.filter{it.title.lowercase().contains(q)||it.artist.lowercase().contains(q)||it.albumArtist.lowercase().contains(q)||it.album.lowercase().contains(q)}}
     Column(Modifier.fillMaxSize()){
@@ -444,8 +451,8 @@ private fun selectLibrarySource(tracks:List<Track>,source:LibrarySource):List<Tr
         }
     }
 }
-@Composable private fun AlbumPage(album:Album,onBack:()->Unit,onPlay:(List<Track>,Int)->Unit,onQueue:(Track)->Unit){
-    LazyColumn(contentPadding=PaddingValues(bottom=18.dp)){item{Column(Modifier.padding(horizontal=18.dp)){TextButton(onClick=onBack){Icon(Icons.Default.ArrowBack,null,tint=MaterialTheme.colorScheme.primary);Spacer(Modifier.width(6.dp));Text("Biblioteca",color=MaterialTheme.colorScheme.primary)};Cover(album.tracks.first(),Modifier.fillMaxWidth().aspectRatio(1.05f).clip(RoundedCornerShape(14.dp)));Text(album.title,color=Tx,style=MaterialTheme.typography.headlineSmall,fontWeight=FontWeight.Bold,maxLines=2,overflow=TextOverflow.Ellipsis,modifier=Modifier.padding(top=14.dp));Text(album.artist,color=MaterialTheme.colorScheme.primary,style=MaterialTheme.typography.titleMedium);Text("${if(album.year>0)"${album.year} · " else ""}${album.tracks.size} faixas",color=Mu,style=MaterialTheme.typography.bodySmall);Row(horizontalArrangement=Arrangement.spacedBy(10.dp),modifier=Modifier.padding(vertical=12.dp)){Button(onClick={onPlay(album.tracks,0)},colors=ButtonDefaults.buttonColors(containerColor=MaterialTheme.colorScheme.primary),shape=RoundedCornerShape(24.dp)){Icon(Icons.Default.PlayArrow,null);Text("Reproduzir")};TextButton(onClick={album.tracks.forEach(onQueue)}){Icon(Icons.Default.QueueMusic,null,tint=MaterialTheme.colorScheme.primary);Text("Fila",color=Tx)}}}}
+@Composable private fun AlbumPage(album:Album,onBack:()->Unit,onPlay:(List<Track>,Int)->Unit,onQueue:(Track)->Unit,onSearchCovers:()->Unit){
+    LazyColumn(contentPadding=PaddingValues(bottom=18.dp)){item{Column(Modifier.padding(horizontal=18.dp)){TextButton(onClick=onBack){Icon(Icons.Default.ArrowBack,null,tint=MaterialTheme.colorScheme.primary);Spacer(Modifier.width(6.dp));Text("Biblioteca",color=MaterialTheme.colorScheme.primary)};Cover(album.tracks.first(),Modifier.fillMaxWidth().aspectRatio(1.05f).clip(RoundedCornerShape(14.dp)));Text(album.title,color=Tx,style=MaterialTheme.typography.headlineSmall,fontWeight=FontWeight.Bold,maxLines=2,overflow=TextOverflow.Ellipsis,modifier=Modifier.padding(top=14.dp));Text(album.artist,color=MaterialTheme.colorScheme.primary,style=MaterialTheme.typography.titleMedium);Text("${if(album.year>0)"${album.year} · " else ""}${album.tracks.size} faixas",color=Mu,style=MaterialTheme.typography.bodySmall);Row(horizontalArrangement=Arrangement.spacedBy(10.dp),modifier=Modifier.padding(vertical=12.dp)){Button(onClick={onPlay(album.tracks,0)},colors=ButtonDefaults.buttonColors(containerColor=MaterialTheme.colorScheme.primary),shape=RoundedCornerShape(24.dp)){Icon(Icons.Default.PlayArrow,null);Text("Reproduzir")};TextButton(onClick={album.tracks.forEach(onQueue)}){Icon(Icons.Default.QueueMusic,null,tint=MaterialTheme.colorScheme.primary);Text("Fila",color=Tx)};TextButton(onClick=onSearchCovers){Icon(Icons.Default.Search,null,tint=MaterialTheme.colorScheme.primary);Text("Buscar capa",color=Tx)}}}}
         items(album.tracks,key={it.id}){t->Row(Modifier.fillMaxWidth().clickable{onPlay(album.tracks,album.tracks.indexOf(t))}.padding(horizontal=22.dp,vertical=12.dp),verticalAlignment=Alignment.CenterVertically){Text(if(t.trackNumber>0)t.trackNumber.toString() else "•",color=Mu,modifier=Modifier.width(30.dp));Column(Modifier.weight(1f)){Text(t.title,color=Tx,maxLines=1,overflow=TextOverflow.Ellipsis);if(t.artist!=album.artist)Text(t.artist,color=Mu,style=MaterialTheme.typography.labelSmall,maxLines=1,overflow=TextOverflow.Ellipsis)};Text(time(t.durationMs),color=Mu,style=MaterialTheme.typography.labelSmall);IconButton(onClick={onQueue(t)}){Icon(Icons.Default.Add,"Adicionar à fila",tint=Mu)}};Spacer(Modifier.fillMaxWidth().height(1.dp).background(Line))}
     }
 }
@@ -495,13 +502,20 @@ private fun selectLibrarySource(tracks:List<Track>,source:LibrarySource):List<Tr
     Column(Modifier.fillMaxWidth().background(Panel)){Row(Modifier.fillMaxWidth().height(68.dp).padding(horizontal=11.dp),verticalAlignment=Alignment.CenterVertically){Cover(s.queue.getOrNull(s.currentIndex),Modifier.size(46.dp).clip(RoundedCornerShape(8.dp)).clickable(onClick=onOpen));Column(Modifier.weight(1f).clickable(onClick=onOpen).padding(horizontal=10.dp)){Text(s.title.ifBlank{"Reproduzindo"},color=Tx,maxLines=1,overflow=TextOverflow.Ellipsis,fontWeight=FontWeight.Medium);Text(s.artist,color=Mu,style=MaterialTheme.typography.bodySmall,maxLines=1,overflow=TextOverflow.Ellipsis)};IconButton(onClick=player::previous){Icon(Icons.Default.SkipPrevious,"Anterior",tint=Tx,modifier=Modifier.size(21.dp))};IconButton(onClick=player::toggle){Icon(if(s.playing)Icons.Default.Pause else Icons.Default.PlayArrow,"Reproduzir ou pausar",tint=MaterialTheme.colorScheme.primary,modifier=Modifier.size(27.dp))};IconButton(onClick=player::next){Icon(Icons.Default.SkipNext,"Próxima",tint=Tx,modifier=Modifier.size(21.dp))}};val progress=if(s.durationMs>0)(s.positionMs.toFloat()/s.durationMs).coerceIn(0f,1f)else 0f;Box(Modifier.fillMaxWidth().height(2.dp).background(Line)){Box(Modifier.fillMaxWidth(progress).fillMaxHeight().background(MaterialTheme.colorScheme.primary))}}
 }
 
-@Composable private fun PlayerPage(s:NowPlaying,player:PlayerController,desktopOrigin:String,hasDesktopGrant:Boolean,onClose:()->Unit,onQueue:()->Unit,onPlayOnDesktop:(Int)->Unit){
+@Composable private fun PlayerPage(s:NowPlaying,player:PlayerController,desktopOrigin:String,hasDesktopGrant:Boolean,vinylEnabled:Boolean,onVinylToggle:(Boolean)->Unit,onClose:()->Unit,onQueue:()->Unit,onPlayOnDesktop:(Int)->Unit){
     val context=LocalContext.current
     val audio=context.getSystemService(android.content.Context.AUDIO_SERVICE) as AudioManager
     val maxVolume=audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC).coerceAtLeast(1)
     var volume by remember{mutableFloatStateOf(audio.getStreamVolume(AudioManager.STREAM_MUSIC).toFloat()/maxVolume)}
     var scrubbing by remember{mutableStateOf(false)};var preview by remember{mutableFloatStateOf(0f)}
     val current=s.queue.getOrNull(s.currentIndex)
+    var showLyrics by remember(current?.uri){mutableStateOf(false)};var lyricsRequested by remember(current?.uri){mutableStateOf(false)};var lyricsLoading by remember(current?.uri){mutableStateOf(false)};var lyrics by remember(current?.uri){mutableStateOf<TrackLyrics?>(null)}
+    val lyricsRepo=remember{LyricsRepository(context)};val lyricScope=rememberCoroutineScope()
+    fun requestLyrics(){
+        showLyrics=true
+        val track=current?:return
+        if(!lyricsRequested){lyricsRequested=true;lyricsLoading=true;lyricScope.launch{lyrics=runCatching{lyricsRepo.load(track)}.getOrNull();lyricsLoading=false}}
+    }
     val desktopRepository=remember{DesktopLibraryRepository()}
     val desktopTrackId=current?.let{desktopRepository.desktopTrackIdForRemotePlayback(it,desktopOrigin)}
     var confirmDesktopPlayback by remember(current?.uri){mutableStateOf(false)}
@@ -515,7 +529,7 @@ private fun selectLibrarySource(tracks:List<Track>,source:LibrarySource):List<Tr
             }
             Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal=26.dp),horizontalAlignment=Alignment.CenterHorizontally){
                 Spacer(Modifier.height(12.dp))
-                Box(Modifier.fillMaxWidth(.86f).aspectRatio(1f).clip(RoundedCornerShape(18.dp)).background(CardBg),contentAlignment=Alignment.Center){Cover(current,Modifier.fillMaxSize())}
+                Box(Modifier.fillMaxWidth(.86f).aspectRatio(1f).clip(RoundedCornerShape(18.dp)).background(CardBg),contentAlignment=Alignment.Center){if(vinylEnabled)VinylRecord(current,s.playing,Modifier.fillMaxSize())else Cover(current,Modifier.fillMaxSize())}
                 Spacer(Modifier.height(24.dp))
                 Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically){
                     Column(Modifier.weight(1f)){Text(s.title,color=Tx,style=MaterialTheme.typography.titleLarge,fontWeight=FontWeight.Bold,maxLines=1,overflow=TextOverflow.Ellipsis);Text(s.artist,color=Mu,style=MaterialTheme.typography.titleMedium,maxLines=1,overflow=TextOverflow.Ellipsis);Text(buildString{append(current?.album?:"Álbum desconhecido");if((current?.year?:0)>0)append(" · ${current?.year}");if((current?.trackNumber?:0)>0)append(" · Faixa ${current?.trackNumber}")},color=Mu.copy(alpha=.8f),style=MaterialTheme.typography.bodySmall,maxLines=1,overflow=TextOverflow.Ellipsis,modifier=Modifier.padding(top=3.dp))}
@@ -535,6 +549,7 @@ private fun selectLibrarySource(tracks:List<Track>,source:LibrarySource):List<Tr
                 }
                 Spacer(Modifier.height(16.dp))
                 Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(15.dp)).background(Color.White.copy(alpha=.055f)).padding(horizontal=13.dp,vertical=4.dp),verticalAlignment=Alignment.CenterVertically){Icon(Icons.Default.VolumeDown,"Volume",tint=Mu,modifier=Modifier.size(20.dp));Slider(value=volume,onValueChange={volume=it;audio.setStreamVolume(AudioManager.STREAM_MUSIC,(it*maxVolume).toInt().coerceIn(0,maxVolume),0)},modifier=Modifier.weight(1f).padding(horizontal=10.dp),valueRange=0f..1f,colors=SliderDefaults.colors(thumbColor=MaterialTheme.colorScheme.primary,activeTrackColor=MaterialTheme.colorScheme.primary,inactiveTrackColor=Line));Text("${(volume*100).toInt()}%",color=Mu,style=MaterialTheme.typography.labelSmall,modifier=Modifier.width(38.dp),textAlign=TextAlign.End)}
+                Row(Modifier.fillMaxWidth().padding(top=4.dp),verticalAlignment=Alignment.CenterVertically){TextButton(onClick=::requestLyrics){Icon(Icons.Default.MusicNote,null,tint=MaterialTheme.colorScheme.primary);Spacer(Modifier.width(5.dp));Text("Letra",color=Tx)};Spacer(Modifier.weight(1f));if(vinylEnabled)Text("PLAYER DE VINIL",color=Mu,style=MaterialTheme.typography.labelSmall)else Text("CAPA DO ÁLBUM",color=Mu,style=MaterialTheme.typography.labelSmall)}
                 if(hasDesktopGrant&&desktopTrackId!=null){
                     Spacer(Modifier.height(8.dp))
                     OutlinedButton(onClick={confirmDesktopPlayback=true},modifier=Modifier.fillMaxWidth(),shape=RoundedCornerShape(14.dp)){
@@ -556,12 +571,48 @@ private fun selectLibrarySource(tracks:List<Track>,source:LibrarySource):List<Tr
         confirmButton={TextButton(onClick={confirmDesktopPlayback=false;onPlayOnDesktop(desktopTrackId)}){Text("Tocar no computador",color=MaterialTheme.colorScheme.primary)}},
         dismissButton={TextButton(onClick={confirmDesktopPlayback=false}){Text("Cancelar",color=Mu)}},
     )
+    if(showLyrics) LyricsSheet(current?.title.orEmpty(),current?.artist.orEmpty(),lyrics,lyricsLoading,s.positionMs,{showLyrics=false})
+}
+
+@Composable private fun VinylRecord(track:Track?,playing:Boolean,modifier:Modifier=Modifier){
+    val rotation=remember{Animatable(0f)}
+    LaunchedEffect(playing){if(playing){while(isActive){val target=(rotation.value%360f)+360f;rotation.animateTo(target,tween(durationMillis=8_000,easing=LinearEasing))}}else rotation.stop()}
+    Box(modifier.graphicsLayer{rotationZ=rotation.value},contentAlignment=Alignment.Center){
+        androidx.compose.foundation.Canvas(Modifier.fillMaxSize().padding(5.dp)){
+            val radius=size.minDimension/2f
+            val center=androidx.compose.ui.geometry.Offset(size.width/2f,size.height/2f)
+            drawCircle(brush=Brush.radialGradient(listOf(Color(0xFF4B4947),Color(0xFF201F1E),Color(0xFF090909)),center=center,radius=radius),radius=radius,center=center)
+            for(index in 1..15){val ring=radius*(.39f+index*.037f);drawCircle(color=Color.White.copy(alpha=if(index%3==0).12f else .055f),radius=ring,center=center,style=androidx.compose.ui.graphics.drawscope.Stroke(width=1.dp.toPx()))}
+            drawArc(color=Color.White.copy(alpha=.13f),startAngle=210f,sweepAngle=42f,useCenter=false,topLeft=androidx.compose.ui.geometry.Offset(center.x-radius*.82f,center.y-radius*.82f),size=androidx.compose.ui.geometry.Size(radius*1.64f,radius*1.64f),style=androidx.compose.ui.graphics.drawscope.Stroke(width=radius*.035f))
+            drawCircle(color=Color(0xFF090909),radius=radius*.34f,center=center)
+        }
+        Cover(track,Modifier.fillMaxSize(.48f).clip(CircleShape))
+    }
+}
+
+@Composable private fun LyricsSheet(title:String,artist:String,lyrics:TrackLyrics?,loading:Boolean,positionMs:Long,onDismiss:()->Unit){
+    val state=rememberModalBottomSheetState(skipPartiallyExpanded=true)
+    val active=lyrics?.activeLine(positionMs)?:-1
+    val listState=androidx.compose.foundation.lazy.rememberLazyListState()
+    LaunchedEffect(active,lyrics?.synchronized){if(lyrics?.synchronized==true&&active>=0)runCatching{listState.animateScrollToItem(active)}}
+    ModalBottomSheet(onDismissRequest=onDismiss,sheetState=state,containerColor=Panel,contentColor=Tx,windowInsets=WindowInsets.navigationBars){
+        Column(Modifier.fillMaxWidth().heightIn(min=300.dp,max=610.dp).padding(horizontal=20.dp)){
+            Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){Text("LETRA",color=MaterialTheme.colorScheme.primary,style=MaterialTheme.typography.labelMedium,letterSpacing=1.8.sp);Text(title,color=Tx,style=MaterialTheme.typography.titleLarge,fontWeight=FontWeight.Bold,maxLines=1,overflow=TextOverflow.Ellipsis);Text(artist,color=Mu,style=MaterialTheme.typography.bodySmall,maxLines=1,overflow=TextOverflow.Ellipsis)};IconButton(onClick=onDismiss){Icon(Icons.Default.Close,"Fechar letra",tint=Mu)}}
+            when{
+                loading->Box(Modifier.fillMaxWidth().weight(1f),contentAlignment=Alignment.Center){CircularProgressIndicator(color=MaterialTheme.colorScheme.primary)}
+                lyrics==null->Box(Modifier.fillMaxWidth().weight(1f),contentAlignment=Alignment.Center){Text("Não encontramos a letra desta faixa. Conecte-se à internet e tente novamente.",color=Mu,textAlign=TextAlign.Center)}
+                lyrics.instrumental->Box(Modifier.fillMaxWidth().weight(1f),contentAlignment=Alignment.Center){Text("Faixa instrumental",color=Mu,style=MaterialTheme.typography.titleMedium)}
+                lyrics.synchronized->LazyColumn(state=listState,modifier=Modifier.weight(1f),contentPadding=PaddingValues(top=18.dp,bottom=24.dp),verticalArrangement=Arrangement.spacedBy(12.dp)){itemsIndexed(lyrics.lines){index,line->Text(line.text,color=if(index==active)Tx else Mu.copy(alpha=.8f),fontSize=if(index==active)22.sp else 19.sp,fontWeight=if(index==active)FontWeight.Bold else FontWeight.Medium,modifier=Modifier.fillMaxWidth())}}
+                else->Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(top=18.dp,bottom=24.dp),verticalArrangement=Arrangement.spacedBy(10.dp)){lyrics.lines.forEach{Text(it.text,color=Tx,fontSize=18.sp,lineHeight=27.sp)}}
+            }
+        }
+    }
 }
 
 @Composable private fun Cover(track:Track?,modifier:Modifier=Modifier){
-    val context=LocalContext.current;val desktop=remember{DesktopLibraryRepository()};val coverUri=track?.let(desktop::coverUri)
+    val context=LocalContext.current;val desktop=remember{DesktopLibraryRepository()};val artwork=remember{CoverArtworkRepository(context)};val revision by CoverArtworkEvents.revision.collectAsState();val customFile=remember(track,revision){track?.let(artwork::coverFile)};val coverUri=track?.let(desktop::coverUri)
     val grantToken=CobreIdRepository(context).currentDesktopGrantToken()
-    val bitmap by produceState<Bitmap?>(null,track?.uri,coverUri,grantToken){value=if(track==null)null else withContext(Dispatchers.IO){runCatching{if(coverUri==null)context.contentResolver.loadThumbnail(track.uri,Size(480,480),null)else{val connection=URL(coverUri.toString()).openConnection() as HttpURLConnection;try{connection.instanceFollowRedirects=false;if(coverUri.path?.startsWith("/v1/")==true&&!grantToken.isNullOrBlank())connection.setRequestProperty("Authorization","Bearer $grantToken");if(connection.responseCode==HttpURLConnection.HTTP_OK)connection.inputStream.use{BitmapFactory.decodeStream(it)}else null}finally{connection.disconnect()}}}.getOrNull()}}
+    val bitmap by produceState<Bitmap?>(null,track?.uri,coverUri,grantToken,customFile){value=if(track==null)null else withContext(Dispatchers.IO){runCatching{when{customFile!=null->BitmapFactory.decodeFile(customFile.absolutePath);coverUri==null->context.contentResolver.loadThumbnail(track.uri,Size(480,480),null);else->{val connection=URL(coverUri.toString()).openConnection() as HttpURLConnection;try{connection.instanceFollowRedirects=false;if(coverUri.path?.startsWith("/v1/")==true&&!grantToken.isNullOrBlank())connection.setRequestProperty("Authorization","Bearer $grantToken");if(connection.responseCode==HttpURLConnection.HTTP_OK)connection.inputStream.use{BitmapFactory.decodeStream(it)}else null}finally{connection.disconnect()}}}}.getOrNull()}}
     Box(modifier.background(CardBg),contentAlignment=Alignment.Center){if(bitmap!=null)Image(bitmap!!.asImageBitmap(),track?.album,Modifier.fillMaxSize(),contentScale=ContentScale.Crop)else Icon(Icons.Default.MusicNote,null,tint=MaterialTheme.colorScheme.primary.copy(alpha=.75f),modifier=Modifier.size(36.dp))}
 }
 
