@@ -590,12 +590,13 @@ private fun selectLibrarySource(tracks:List<Track>,source:LibrarySource):List<Tr
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable private fun LyricsSheet(title:String,artist:String,lyrics:TrackLyrics?,loading:Boolean,positionMs:Long,onDismiss:()->Unit){
     val state=rememberModalBottomSheetState(skipPartiallyExpanded=true)
     val active=lyrics?.activeLine(positionMs)?:-1
     val listState=androidx.compose.foundation.lazy.rememberLazyListState()
     LaunchedEffect(active,lyrics?.synchronized){if(lyrics?.synchronized==true&&active>=0)runCatching{listState.animateScrollToItem(active)}}
-    ModalBottomSheet(onDismissRequest=onDismiss,sheetState=state,containerColor=Panel,contentColor=Tx,windowInsets=WindowInsets.navigationBars){
+    ModalBottomSheet(onDismissRequest=onDismiss,sheetState=state,containerColor=Panel,contentColor=Tx){
         Column(Modifier.fillMaxWidth().heightIn(min=300.dp,max=610.dp).padding(horizontal=20.dp)){
             Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){Text("LETRA",color=MaterialTheme.colorScheme.primary,style=MaterialTheme.typography.labelMedium,letterSpacing=1.8.sp);Text(title,color=Tx,style=MaterialTheme.typography.titleLarge,fontWeight=FontWeight.Bold,maxLines=1,overflow=TextOverflow.Ellipsis);Text(artist,color=Mu,style=MaterialTheme.typography.bodySmall,maxLines=1,overflow=TextOverflow.Ellipsis)};IconButton(onClick=onDismiss){Icon(Icons.Default.Close,"Fechar letra",tint=Mu)}}
             when{
