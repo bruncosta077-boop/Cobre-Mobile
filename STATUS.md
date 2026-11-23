@@ -6,11 +6,10 @@
 - A tela Cobre ID inclui exclusão com confirmação de senha. Após sucesso, tokens e autorização do serviço de reprodução são removidos e a faixa remota é pausada; API do Server 1.3.0 está publicada.
 - Implementado nesta branch o download offline de faixas do Desktop, com limite de armazenamento, barra de progresso, catálogo “Baixadas” e remoção. O build compila; falta teste em celular.
 - A fila, a faixa atual, posição, aleatório e repetição são salvos localmente; ao iniciar o app a fila restaura pausada para evitar reprodução inesperada. O build compila; falta teste em aparelho.
-- O workflow **Build APK** agora pode gerar APK/AAB assinados para teste físico sem publicar uma release; a próxima validação deve usar esse pacote assinado.
+- O workflow de release terminou com sucesso: [45086261665](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45086261665) compilou e verificou o APK direto e o AAB Play assinados, com checksums.
 - API 36 e variante Play dedicados: sem permissão nem código de auto-instalação de APK; atualizações ficam a cargo da Play Store.
-- Workflow separado gera AAB da variante Play e APK da edição direta, mantendo uma mesma chave de distribuição.
-- GitHub Actions passou no [workflow 45055015245](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45055015245), compilando o APK de debug e o AAB de validação. Esse AAB da branch é unsigned e não deve ser enviado à Play Console.
-- A tag 0.19.0 publica somente uma pré-release no GitHub. A variante Play ainda precisa de validação em Android 16, página web pública para solicitar exclusão, política de privacidade, configuração do Play App Signing e preenchimento da Play Console.
+- A edição `direct` gera APK; a variante `play` gera AAB sem auto-atualizador de APK. O CI assina ambos com a chave atual de distribuição; a Play Console ainda precisa concluir Play App Signing.
+- A tag `mobile-v0.19.0` está publicada como pré-release no GitHub; ainda não houve envio à Play Store. Faltam teste físico das funções novas, política de privacidade pública, página web externa de exclusão, configuração Play Console e ficha da loja. Ver [itens detalhados](docs/PUBLICACAO-GOOGLE-PLAY.md).
 
 ## Versão publicada 0.18.0 — renovação serializada da sessão
 

@@ -4,17 +4,22 @@
 
 - A variante `play` compila para API 36 e remove a permissão `REQUEST_INSTALL_PACKAGES`, que a política da loja proíbe usar para atualizar o próprio app. Essa variante não baixa nem instala APKs externos.
 - A variante `direct` preserva o canal atual de APK e o atualizador por GitHub.
-- O workflow publica APK direto e AAB Play assinados com a chave estável existente. O Android App Bundle precisa ser validado no GitHub Actions antes de uma tag de release.
+- A pré-release assinada `mobile-v0.19.0` já contém APK direto, AAB Play e checksums SHA-256; o workflow terminou com sucesso em 23/11/2026. O AAB está tecnicamente assinado, mas a vinculação da chave à configuração Play App Signing ainda precisa ser concluída na Play Console.
 - O pacote `app.cobre.mobile` já foi distribuído fora da loja. A chave usada nos APKs diretos precisa ser preservada ao configurar Play App Signing para que os dois canais possam atualizar a mesma instalação.
+
+## Estado do lançamento
+
+- **GitHub:** `0.19.0` está publicada como pré-release. Para promovê-la a release estável no GitHub, não falta uma nova compilação; falta decidir se a transferência para o Desktop e os downloads/retomada offline podem ser declarados estáveis sem validação física. A compilação assinada foi verificada pelo CI, mas essas funções novas ainda não foram exercitadas num aparelho nesta versão.
+- **Google Play:** o aplicativo ainda não foi enviado à Play Console. “Release estável no GitHub” e “disponível na Play Store” são etapas diferentes.
 
 ## Itens obrigatórios antes do envio
 
-1. Validar a variante Play em Android 16, principalmente bordas do sistema, início da reprodução, serviço em segundo plano, notificações, QR, conexão local e restauração de preferências.
-2. Criar/usar uma conta Play Console verificada e registrar o app com o nome do pacote e a chave corretos.
-3. Publicar política de privacidade acessível dentro e fora do app; preencher a seção Segurança dos dados de acordo com conta Cobre ID, identificador de dispositivo e métricas de conexão enviadas ao Cobre Server. O áudio segue diretamente do Desktop e não passa pelo Server.
-4. Confirmar um processo claro de exclusão da conta e dos dados associados. O código atual não foi confirmado como oferecendo esse fluxo.
-5. Completar classificação de conteúdo, ficha da loja, screenshots, contato do desenvolvedor, declarações de permissões e credenciais/instruções de revisão para o Cobre ID.
-6. Para uma conta pessoal criada depois de 13/11/2023, concluir teste fechado com pelo menos 12 participantes inscritos continuamente por 14 dias antes de pedir acesso à produção.
+1. **Teste de dispositivo:** validar a variante Play em Android 16, incluindo reprodução em segundo plano, notificações, QR, rede local, download interrompido/retomado, falta de espaço, fila restaurada e transferência Mobile → Desktop.
+2. **Conta/assinatura:** registrar o app na Play Console verificada e concluir Play App Signing preservando a continuidade da chave de distribuição. A release de GitHub contém AAB assinado; não presumir que isso conclui a configuração de assinatura da loja.
+3. **Privacidade:** publicar uma política pública, acessível dentro e fora do app, e preencher Segurança dos dados com base no que os clientes e o Cobre Server realmente coletam. O áudio segue do Desktop ao cliente e não passa pelo Server.
+4. **Exclusão externa:** o fluxo no app e a exclusão no Server já existem; ainda falta uma página web pública que explique/inicie a solicitação externa e sua URL para a Play Console. A política deve explicar qualquer dado local que não seja removido pelo Server.
+5. **Ficha da loja:** completar classificação etária, descrição, capturas, contato do desenvolvedor, declarações de permissões e instruções/credenciais de revisão do Cobre ID.
+6. **Acesso à produção:** se a conta Play Console for pessoal e tiver sido criada após 13/11/2023, concluir teste fechado com pelo menos 12 participantes inscritos continuamente por 14 dias e solicitar acesso à produção. A exigência depende do tipo e da data da conta.
 
 ## Assinatura e atualização
 
@@ -22,4 +27,4 @@ Usar no Play App Signing a chave de assinatura existente do canal direto, em vez
 
 ## Estado
 
-API 36, flavor `play`, remoção de auto-update APK e geração do AAB passaram no workflow [45055015245](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45055015245). O AAB de validação da branch é unsigned; a versão assinada só é gerada em tag de release e ainda não foi criada. A Play Console não foi configurada e nenhum app foi enviado para revisão.
+API 36, flavor `play`, remoção de auto-update APK e geração do AAB passaram no workflow [45086261665](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45086261665), que também verificou os artefatos assinados da tag `mobile-v0.19.0`. A Play Console não foi configurada e nenhum app foi enviado para revisão. A política do Google exige API 36 para novos apps e atualizações a partir de 31/08/2026; o projeto já usa target 36.

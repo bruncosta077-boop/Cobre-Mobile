@@ -8,11 +8,9 @@
 - A fila agora é salva no aparelho com a faixa atual, posição, modo aleatório e repetição. Ao reabrir o Mobile, ela volta pausada e só toca quando o usuário iniciar a reprodução.
 - Atualizados compile/target SDK para API 36, exigida para novos apps e atualizações da Google Play desde 31/08/2026.
 - Criada variante `play` que remove `REQUEST_INSTALL_PACKAGES`, desativa o atualizador de APK externo e orienta a receber atualizações pela loja. A edição `direct` mantém o atualizador GitHub existente.
-- O workflow produz APK direto e AAB da variante Play; ambos usam a chave de distribuição atual para preservar compatibilidade, sujeito à configuração correta do Play App Signing.
-- O GitHub Actions passou no [workflow 45055015245](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45055015245) e gerou APK de debug e AAB de validação sem assinatura de distribuição.
-- O código desta versão compilou no [workflow 45066267659](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45066267659). A transferência de reprodução ainda não foi verificada em aparelho físico; esta pré-release do GitHub não representa publicação na Google Play nem aprovação de loja.
-- A build de desenvolvimento que inclui a transferência da faixa ao Desktop compilou no [workflow 45066267659](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45066267659). A função ainda requer teste em aparelho conectado a um Desktop ativo; a versão 0.19.0 não foi publicada.
-- Ainda não é publicação da Play Store: validar AAB assinado, comportamento em Android 16, chave no Play App Signing, política de privacidade, URL web pública de exclusão de conta e declarações da Play Console.
+- O workflow publicou APK direto e AAB Play assinados, mais checksums SHA-256, na [pré-release do GitHub `mobile-v0.19.0`](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.19.0). O [workflow 45086261665](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45086261665) compilou e verificou os pacotes.
+- A transferência de reprodução, os downloads offline e a restauração da fila ainda não foram exercitados em aparelho físico nesta versão. A publicação no GitHub não é publicação na Google Play.
+- Para a Play Store ainda faltam configuração da Play Console e Play App Signing, política pública de privacidade, URL externa de exclusão da conta, ficha e declarações da loja, teste físico e, se a conta pessoal se enquadrar na regra, teste fechado antes do acesso à produção. Veja [PUBLICACAO-GOOGLE-PLAY.md](docs/PUBLICACAO-GOOGLE-PLAY.md).
 ## 0.18.0 — evitar conflito ao renovar sessão Cobre ID
 
 - A renovação do refresh token agora é serializada no processo Android, pois a tela principal e o serviço de reprodução têm instâncias independentes do repositório e compartilham o mesmo token rotativo.

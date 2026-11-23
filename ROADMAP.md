@@ -1,12 +1,14 @@
 # Cobre Mobile — roadmap de paridade com Desktop
 
-## 0.19.0 em desenvolvimento
+## 0.19.0 — publicada como pré-release no GitHub
 
 - Exclusão de conta Cobre ID com senha atual, remoção de sessões e permissões no Server e limpeza de tokens no Mobile.
 - Downloads de faixas do Desktop para reprodução offline no armazenamento privado do Mobile. Limites atuais: 2 GB de biblioteca, 512 MB por faixa; só aceita o endpoint HTTP local versionado e o host configurado no app.
 - Restauração local da fila, faixa atual, posição, aleatório e repetição; a retomada fica pausada até uma ação explícita do usuário.
 - Transferência de uma faixa do Desktop do player Mobile para reprodução no computador, com confirmação explícita da substituição da fila. Primeiro fluxo de sessão compartilhada; transferência de fila completa e sincronização contínua continuam como passos separados.
-- Próximas validações: compilação do workflow, teste no aparelho com uma faixa MP3/FLAC, interrupção durante download, remoção do arquivo, falta de espaço e exclusão da conta enquanto toca uma faixa remota.
+- Build assinado, verificações de APK/AAB e publicação da pré-release concluídos no workflow 45086261665.
+- Validação física pendente: transferência Mobile → Desktop, download interrompido/retomado, remoção do arquivo, falta de espaço, fila restaurada e exclusão da conta enquanto toca uma faixa remota.
+- Próxima etapa de distribuição: página pública de privacidade e exclusão para a Play Console; configuração Play App Signing e ficha da loja. Requisitos condicionais incluem teste fechado de 12 pessoas por 14 dias para contas pessoais novas.
 
 ## Estado validado
 
