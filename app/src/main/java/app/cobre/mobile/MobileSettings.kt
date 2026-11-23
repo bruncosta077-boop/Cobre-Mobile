@@ -48,7 +48,7 @@ class MobileSettings(context: Context) {
         appearancePrefs.edit().putInt("accent_primary", primary).putInt("accent_secondary", secondary).apply()
     }
 
-    fun setVinylPlayer(enabled: Boolean) {
+    fun saveVinylPlayer(enabled: Boolean) {
         vinylPlayer = enabled
         appearancePrefs.edit().putBoolean("vinyl_player", enabled).apply()
     }
