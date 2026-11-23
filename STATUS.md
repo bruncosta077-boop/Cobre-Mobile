@@ -1,10 +1,10 @@
 # Cobre Mobile — status
 
-## 0.30.0-rc.1 em publicação
+## 0.30.0-rc.1 publicado
 
 - Ajustes agora mostram o espaço usado pelos downloads offline e permitem limpar as cópias com confirmação, sem tocar na biblioteca do Desktop.
 - Arquivos temporários interrompidos também são limpos; faixas offline removidas da fila e a faixa atual é pausada antes da exclusão.
-- Versão de pacote 32 / 0.30.0-rc.1. A publicação depende do workflow de compilação e assinatura.
+- Versão de pacote 32 / 0.30.0-rc.1. Build, assinatura estável e publicação [45256146633](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45256146633) passaram. APK/AAB e checksums estão na [release](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.30.0-rc.1).
 
 ## 0.29.0-rc.1 publicado
 

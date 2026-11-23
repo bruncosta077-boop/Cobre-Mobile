@@ -6,7 +6,7 @@
 - Adicionada remoção total de downloads com confirmação clara; ela apaga somente cópias privadas do Cobre no celular e não altera os originais do Desktop.
 - A limpeza também remove arquivos temporários de downloads interrompidos.
 - Faixas baixadas removidas da biblioteca offline são retiradas da fila; se a faixa atual for apagada, o player é pausado antes da remoção.
-- Esta versão aguarda compilação e assinatura automáticas antes da publicação.
+- Build, assinatura do APK/AAB e publicação passaram no workflow [45256146633](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45256146633). Artefatos na [release 0.30.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.30.0-rc.1).
 
 ## 0.29.0-rc.1 — downloads offline de álbuns e playlists
 
