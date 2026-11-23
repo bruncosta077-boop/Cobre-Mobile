@@ -2,7 +2,7 @@
   <img src="assets/branding/cobre-logo.png" alt="Logo do Cobre" width="150">
   <h1>Cobre Mobile</h1>
   <p>Player Android integrado ao ecossistema Cobre</p>
-  <p><strong>Próxima versão: 0.40.0-rc.1 — leitura eficiente das coleções</strong></p>
+  <p><strong>Última versão publicada: 0.40.0-rc.1 — leitura eficiente das coleções</strong></p>
 </div>
 
 O código do Cobre é proprietário e está disponível publicamente para inspeção. Consulte o [aviso de licença](LICENSE); componentes de terceiros mantêm suas próprias licenças.
@@ -11,9 +11,9 @@ Desenvolvimento principal: Bruno C S Moraes · Contribuição ao projeto: [@dilu
 
 Aplicativo Android do ecossistema Cobre. Interface escura com a paleta, o símbolo e a organização visual do Cobre Desktop, adaptados para toque.
 
-## Versão em preparação: 0.40.0-rc.1
+## Última versão publicada: 0.40.0-rc.1
 
-Playlists são carregadas com uma consulta agrupada; índices reduzem o custo para ordenar favoritos, histórico e playlists. A migração adiciona os índices sem descartar dados locais.
+Playlists são carregadas com uma consulta agrupada; índices reduzem o custo para ordenar favoritos, histórico e playlists. A migração adiciona os índices sem descartar dados locais. APK/AAB assinados e checksums estão na [release 0.40.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.40.0-rc.1). Build, assinatura estável e publicação passaram no [GitHub Actions](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45276795425). A migração do banco ainda não foi exercitada num aparelho nesta rodada.
 
 O backup leva aparência, áudio, e-mail e endereços do Server/Desktop para outra instalação. Senhas, tokens, concessões e permissões de pasta não são exportados.
 

@@ -1,9 +1,10 @@
 # Cobre Mobile — status
 
-## 0.40.0-rc.1 em preparação
+## 0.40.0-rc.1 publicado — 23/11/2026
 
 - Playlists lidas em uma consulta SQL agrupada; novas ordenações indexadas via migração do banco v4.
-- Dados locais existentes preservados; build e publicação aguardando GitHub Actions.
+- Dados locais existentes preservados. Pacote 42 / versionCode 42. Build, assinatura estável APK/AAB, publicação e checksums passaram no [workflow 45276795425](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45276795425). Migração ainda não exercitada em aparelho.
+- APK e AAB disponíveis na [release mobile-v0.40.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.40.0-rc.1).
 
 ## 0.39.0-rc.1 publicado — 23/11/2026
 

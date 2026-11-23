@@ -4,7 +4,7 @@
 
 - Leitura de playlists agora usa um `LEFT JOIN` ordenado em uma consulta, eliminando uma consulta extra por playlist e preservando playlists vazias.
 - Migração de banco v4 cria índices de ordenação para favoritos, histórico e playlists sem remover registros existentes.
-- Build, assinatura e publicação pendentes no GitHub Actions.
+- Build, assinatura estável do APK/AAB e publicação com checksums SHA-256 passaram no [GitHub Actions](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45276795425). Pacote 42 / versionCode 42. A migração do banco ainda não foi exercitada num aparelho nesta rodada.
 
 ## 0.39.0-rc.1 — atualização direta mais confiável
 
