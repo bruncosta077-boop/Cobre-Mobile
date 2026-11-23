@@ -4,7 +4,7 @@
 
 - Arquivos baixados só são reconhecidos como offline quando o caminho canônico está na pasta privada `offline-audio` e o nome corresponde ao hash gerado pelo app.
 - Remover e limpar downloads nunca excluem caminhos externos ou links simbólicos que escapem dessa pasta; referências inválidas são removidas do banco sem apagar o arquivo apontado.
-- Build, assinatura e publicação pendentes no GitHub Actions.
+- Build, assinatura estável do APK/AAB e publicação com checksums SHA-256 passaram no [GitHub Actions](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45279480824). Pacote 44 / versionCode 44. Caminhos malformados ainda não foram exercitados em aparelho nesta rodada.
 
 ## 0.41.0-rc.1 — gravações locais consistentes
 

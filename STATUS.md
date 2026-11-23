@@ -1,9 +1,10 @@
 # Cobre Mobile — status
 
-## 0.42.0-rc.1 em preparação
+## 0.42.0-rc.1 publicado — 23/11/2026
 
 - Caminhos de áudio offline validados contra a pasta privada e o padrão de nome gerado; referências inválidas não podem expor nem apagar arquivos externos.
-- Build, assinatura estável e publicação aguardando GitHub Actions.
+- Pacote 44 / versionCode 44. Build, assinatura estável APK/AAB, publicação e checksums passaram no [workflow 45279480824](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45279480824). Caminhos malformados ainda não testados em aparelho.
+- APK e AAB disponíveis na [release mobile-v0.42.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.42.0-rc.1).
 
 ## 0.41.0-rc.1 publicado — 23/11/2026
 
