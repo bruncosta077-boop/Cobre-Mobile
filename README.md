@@ -2,7 +2,7 @@
   <img src="assets/branding/cobre-logo.png" alt="Logo do Cobre" width="150">
   <h1>Cobre Mobile</h1>
   <p>Player Android integrado ao ecossistema Cobre</p>
-  <p><strong>Em desenvolvimento: 0.26.0-rc.1 — player e controles</strong></p>
+  <p><strong>Versão publicada: 0.26.0-rc.1 — player e controles</strong></p>
 </div>
 
 O código do Cobre é proprietário e está disponível publicamente para inspeção. Consulte o [aviso de licença](LICENSE); componentes de terceiros mantêm suas próprias licenças.
@@ -11,9 +11,9 @@ Desenvolvimento principal: Bruno C S Moraes · Contribuição ao projeto: [@dilu
 
 Aplicativo Android do ecossistema Cobre. Interface escura com a paleta, o símbolo e a organização visual do Cobre Desktop, adaptados para toque.
 
-## Última versão publicada: 0.25.0-rc.1
+## Última versão publicada: 0.26.0-rc.1
 
-APK e AAB assinados, com checksums SHA-256, disponíveis em [Cobre Mobile 0.25.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.25.0-rc.1). É um pré-lançamento para avaliação em aparelho.
+APK e AAB assinados, com checksums SHA-256, disponíveis em [Cobre Mobile 0.26.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.26.0-rc.1). É um pré-lançamento para avaliação em aparelho.
 
 O app verifica novas versões ao abrir e em **Configurações → Aplicativo**. Quando encontra uma atualização, baixa e valida o APK assinado e abre a instalação do Android; o sistema pede autorização para instalar e confirmação final. As notas da versão aparecem antes e depois da atualização.
 
@@ -35,7 +35,7 @@ O app verifica novas versões ao abrir e em **Configurações → Aplicativo**. 
 - O atualizador da edição direta agora encontra pré-lançamentos numerados (RC, beta e alpha) e compara versões estáveis acima da RC correspondente.
 - A página do álbum busca capas em Apple Music e MusicBrainz/Cover Art Archive. A escolha é salva em espaço privado do Mobile, sem alterar os arquivos de música ou o Desktop.
 - O player de vinil opcional coloca a capa no selo central e gira continuamente enquanto a faixa toca; também pode ser ativado no próprio player.
-- Nesta versão em desenvolvimento 0.26.0-rc.1, buscar/alterar a capa fica disponível dentro do player e aleatório/repetição têm nomes visíveis.
+- Na versão publicada 0.26.0-rc.1, buscar/alterar a capa fica disponível dentro do player e aleatório/repetição têm nomes visíveis.
 - Faixas autorizadas do Desktop podem ser baixadas para ouvir offline. Em **Biblioteca → Computador → Faixas**, toque no ícone de download; elas aparecem em **Baixadas** e o mesmo controle as remove. Os arquivos ficam privados no app e há limite de 2 GB no total e 512 MB por faixa.
 - Descoberta automática do Desktop na mesma rede local enquanto a tela Conexões estiver aberta; QR continua disponível.
 - Status da conexão Desktop exibe tempo de resposta do catálogo e quantidade de faixas carregadas.

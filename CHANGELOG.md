@@ -6,7 +6,7 @@
 - Incluído no player um botão sobre a arte para buscar uma capa ou escolher uma imagem do celular, sem sair da tela Tocando agora.
 - O player agora permite alternar entre capa e visual de vinil diretamente na tela.
 - Aleatório e repetição ganharam rótulos visíveis; a repetição informa se está desligada, na fila ou em uma faixa.
-- Build, assinatura e validação física ainda pendentes.
+- Workflow [45207850024](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45207850024) passou. APK conferido: SHA-256, certificado estável, pacote `app.cobre.mobile`, versionCode 28, minSdk 29 e targetSdk 36 corretos. A validação visual e o teste no celular ainda dependem do usuário.
 
 ## 0.25.0-rc.1 — atualização protegida contra falta de espaço
 

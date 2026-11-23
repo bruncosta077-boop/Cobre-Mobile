@@ -1,9 +1,10 @@
 # Cobre Mobile — status
 
-## 0.26.0-rc.1 em preparação
+## 0.26.0-rc.1 publicado
 
 - Correção do giro contínuo do vinil, opção de trocar capa dentro do player e rótulos mais claros para aleatório/repetição.
-- Build, assinatura, publicação e teste em aparelho pendentes.
+- O workflow [45207850024](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45207850024) compilou, assinou e publicou APK/AAB. APK conferido localmente: SHA-256, certificado estável, pacote, versionCode 28, minSdk 29 e targetSdk 36 corretos.
+- Release disponível em [mobile-v0.26.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.26.0-rc.1). Falta teste no celular e confirmação de que o vinil segue girando ao completar várias voltas.
 
 ## 0.25.0-rc.1 publicado
 
