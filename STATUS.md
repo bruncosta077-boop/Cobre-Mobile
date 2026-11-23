@@ -1,10 +1,10 @@
 # Cobre Mobile — status
 
-## 0.29.0-rc.1 em publicação
+## 0.29.0-rc.1 publicado
 
 - Implementados downloads offline em lote para álbuns e playlists do Desktop, com fila sequencial, progresso, cancelamento e retomada que preserva arquivos já concluídos.
 - Ações de playlist ficaram agrupadas no menu contextual; os controles visíveis foram reduzidos.
-- Versão de pacote 31 / 0.29.0-rc.1. A publicação assinada aguarda a compilação automática e a conferência dos artefatos.
+- Versão de pacote 31 / 0.29.0-rc.1. Build, assinatura estável e publicação [45254471818](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45254471818) passaram. APK/AAB e checksums estão na [release](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.29.0-rc.1).
 
 ## 0.28.0-rc.1 publicado
 

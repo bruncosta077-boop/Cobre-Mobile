@@ -2,7 +2,7 @@
   <img src="assets/branding/cobre-logo.png" alt="Logo do Cobre" width="150">
   <h1>Cobre Mobile</h1>
   <p>Player Android integrado ao ecossistema Cobre</p>
-  <p><strong>Versão em publicação: 0.29.0-rc.1 — downloads offline de álbuns e playlists</strong></p>
+  <p><strong>Versão publicada: 0.29.0-rc.1 — downloads offline de álbuns e playlists</strong></p>
 </div>
 
 O código do Cobre é proprietário e está disponível publicamente para inspeção. Consulte o [aviso de licença](LICENSE); componentes de terceiros mantêm suas próprias licenças.
@@ -11,9 +11,9 @@ Desenvolvimento principal: Bruno C S Moraes · Contribuição ao projeto: [@dilu
 
 Aplicativo Android do ecossistema Cobre. Interface escura com a paleta, o símbolo e a organização visual do Cobre Desktop, adaptados para toque.
 
-## Última versão publicada: 0.28.0-rc.1
+## Última versão publicada: 0.29.0-rc.1
 
-Próxima versão em publicação: 0.29.0-rc.1, com downloads offline em lote de álbuns e playlists. O APK/AAB será anexado automaticamente após a verificação do GitHub Actions.
+APK e AAB assinados, com checksums SHA-256, disponíveis em [Cobre Mobile 0.29.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.29.0-rc.1). É um pré-lançamento para avaliação em aparelho.
 
 APK e AAB assinados, com checksums SHA-256, disponíveis em [Cobre Mobile 0.28.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.28.0-rc.1). É um pré-lançamento para avaliação em aparelho.
 
@@ -38,6 +38,7 @@ O app verifica novas versões ao abrir e em **Configurações → Aplicativo**. 
 - A página do álbum busca capas em Apple Music e MusicBrainz/Cover Art Archive. A escolha é salva em espaço privado do Mobile, sem alterar os arquivos de música ou o Desktop.
 - O player de vinil opcional coloca a capa no selo central e gira continuamente enquanto a faixa toca; também pode ser ativado no próprio player.
 - Na versão publicada 0.28.0-rc.1, a navegação inferior tem três áreas e as listas de faixas usam menus contextuais. Busca e organização de listas rodam fora da tela principal; ajustes avançados de áudio começam recolhidos.
+- Na versão publicada 0.29.0-rc.1, álbuns e playlists do Desktop podem ser baixados em lote para ouvir offline, com progresso, cancelamento e retomada sem repetir faixas concluídas.
 - Faixas autorizadas do Desktop podem ser baixadas para ouvir offline. Em **Biblioteca → Computador → Faixas**, toque no ícone de download; elas aparecem em **Baixadas** e o mesmo controle as remove. Os arquivos ficam privados no app e há limite de 2 GB no total e 512 MB por faixa.
 - Descoberta automática do Desktop na mesma rede local enquanto a tela Conexões estiver aberta; QR continua disponível.
 - Status da conexão Desktop exibe tempo de resposta do catálogo e quantidade de faixas carregadas.

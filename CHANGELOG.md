@@ -7,7 +7,7 @@
 - Faixas já disponíveis offline são ignoradas; se um download falhar ou for cancelado, os itens concluídos são mantidos e uma nova tentativa continua do que falta.
 - Downloads continuam no espaço privado do aplicativo e respeitam o limite total de 2 GB e o limite de 512 MB por faixa existentes.
 - Em playlists, as ações de fila e exclusão foram agrupadas no menu contextual para reduzir botões permanentes.
-- Pacote assinado e publicação serão conferidos pelo workflow do GitHub antes de marcar esta versão como publicada.
+- Build, assinatura e publicação passaram no workflow [45254471818](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45254471818). APK e AAB assinados com a chave estável do app estão disponíveis na [release 0.29.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.29.0-rc.1).
 
 ## 0.28.0-rc.1 — navegação enxuta e biblioteca mais leve
 
