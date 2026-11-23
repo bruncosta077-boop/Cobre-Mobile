@@ -2,7 +2,7 @@
   <img src="assets/branding/cobre-logo.png" alt="Logo do Cobre" width="150">
   <h1>Cobre Mobile</h1>
   <p>Player Android integrado ao ecossistema Cobre</p>
-  <p><strong>Última versão publicada: 0.42.0-rc.1 — caminhos offline protegidos</strong></p>
+  <p><strong>Próxima versão: 0.43.0-rc.1 — operações offline ordenadas</strong></p>
 </div>
 
 O código do Cobre é proprietário e está disponível publicamente para inspeção. Consulte o [aviso de licença](LICENSE); componentes de terceiros mantêm suas próprias licenças.
@@ -11,9 +11,9 @@ Desenvolvimento principal: Bruno C S Moraes · Contribuição ao projeto: [@dilu
 
 Aplicativo Android do ecossistema Cobre. Interface escura com a paleta, o símbolo e a organização visual do Cobre Desktop, adaptados para toque.
 
-## Última versão publicada: 0.42.0-rc.1
+## Versão em preparação: 0.43.0-rc.1
 
-O catálogo offline valida caminho, diretório e nome do arquivo antes de exibir ou excluir cópias locais. Registros fora da pasta privada do app são descartados do banco sem apagar o arquivo apontado. APK/AAB assinados e checksums estão na [release 0.42.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.42.0-rc.1). Build, assinatura estável e publicação passaram no [GitHub Actions](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/45279480824). Caminhos malformados ainda não foram exercitados em aparelho nesta rodada.
+Carregar, baixar, remover e limpar arquivos offline agora passam por uma fila assíncrona única. Operações concorrentes não deixam a biblioteca na tela fora de sincronia com o banco e os arquivos.
 
 O backup leva aparência, áudio, e-mail e endereços do Server/Desktop para outra instalação. Senhas, tokens, concessões e permissões de pasta não são exportados.
 

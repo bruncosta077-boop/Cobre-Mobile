@@ -1,5 +1,11 @@
 # Histórico de versões — Cobre Mobile
 
+## 0.43.0-rc.1 — operações offline ordenadas
+
+- Carregar, remover, baixar e limpar a biblioteca offline agora usam a mesma trava assíncrona, impedindo estado em tela divergente entre banco e arquivos quando operações se sobrepõem.
+- A trava não bloqueia a interface; uma limpeza iniciada durante um download espera a operação atual concluir.
+- Build, assinatura e publicação pendentes no GitHub Actions.
+
 ## 0.42.0-rc.1 — caminhos offline protegidos
 
 - Arquivos baixados só são reconhecidos como offline quando o caminho canônico está na pasta privada `offline-audio` e o nome corresponde ao hash gerado pelo app.

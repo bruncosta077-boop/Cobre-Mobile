@@ -1,5 +1,10 @@
 # Cobre Mobile — status
 
+## 0.43.0-rc.1 em preparação
+
+- Operações de leitura, download, remoção e limpeza offline serializadas sem trabalho síncrono na interface.
+- Build, assinatura estável e publicação aguardando GitHub Actions.
+
 ## 0.42.0-rc.1 publicado — 23/11/2026
 
 - Caminhos de áudio offline validados contra a pasta privada e o padrão de nome gerado; referências inválidas não podem expor nem apagar arquivos externos.

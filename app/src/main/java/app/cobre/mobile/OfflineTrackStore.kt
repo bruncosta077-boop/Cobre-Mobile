@@ -10,6 +10,8 @@ import androidx.compose.runtime.setValue
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.net.HttpURLConnection
@@ -22,13 +24,14 @@ data class OfflineStorageSummary(val trackCount:Int,val usedBytes:Long,val limit
 class OfflineTrackStore(context: Context) {
     private val appContext = context.applicationContext
     private val db = OfflineDatabase(appContext)
+    private val operations = Mutex()
     var tracks by androidx.compose.runtime.mutableStateOf(emptyList<Track>())
         private set
 
-    suspend fun load(): OfflineStorageSummary = withContext(Dispatchers.IO) {
+    suspend fun load(): OfflineStorageSummary = operations.withLock { withContext(Dispatchers.IO) {
         tracks = readAll()
         storageSummaryOnIo()
-    }
+    }}
 
     suspend fun contains(track: Track): Boolean = withContext(Dispatchers.IO) {
         db.readableDatabase
@@ -42,7 +45,7 @@ class OfflineTrackStore(context: Context) {
         if(cursor.moveToFirst())OfflineStorageSummary(cursor.getInt(0),cursor.getLong(1),MAX_LIBRARY_BYTES)else OfflineStorageSummary(0,0,MAX_LIBRARY_BYTES)
     }
 
-    suspend fun clearAll():Int=withContext(Dispatchers.IO){
+    suspend fun clearAll():Int=operations.withLock { withContext(Dispatchers.IO){
         val paths=db.readableDatabase.query("offline_tracks",arrayOf("file_path"),null,null,null,null,null).use{cursor->buildList(cursor.count){while(cursor.moveToNext())add(cursor.getString(0))}}
         db.writableDatabase.delete("offline_tracks",null,null)
         paths.forEach{path->ownedAudioFile(path)?.delete()}
@@ -50,9 +53,9 @@ class OfflineTrackStore(context: Context) {
         directory.listFiles()?.filter{it.isFile&&it.name.matches(PART_FILE_NAME)&&runCatching{it.canonicalFile.parentFile==directory}.getOrDefault(false)}?.forEach{it.delete()}
         tracks=readAll()
         paths.size
-    }
+    }}
 
-    suspend fun download(track: Track, grantToken: String, expectedDesktopUrl: String, onProgress: (Int) -> Unit = {}): Track = withContext(Dispatchers.IO) {
+    suspend fun download(track: Track, grantToken: String, expectedDesktopUrl: String, onProgress: (Int) -> Unit = {}): Track = operations.withLock { withContext(Dispatchers.IO) {
         val source = track.sourceUri ?: track.uri
         val uri = validateStreamUri(source, expectedDesktopUrl)
         require(grantToken.isNotBlank()) { "A autorização do computador expirou. Conecte novamente pelo QR." }
@@ -156,16 +159,16 @@ class OfflineTrackStore(context: Context) {
             connection.disconnect()
             part.delete()
         }
-    }
+    }}
 
-    suspend fun remove(track: Track) = withContext(Dispatchers.IO) {
+    suspend fun remove(track: Track) = operations.withLock { withContext(Dispatchers.IO) {
         val key = track.libraryIdentity()
         val path = db.readableDatabase.query("offline_tracks", arrayOf("file_path"), "source_key=?", arrayOf(key), null, null, null)
             .use { if (it.moveToFirst()) it.getString(0) else null }
         db.writableDatabase.delete("offline_tracks", "source_key=?", arrayOf(key))
         path?.let(::ownedAudioFile)?.delete()
         tracks = readAll()
-    }
+    }}
 
     private fun readAll(): List<Track> {
         val columns = arrayOf("source_uri", "file_path", "media_id", "title", "artist", "album_artist", "album", "track_number", "disc_number", "duration_ms", "year")
