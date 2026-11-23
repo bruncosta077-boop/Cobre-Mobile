@@ -1,5 +1,12 @@
 # Cobre Mobile — status
 
+## 0.27.0-rc.1 em preparação
+
+- Menu de ações do player substitui a ação duplicada de fila por favoritos, playlists, capas, encarte/créditos, letras, modo vinil e compartilhamento local.
+- Normalização ReplayGain opcional lê metadados reconhecidos e limita o pico; build e teste auditivo ainda pendentes.
+- Capas usam cache de memória, decodificação reduzida e limites de espera mais curtos para reduzir travamentos ao navegar.
+- Não anuncia suporte novo a DSD/MQA/APE/WMA/WavPack: codecs dedicados ainda não foram adicionados.
+
 ## 0.26.0-rc.1 publicado
 
 - Correção do giro contínuo do vinil, opção de trocar capa dentro do player e rótulos mais claros para aleatório/repetição.

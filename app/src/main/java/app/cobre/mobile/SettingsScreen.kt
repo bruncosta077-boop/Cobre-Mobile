@@ -73,6 +73,7 @@ fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,
     val audioPrefs=remember{context.getSharedPreferences(PlaybackService.AUDIO_PREFS,Context.MODE_PRIVATE)}
     val equalizerBands=remember{mutableStateListOf<Float>().apply{repeat(5){add(audioPrefs.getInt("eq_band_$it",0).toFloat())}}}
     var equalizerEnabled by remember{mutableStateOf(audioPrefs.getBoolean("eq_enabled",false))}
+    var replayGainEnabled by remember{mutableStateOf(audioPrefs.getBoolean("replaygain_enabled",false))}
     var equalizerAvailable by remember{mutableStateOf(audioPrefs.getBoolean("eq_available",false))}
     var audioSessionReady by remember{mutableStateOf(audioPrefs.getBoolean("audio_session_ready",false))}
     var bassEnabled by remember{mutableStateOf(audioPrefs.getBoolean("bass_enabled",false))}
@@ -171,6 +172,7 @@ fun SettingsPage(settings:MobileSettings,folderUri:String?,desktopStatus:String,
         }
         SettingsCard {
             SectionHeading(Icons.Default.AudioFile,"Equalizador de 5 bandas")
+            Row(Modifier.fillMaxWidth().padding(top=8.dp),verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){Text("Normalizar volume (ReplayGain)",color=Tx,fontWeight=FontWeight.SemiBold);Text("Lê ganho e pico gravados nas tags da faixa. Sem tags, mantém o volume original.",color=Mu,style=MaterialTheme.typography.bodySmall)};Switch(checked=replayGainEnabled,onCheckedChange={replayGainEnabled=it;audioPrefs.edit().putBoolean("replaygain_enabled",it).apply()})}
             Text("Ajuste o timbre da reprodução local e das faixas recebidas do Desktop.",color=Mu,style=MaterialTheme.typography.bodySmall,modifier=Modifier.padding(top=6.dp))
             Row(Modifier.fillMaxWidth().padding(top=8.dp),verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){Text("Equalizador",color=Tx,fontWeight=FontWeight.SemiBold);Text(when{equalizerAvailable->"Aplicado pelo mecanismo de áudio do Android";!audioSessionReady->"Inicie uma faixa para verificar suporte nesta saída";else->"Este aparelho não disponibilizou o efeito de equalização"},color=Mu,style=MaterialTheme.typography.bodySmall)};Switch(checked=equalizerEnabled,onCheckedChange={equalizerEnabled=it;audioPrefs.edit().putBoolean("eq_enabled",it).apply()})}
             if(equalizerEnabled&&equalizerAvailable){

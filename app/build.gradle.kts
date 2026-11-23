@@ -10,8 +10,8 @@ android {
         applicationId = "app.cobre.mobile"
         minSdk = 29          // loadThumbnail() e MediaStore moderno; ver STATUS.md
         targetSdk = 36
-        versionCode = 28
-        versionName = "0.26.0-rc.1"
+        versionCode = 29
+        versionName = "0.27.0-rc.1"
     }
     flavorDimensions += "distribution"
     productFlavors {
@@ -48,7 +48,7 @@ android {
     kotlinOptions { jvmTarget = "17" }
 }
 dependencies {
-    val media3 = "1.4.1"
+    val media3 = "1.11.1"
     implementation("androidx.media3:media3-exoplayer:$media3")
     implementation("androidx.media3:media3-session:$media3")
     implementation("com.google.android.gms:play-services-code-scanner:16.1.0")

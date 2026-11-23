@@ -230,7 +230,7 @@ class MainActivity:ComponentActivity(){
                     }
                     .onFailure { Toast.makeText(context,it.message?:"Não foi possível enviar a faixa ao Desktop.",Toast.LENGTH_LONG).show() }
             }
-        },{track->coverSearchAlbum=Album(track.albumArtist.ifBlank{track.artist},track.album,track.year,listOf(track))})
+        },{track->coverSearchAlbum=Album(track.albumArtist.ifBlank{track.artist},track.album,track.year,listOf(track))},collections,{selectedAlbum->albumInfoAlbum=selectedAlbum})
         else {
             Header(page,search,query,{query=it},{search=!search;query="";tab=LibraryTab.Tracks;album=null;artist=null},{scope.launch{granted=ContextCompat.checkSelfPermission(context,permission)==PackageManager.PERMISSION_GRANTED;localTracks=if(granted)runCatching{library.load(folderUri?.let{Uri.parse(it)})}.getOrDefault(emptyList()) else emptyList();desktopRefreshKey++}})
             Box(Modifier.weight(1f).fillMaxWidth()){
@@ -505,13 +505,17 @@ private fun selectLibrarySource(tracks:List<Track>,source:LibrarySource):List<Tr
     Column(Modifier.fillMaxWidth().background(Panel)){Row(Modifier.fillMaxWidth().height(68.dp).padding(horizontal=11.dp),verticalAlignment=Alignment.CenterVertically){Cover(s.queue.getOrNull(s.currentIndex),Modifier.size(46.dp).clip(RoundedCornerShape(8.dp)).clickable(onClick=onOpen));Column(Modifier.weight(1f).clickable(onClick=onOpen).padding(horizontal=10.dp)){Text(s.title.ifBlank{"Reproduzindo"},color=Tx,maxLines=1,overflow=TextOverflow.Ellipsis,fontWeight=FontWeight.Medium);Text(s.artist,color=Mu,style=MaterialTheme.typography.bodySmall,maxLines=1,overflow=TextOverflow.Ellipsis)};IconButton(onClick=player::previous){Icon(Icons.Default.SkipPrevious,"Anterior",tint=Tx,modifier=Modifier.size(21.dp))};IconButton(onClick=player::toggle){Icon(if(s.playing)Icons.Default.Pause else Icons.Default.PlayArrow,"Reproduzir ou pausar",tint=MaterialTheme.colorScheme.primary,modifier=Modifier.size(27.dp))};IconButton(onClick=player::next){Icon(Icons.Default.SkipNext,"Próxima",tint=Tx,modifier=Modifier.size(21.dp))}};val progress=if(s.durationMs>0)(s.positionMs.toFloat()/s.durationMs).coerceIn(0f,1f)else 0f;Box(Modifier.fillMaxWidth().height(2.dp).background(Line)){Box(Modifier.fillMaxWidth(progress).fillMaxHeight().background(MaterialTheme.colorScheme.primary))}}
 }
 
-@Composable private fun PlayerPage(s:NowPlaying,player:PlayerController,desktopOrigin:String,hasDesktopGrant:Boolean,vinylEnabled:Boolean,dynamicAlbumColors:Boolean,artworkRepository:CoverArtworkRepository,grantToken:String?,onVinylToggle:(Boolean)->Unit,onClose:()->Unit,onQueue:()->Unit,onPlayOnDesktop:(Int)->Unit,onChangeCover:(Track)->Unit){
+@Composable private fun PlayerPage(s:NowPlaying,player:PlayerController,desktopOrigin:String,hasDesktopGrant:Boolean,vinylEnabled:Boolean,dynamicAlbumColors:Boolean,artworkRepository:CoverArtworkRepository,grantToken:String?,onVinylToggle:(Boolean)->Unit,onClose:()->Unit,onQueue:()->Unit,onPlayOnDesktop:(Int)->Unit,onChangeCover:(Track)->Unit,collections:LibraryCollections,onAlbumInfo:(Album)->Unit){
     val context=LocalContext.current
     val audio=context.getSystemService(android.content.Context.AUDIO_SERVICE) as AudioManager
     val maxVolume=audio.getStreamMaxVolume(AudioManager.STREAM_MUSIC).coerceAtLeast(1)
     var volume by remember{mutableFloatStateOf(audio.getStreamVolume(AudioManager.STREAM_MUSIC).toFloat()/maxVolume)}
     var scrubbing by remember{mutableStateOf(false)};var preview by remember{mutableFloatStateOf(0f)}
     val current=s.queue.getOrNull(s.currentIndex)
+    val currentAlbum=current?.let{Album(it.albumArtist.ifBlank{it.artist},it.album,it.year,listOf(it))}
+    var moreActionsExpanded by remember(current?.uri){mutableStateOf(false)}
+    var showPlaylistDialog by remember(current?.uri){mutableStateOf(false)}
+    var newPlaylistName by remember(current?.uri){mutableStateOf("")}
     val audioPrefs=remember{context.getSharedPreferences(PlaybackService.AUDIO_PREFS,android.content.Context.MODE_PRIVATE)}
     var audioSessionId by remember{mutableIntStateOf(audioPrefs.getInt("audio_session_id",0))}
     DisposableEffect(audioPrefs){
@@ -555,7 +559,24 @@ private fun selectLibrarySource(tracks:List<Track>,source:LibrarySource):List<Tr
                 Spacer(Modifier.height(24.dp))
                 Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically){
                     Column(Modifier.weight(1f)){Text(s.title,color=Tx,style=MaterialTheme.typography.titleLarge,fontWeight=FontWeight.Bold,maxLines=1,overflow=TextOverflow.Ellipsis);Text(s.artist,color=Mu,style=MaterialTheme.typography.titleMedium,maxLines=1,overflow=TextOverflow.Ellipsis);Text(buildString{append(current?.album?:"Álbum desconhecido");if((current?.year?:0)>0)append(" · ${current?.year}");if((current?.trackNumber?:0)>0)append(" · Faixa ${current?.trackNumber}")},color=Mu.copy(alpha=.8f),style=MaterialTheme.typography.bodySmall,maxLines=1,overflow=TextOverflow.Ellipsis,modifier=Modifier.padding(top=3.dp))}
-                    IconButton(onClick=onQueue){Icon(Icons.Default.MoreVert,"Mais opções e fila",tint=Mu)}
+                    Box{
+                        IconButton(onClick={moreActionsExpanded=true}){Icon(Icons.Default.MoreVert,"Mais ações da faixa",tint=Mu)}
+                        DropdownMenu(expanded=moreActionsExpanded,onDismissRequest={moreActionsExpanded=false}){
+                            current?.let{track->
+                                DropdownMenuItem(text={Text(if(collections.isFavorite(track))"Remover dos favoritos" else "Adicionar aos favoritos")},leadingIcon={Icon(if(collections.isFavorite(track))Icons.Default.Favorite else Icons.Default.FavoriteBorder,null)},onClick={moreActionsExpanded=false;collections.toggleFavorite(track)})
+                                DropdownMenuItem(text={Text("Adicionar à playlist")},leadingIcon={Icon(Icons.Default.PlaylistAdd,null)},onClick={moreActionsExpanded=false;showPlaylistDialog=true})
+                                DropdownMenuItem(text={Text("Buscar ou trocar capa")},leadingIcon={Icon(Icons.Default.Edit,null)},onClick={moreActionsExpanded=false;onChangeCover(track)})
+                            }
+                            currentAlbum?.let{item->DropdownMenuItem(text={Text("Créditos e encarte")},leadingIcon={Icon(Icons.Default.Info,null)},onClick={moreActionsExpanded=false;onAlbumInfo(item)})}
+                            DropdownMenuItem(text={Text("Abrir letra")},leadingIcon={Icon(Icons.Default.MusicNote,null)},onClick={moreActionsExpanded=false;requestLyrics()})
+                            DropdownMenuItem(text={Text(if(vinylEnabled)"Mostrar capa do álbum" else "Ativar visual de vinil")},leadingIcon={Icon(Icons.Default.Album,null)},onClick={moreActionsExpanded=false;onVinylToggle(!vinylEnabled)})
+                            if(current?.uri?.scheme=="content")DropdownMenuItem(text={Text("Compartilhar arquivo de áudio")},leadingIcon={Icon(Icons.Default.Share,null)},onClick={
+                                moreActionsExpanded=false
+                                runCatching{Intent(Intent.ACTION_SEND).apply{type="audio/*";putExtra(Intent.EXTRA_STREAM,current.uri);addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)}.let{context.startActivity(Intent.createChooser(it,"Compartilhar faixa"))}}
+                                    .onFailure{Toast.makeText(context,"Não foi possível compartilhar este arquivo.",Toast.LENGTH_SHORT).show()}
+                            })
+                        }
+                    }
                 }
                 Spacer(Modifier.height(14.dp))
                 val p=if(scrubbing)preview else s.positionMs.toFloat()
@@ -602,6 +623,35 @@ private fun selectLibrarySource(tracks:List<Track>,source:LibrarySource):List<Tr
         confirmButton={TextButton(onClick={confirmDesktopPlayback=false;onPlayOnDesktop(desktopTrackId)}){Text("Tocar no computador",color=MaterialTheme.colorScheme.primary)}},
         dismissButton={TextButton(onClick={confirmDesktopPlayback=false}){Text("Cancelar",color=Mu)}},
     )
+    if(showPlaylistDialog&&current!=null)AlertDialog(
+        onDismissRequest={showPlaylistDialog=false},
+        title={Text("Adicionar à playlist")},
+        text={
+            Column(Modifier.fillMaxWidth().heightIn(max=380.dp).verticalScroll(rememberScrollState())){
+                if(collections.playlists.isEmpty())Text("Crie uma playlist para guardar esta faixa.",color=Mu)
+                collections.playlists.forEach{playlist->
+                    Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(10.dp)).clickable{
+                        val alreadyThere=playlist.tracks.any{it.uri==current.uri}
+                        val added=collections.addTrackToPlaylist(playlist.name,current)
+                        showPlaylistDialog=false
+                        Toast.makeText(context,when{added->"Faixa adicionada a ${playlist.name}.";alreadyThere->"A faixa já está nesta playlist.";else->"Não consegui atualizar a playlist."},Toast.LENGTH_SHORT).show()
+                    }.padding(horizontal=10.dp,vertical=13.dp),verticalAlignment=Alignment.CenterVertically){
+                        Icon(Icons.Default.QueueMusic,null,tint=MaterialTheme.colorScheme.primary)
+                        Text(playlist.name,color=Tx,modifier=Modifier.padding(start=10.dp))
+                    }
+                }
+                OutlinedTextField(value=newPlaylistName,onValueChange={newPlaylistName=it.take(60)},label={Text("Criar nova playlist")},singleLine=true,modifier=Modifier.fillMaxWidth().padding(top=10.dp))
+            }
+        },
+        confirmButton={TextButton(onClick={
+            val name=newPlaylistName.trim()
+            if(name.isBlank()){showPlaylistDialog=false;return@TextButton}
+            val created=collections.savePlaylist(name,listOf(current))
+            if(created){newPlaylistName="";showPlaylistDialog=false;Toast.makeText(context,"Playlist criada com esta faixa.",Toast.LENGTH_SHORT).show()}
+            else Toast.makeText(context,"Nome já usado ou não foi possível criar a playlist.",Toast.LENGTH_SHORT).show()
+        }){Text("Criar",color=MaterialTheme.colorScheme.primary)}},
+        dismissButton={TextButton(onClick={showPlaylistDialog=false}){Text("Cancelar",color=Mu)}}
+    )
     if(showLyrics) LyricsSheet(current?.title.orEmpty(),current?.artist.orEmpty(),lyrics,lyricsLoading,s.positionMs,{showLyrics=false})
 }
 
@@ -644,8 +694,59 @@ private fun selectLibrarySource(tracks:List<Track>,source:LibrarySource):List<Tr
 @Composable private fun Cover(track:Track?,modifier:Modifier=Modifier){
     val context=LocalContext.current;val desktop=remember{DesktopLibraryRepository()};val artwork=remember{CoverArtworkRepository(context)};val revision by CoverArtworkEvents.revision.collectAsState();val customFile=remember(track,revision){track?.let(artwork::coverFile)};val coverUri=track?.let(desktop::coverUri)
     val grantToken=CobreIdRepository(context).currentDesktopGrantToken()
-    val bitmap by produceState<Bitmap?>(null,track?.uri,coverUri,grantToken,customFile){value=if(track==null)null else withContext(Dispatchers.IO){runCatching{when{customFile!=null->BitmapFactory.decodeFile(customFile.absolutePath);coverUri==null->context.contentResolver.loadThumbnail(track.uri,Size(480,480),null);else->{val connection=URL(coverUri.toString()).openConnection() as HttpURLConnection;try{connection.instanceFollowRedirects=false;if(coverUri.path?.startsWith("/v1/")==true&&!grantToken.isNullOrBlank())connection.setRequestProperty("Authorization","Bearer $grantToken");if(connection.responseCode==HttpURLConnection.HTTP_OK)connection.inputStream.use{BitmapFactory.decodeStream(it)}else null}finally{connection.disconnect()}}}}.getOrNull()}}
+    val bitmap by produceState<Bitmap?>(null,track?.uri,coverUri,grantToken,customFile,revision){
+        val item=track
+        value=if(item==null)null else withContext(Dispatchers.IO){
+            val key=customFile?.let{"custom:${it.absolutePath}"}?:coverUri?.let{"desktop:$it"}?:"local:${item.uri}"
+            CoverBitmapCache.get(key)?:runCatching{
+                val loaded=when{
+                    customFile!=null->decodeSampledBitmap(customFile.absolutePath)
+                    coverUri==null->context.contentResolver.loadThumbnail(item.uri,Size(360,360),null)
+                    else->{
+                        val connection=URL(coverUri.toString()).openConnection() as HttpURLConnection
+                        try{
+                            connection.instanceFollowRedirects=false;connection.connectTimeout=4_000;connection.readTimeout=6_000
+                            if(coverUri.path?.startsWith("/v1/")==true&&!grantToken.isNullOrBlank())connection.setRequestProperty("Authorization","Bearer $grantToken")
+                            if(connection.responseCode==HttpURLConnection.HTTP_OK)connection.inputStream.use(::decodeSampledBitmap) else null
+                        }finally{connection.disconnect()}
+                    }
+                }
+                loaded?.also{CoverBitmapCache.put(key,it)}
+            }.getOrNull()
+        }
+    }
     Box(modifier.background(CardBg),contentAlignment=Alignment.Center){if(bitmap!=null)Image(bitmap!!.asImageBitmap(),track?.album,Modifier.fillMaxSize(),contentScale=ContentScale.Crop)else Icon(Icons.Default.MusicNote,null,tint=MaterialTheme.colorScheme.primary.copy(alpha=.75f),modifier=Modifier.size(36.dp))}
+}
+
+private object CoverBitmapCache {
+    private val cache=object:android.util.LruCache<String,Bitmap>(12*1024){override fun sizeOf(key:String,value:Bitmap)=value.byteCount/1024}
+    fun get(key:String)=cache.get(key)
+    fun put(key:String,bitmap:Bitmap){cache.put(key,bitmap)}
+}
+
+private fun decodeSampledBitmap(path:String):Bitmap?{
+    val bounds=BitmapFactory.Options().apply{inJustDecodeBounds=true}
+    BitmapFactory.decodeFile(path,bounds)
+    bounds.inSampleSize=sampleSize(bounds.outWidth,bounds.outHeight)
+    bounds.inJustDecodeBounds=false
+    return BitmapFactory.decodeFile(path,bounds)
+}
+
+private fun decodeSampledBitmap(stream:java.io.InputStream):Bitmap?{
+    val buffered=java.io.BufferedInputStream(stream)
+    buffered.mark(16*1024*1024)
+    val bounds=BitmapFactory.Options().apply{inJustDecodeBounds=true}
+    BitmapFactory.decodeStream(buffered,null,bounds)
+    buffered.reset()
+    bounds.inSampleSize=sampleSize(bounds.outWidth,bounds.outHeight)
+    bounds.inJustDecodeBounds=false
+    return BitmapFactory.decodeStream(buffered,null,bounds)
+}
+
+private fun sampleSize(width:Int,height:Int):Int{
+    var sample=1
+    while(width/sample>720||height/sample>720)sample*=2
+    return sample
 }
 
 @Composable private fun EmptyState(icon:ImageVector,title:String,message:String,actionLabel:String="Permitir acesso",action:(()->Unit)?=null){Column(Modifier.fillMaxSize().padding(28.dp),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.Center){Icon(icon,null,tint=MaterialTheme.colorScheme.primary,modifier=Modifier.size(42.dp));Spacer(Modifier.height(14.dp));Text(title,color=Tx,style=MaterialTheme.typography.titleLarge,fontWeight=FontWeight.SemiBold);Spacer(Modifier.height(6.dp));Text(message,color=Mu,textAlign=TextAlign.Center);if(action!=null){Spacer(Modifier.height(16.dp));Button(onClick=action,colors=ButtonDefaults.buttonColors(containerColor=MaterialTheme.colorScheme.primary),shape=RoundedCornerShape(24.dp)){Text(actionLabel)}}}}

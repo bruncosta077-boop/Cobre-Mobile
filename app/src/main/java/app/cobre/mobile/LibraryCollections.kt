@@ -78,6 +78,22 @@ class LibraryCollections(context: Context) {
         return true
     }
 
+    fun addTrackToPlaylist(name: String, track: Track): Boolean {
+        val db = database.writableDatabase
+        val playlistId = db.query("playlists", arrayOf("_id"), "name = ? COLLATE NOCASE", arrayOf(name), null, null, null)
+            .use { cursor -> if (cursor.moveToFirst()) cursor.getLong(0) else return false }
+        val alreadyAdded = db.query("playlist_tracks", arrayOf("position"), "playlist_id = ? AND uri = ?", arrayOf(playlistId.toString(), track.uri.toString()), null, null, null)
+            .use { it.moveToFirst() }
+        if (alreadyAdded) return false
+        val nextPosition = db.query("playlist_tracks", arrayOf("COALESCE(MAX(position), -1) + 1"), "playlist_id = ?", arrayOf(playlistId.toString()), null, null, null)
+            .use { cursor -> if (cursor.moveToFirst()) cursor.getInt(0) else 0 }
+        val inserted = db.insert("playlist_tracks", null, trackValues(track).apply {
+            put("playlist_id", playlistId); put("position", nextPosition)
+        }) != -1L
+        if (inserted) playlists = readPlaylists()
+        return inserted
+    }
+
     fun deletePlaylist(name: String) {
         database.writableDatabase.delete("playlists", "name = ?", arrayOf(name))
         playlists = readPlaylists()

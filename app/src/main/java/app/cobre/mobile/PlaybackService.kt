@@ -8,6 +8,8 @@ import android.media.audiofx.BassBoost
 import android.media.audiofx.Virtualizer
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
+import androidx.media3.common.Metadata
+import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DataSpec
@@ -29,6 +31,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.ln
+import kotlin.math.pow
 
 /** Reprodução em segundo plano, notificação, tela de bloqueio e controles do sistema (MediaSession). */
 @androidx.annotation.OptIn(markerClass = [UnstableApi::class])
@@ -47,8 +50,20 @@ class PlaybackService : MediaSessionService() {
     private var audioEqualizer: Equalizer? = null
     private var audioBassBoost: BassBoost? = null
     private var audioVirtualizer: Virtualizer? = null
+    private var replayGain: ReplayGainAdjustment? = null
     private val audioPrefsListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
         if (key == "eq_enabled" || key?.startsWith("eq_band_") == true || key == "bass_enabled" || key == "bass_strength" || key == "virtualizer_enabled" || key == "virtualizer_strength") applyAudioEffectsSettings()
+        if (key == "replaygain_enabled") applyReplayGain()
+    }
+    private val replayGainListener = object : Player.Listener {
+        override fun onMediaItemTransition(mediaItem: androidx.media3.common.MediaItem?, reason: Int) {
+            replayGain = null
+            applyReplayGain()
+        }
+
+        override fun onMetadata(metadata: Metadata) {
+            replayGainAdjustment(metadata)?.let { replayGain = it; applyReplayGain() }
+        }
     }
     private val audioSessionListener = object : AnalyticsListener {
         override fun onAudioSessionIdChanged(eventTime: AnalyticsListener.EventTime, audioSessionId: Int) {
@@ -127,6 +142,7 @@ class PlaybackService : MediaSessionService() {
             )
             .setHandleAudioBecomingNoisy(true) // pausa ao desconectar o fone
             .build()
+        player.addListener(replayGainListener)
         player.addAnalyticsListener(audioSessionListener)
         session = MediaSession.Builder(this, player).build()
         grantRefreshJob = serviceScope.launch {
@@ -139,6 +155,22 @@ class PlaybackService : MediaSessionService() {
                 if(refreshed)updateGrantHeader(cobreHttpFactory) else delay(GRANT_RETRY_MS)
             }
         }
+    }
+
+    private fun applyReplayGain() {
+        val player = session?.player ?: return
+        if (!audioPrefs.getBoolean("replaygain_enabled", false)) {
+            player.volume = 1f
+            return
+        }
+        val adjustment = replayGain
+        if (adjustment == null) {
+            player.volume = 1f
+            return
+        }
+        val requested = 10.0.pow(adjustment.gainDb / 20.0).toFloat()
+        val peakLimit = adjustment.peak?.takeIf { it > 0f }?.let { .98f / it } ?: 1f
+        player.volume = requested.coerceAtMost(peakLimit).coerceIn(0f, 4f)
     }
 
     private fun updateGrantHeader(factory: DefaultHttpDataSource.Factory?) {
@@ -268,7 +300,7 @@ class PlaybackService : MediaSessionService() {
         audioPrefs.unregisterOnSharedPreferenceChangeListener(audioPrefsListener)
         grantRefreshJob?.cancel()
         serviceScope.cancel()
-        session?.run { player.release(); release() }
+        session?.run { player.removeListener(replayGainListener); player.release(); release() }
         releaseEqualizer()
         releaseBassBoost()
         releaseVirtualizer()
