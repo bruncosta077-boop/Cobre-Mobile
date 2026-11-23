@@ -6,6 +6,7 @@
 - Adicionar faixa a uma playlist existente evita duplicatas e preserva a ordem; criação de playlist continua local ao celular.
 - Adicionada opção desligada por padrão para normalização ReplayGain. Quando o arquivo contém tags ReplayGain legíveis pelo Media3, aplica o ganho de faixa (ou de álbum) e limita o pico para reduzir clipping; sem tags reconhecidas, mantém volume original.
 - Atualizada a base Media3 para 1.11.1 para dar suporte aos metadados ReplayGain de MP3. Esta versão não adiciona decodificadores para DSD, MQA, APE, WMA ou WavPack; compatibilidade de formatos continua dependendo do Android e de codecs incorporados.
+- Atualizado o compilador Kotlin para a compatibilidade binária exigida pela nova base Media3.
 - A leitura de capas passou a reutilizar imagens em cache de memória, decodificar capas grandes em tamanho reduzido e usar tempos limite menores para capas servidas pelo Desktop, reduzindo trabalho durante rolagem e troca de tela.
 - Build e teste auditivo devem ser verificados antes de considerar esta prévia validada; a confirmação depende de arquivos com tags e teste no aparelho.
 
