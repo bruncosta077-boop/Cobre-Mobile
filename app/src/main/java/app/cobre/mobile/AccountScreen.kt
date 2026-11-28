@@ -72,6 +72,7 @@ fun AccountPage(
     var discoveryMessage by remember { mutableStateOf("Buscando Cobre Desktop nesta rede…") }
     var showDeleteAccount by remember { mutableStateOf(false) }
     var deletePassword by remember { mutableStateOf("") }
+    var useAnotherAccount by remember { mutableStateOf(false) }
 
     DisposableEffect(showDesktopDiscovery) {
         if (showDesktopDiscovery) {
@@ -126,12 +127,57 @@ fun AccountPage(
                         tint = if (state.signedIn && !state.error) AccountGood else AccountMuted,
                     )
                     Column(Modifier.weight(1f).padding(start = 10.dp)) {
-                        Text(if (state.signedIn) "Conta conectada" else "Entrar no Cobre ID", color = AccountText, fontWeight = FontWeight.SemiBold)
-                        Text(if (state.signedIn) state.email else "Entre uma vez para vincular seus aparelhos.", color = AccountMuted, style = MaterialTheme.typography.bodySmall)
+                        Text(if (state.signedIn) "Conta conectada" else if (state.sessionSaved) "Conta salva" else "Entrar no Cobre ID", color = AccountText, fontWeight = FontWeight.SemiBold)
+                        Text(if (state.signedIn || state.sessionSaved) state.email else "Entre uma vez para vincular seus aparelhos.", color = AccountMuted, style = MaterialTheme.typography.bodySmall)
                     }
                 }
 
-                if (!state.signedIn) {
+                if (!state.signedIn && state.sessionSaved && !useAnotherAccount) {
+                    Text("Sua sessão do Cobre ID está salva com segurança neste aparelho. A senha não fica armazenada.", color = AccountMuted, style = MaterialTheme.typography.bodySmall)
+                    if (showServerEditor) {
+                        OutlinedTextField(
+                            value = serverUrl,
+                            onValueChange = { serverUrl = it },
+                            modifier = Modifier.fillMaxWidth(),
+                            label = { Text("Endereço do Cobre Server") },
+                            placeholder = { Text("http://192.168.1.20:8080") },
+                            singleLine = true,
+                            colors = accountFieldColors(),
+                        )
+                    } else {
+                        TextButton(onClick = { showServerEditor = true }, contentPadding = PaddingValues(0.dp)) {
+                            Text("Alterar Cobre Server", color = AccountMuted)
+                        }
+                    }
+                    Button(
+                        onClick = {
+                            scope.launch {
+                                onState(state.copy(busy = true, message = "Reconectando à conta salva…", error = false))
+                                runCatching {
+                                    repository.saveServerUrl(serverUrl)
+                                    repository.restoreSession()
+                                    repository.sendPresence()
+                                    repository.loadDevices()
+                                }.onSuccess { devices ->
+                                    showServerEditor = false
+                                    onState(AccountUi(true, repository.savedEmail, devices, message = "Conta reconectada.", sessionSaved = true))
+                                }.onFailure { error ->
+                                    onState(state.copy(busy = false, message = error.message ?: "Não foi possível reconectar.", error = true, sessionSaved = repository.hasSavedSession))
+                                }
+                            }
+                        },
+                        enabled = !state.busy && serverUrl.isNotBlank(),
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary, contentColor = Color.White),
+                        shape = RoundedCornerShape(24.dp),
+                    ) {
+                        if (state.busy) CircularProgressIndicator(Modifier.size(18.dp), color = Color.White, strokeWidth = 2.dp)
+                        else Text("Reconectar")
+                    }
+                    TextButton(onClick = { useAnotherAccount = true }, modifier = Modifier.align(Alignment.CenterHorizontally)) {
+                        Text("Entrar com outra conta", color = MaterialTheme.colorScheme.primary)
+                    }
+                } else if (!state.signedIn) {
                     if (showServerEditor) {
                         OutlinedTextField(
                             value = serverUrl,
@@ -179,7 +225,8 @@ fun AccountPage(
                                 }.onSuccess { devices ->
                                     password = ""
                                     showServerEditor = false
-                                    onState(AccountUi(true, email.trim(), devices, message = "Conta conectada."))
+                                    useAnotherAccount = false
+                                    onState(AccountUi(true, email.trim(), devices, message = "Conta conectada.", sessionSaved = true))
                                 }.onFailure { error ->
                                     onState(state.copy(busy = false, message = error.message ?: "Não foi possível entrar.", error = true))
                                 }

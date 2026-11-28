@@ -183,11 +183,6 @@ import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
                 Spacer(Modifier.height(16.dp))
                 Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(15.dp)).background(Color.White.copy(alpha=.055f)).padding(horizontal=13.dp,vertical=4.dp),verticalAlignment=Alignment.CenterVertically){Icon(Icons.Default.VolumeDown,"Volume",tint=Mu,modifier=Modifier.size(20.dp));Slider(value=volume,onValueChange={volume=it;audio.setStreamVolume(AudioManager.STREAM_MUSIC,(it*maxVolume).toInt().coerceIn(0,maxVolume),0)},modifier=Modifier.weight(1f).padding(horizontal=10.dp),valueRange=0f..1f,colors=SliderDefaults.colors(thumbColor=albumAccent,activeTrackColor=albumAccent,inactiveTrackColor=Line));Text("${(volume*100).toInt()}%",color=Mu,style=MaterialTheme.typography.labelSmall,modifier=Modifier.width(38.dp),textAlign=TextAlign.End)}
                 AudioSpectrumVisualizer(s.playing)
-                Row(Modifier.fillMaxWidth().padding(top=4.dp),verticalAlignment=Alignment.CenterVertically){
-                    TextButton(onClick=::requestLyrics){Icon(Icons.Default.MusicNote,null,tint=MaterialTheme.colorScheme.primary);Spacer(Modifier.width(5.dp));Text("Letra",color=Tx)}
-                    Spacer(Modifier.weight(1f))
-                    TextButton(onClick={onVinylToggle(!vinylEnabled)}){Icon(Icons.Default.Album,null,tint=MaterialTheme.colorScheme.primary);Spacer(Modifier.width(5.dp));Text(if(vinylEnabled)"Mostrar capa" else "Ativar vinil",color=Tx)}
-                }
                 if(hasDesktopGrant&&desktopTrackId!=null){
                     Spacer(Modifier.height(8.dp))
                     OutlinedButton(onClick={confirmDesktopPlayback=true},modifier=Modifier.fillMaxWidth(),shape=RoundedCornerShape(14.dp)){
@@ -197,7 +192,6 @@ import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
                     }
                 }
                 Spacer(Modifier.height(12.dp))
-                Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(13.dp)).clickable(onClick=onQueue).padding(horizontal=14.dp,vertical=12.dp),verticalAlignment=Alignment.CenterVertically){Icon(Icons.Default.QueueMusic,null,tint=MaterialTheme.colorScheme.primary,modifier=Modifier.size(19.dp));Column(Modifier.weight(1f).padding(start=10.dp)){Text("A seguir",color=Tx,style=MaterialTheme.typography.labelLarge);Text("${s.queue.size} faixas · faixa ${if(s.queue.isEmpty())0 else s.currentIndex+1}",color=Mu,style=MaterialTheme.typography.bodySmall)};Icon(Icons.Default.KeyboardArrowRight,null,tint=Mu)}
                 Spacer(Modifier.height(14.dp))
             }
         }

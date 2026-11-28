@@ -13,7 +13,7 @@ Aplicativo Android do ecossistema Cobre. Interface escura com a paleta, o símbo
 
 ## Versão em preparação: 0.44.0-rc.1
 
-O espectro analisa localmente o áudio já reproduzido, sem permissão de microfone. A conta Cobre ID fica lembrada de forma criptografada, o player mostra o codec disponível e a interface foi reorganizada com menos ruído nos controles. O APK de distribuição é otimizado e passa a ter testes automatizados; as operações offline ordenadas da 0.43 também estão incluídas.
+O espectro analisa localmente o áudio já reproduzido, sem permissão de microfone. A conta Cobre ID fica lembrada de forma criptografada, o botão Voltar navega para a tela anterior e o player mostra o codec disponível com controles mais limpos. O APK de distribuição é otimizado e passa a ter testes automatizados; as operações offline ordenadas da 0.43 também estão incluídas.
 
 O backup leva aparência, áudio, e-mail e endereços do Server/Desktop para outra instalação. Senhas, tokens, concessões e permissões de pasta não são exportados.
 

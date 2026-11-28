@@ -99,7 +99,11 @@ class PlayerController(context: Context) {
                 }
                 buildList {
                     add(codec)
-                    if (format.sampleRate > 0) add("${format.sampleRate / 1_000.0} kHz")
+                    if (format.sampleRate > 0) {
+                        val whole = format.sampleRate / 1_000
+                        val decimal = (format.sampleRate % 1_000) / 100
+                        add(if (decimal == 0) "$whole kHz" else "$whole.$decimal kHz")
+                    }
                     val bits = when (format.pcmEncoding) {
                         C.ENCODING_PCM_16BIT -> 16
                         C.ENCODING_PCM_24BIT -> 24

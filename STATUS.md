@@ -4,6 +4,7 @@
 
 - Inclui o patch enviado pelo usuário: espectro sem microfone, reorganização da interface, redução do APK e testes unitários.
 - Exibe a conta salva após falha temporária de conexão, preserva o token de renovação criptografado e mostra formato/qualidade disponível no player.
+- Botão Voltar agora percorre as telas anteriores do app em vez de encerrar a tela atual.
 - Mantida a correção posterior do 0.43: operações do armazenamento offline executadas em sequência assíncrona.
 - CI, build assinado, testes e publicação aguardando GitHub Actions.
 

@@ -14,6 +14,7 @@ import android.os.SystemClock
 import android.util.Size
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -126,6 +127,26 @@ class MainActivity:ComponentActivity(){
     var search by remember{mutableStateOf(false)}; var query by remember{mutableStateOf("")}
     var page by remember{mutableStateOf(Page.Library)}; var tab by remember{mutableStateOf(LibraryTab.Albums)}
      var album by remember{mutableStateOf<Album?>(null)}; var artist by remember{mutableStateOf<Artist?>(null)}; var fullPlayer by remember{mutableStateOf(false)};var coverSearchAlbum by remember{mutableStateOf<Album?>(null)};var albumInfoAlbum by remember{mutableStateOf<Album?>(null)}
+    val pageHistory=remember{androidx.compose.runtime.mutableStateListOf<Pair<Page,Boolean>>()};var queueOpenedFromPlayer by remember{mutableStateOf(false)}
+    val navigateTo:(Page,Boolean)->Unit={destination,destinationSearch->
+        if(page!=destination||search!=destinationSearch){pageHistory.add(page to search);if(pageHistory.size>20)pageHistory.removeAt(0)}
+        page=destination;search=destinationSearch
+    }
+    BackHandler(enabled=fullPlayer||page==Page.Library&&(album!=null||artist!=null||search)||page!=Page.Library){
+        when{
+            fullPlayer->fullPlayer=false
+            page==Page.Library&&album!=null->album=null
+            page==Page.Library&&artist!=null->artist=null
+            search->{search=false;query=""}
+            page==Page.Queue&&queueOpenedFromPlayer->{
+                queueOpenedFromPlayer=false
+                if(pageHistory.isNotEmpty()){val previous=pageHistory.removeAt(pageHistory.lastIndex);page=previous.first;search=previous.second}
+                fullPlayer=true
+            }
+            pageHistory.isNotEmpty()->{val previous=pageHistory.removeAt(pageHistory.lastIndex);page=previous.first;search=previous.second}
+            else->{page=Page.Library;search=false}
+        }
+    }
     val albumInfoRepository=remember{AlbumInfoRepository()}
     val playback by player.state.collectAsState(); var account by remember{mutableStateOf(AccountUi(email=accountRepo.savedEmail,sessionSaved=accountRepo.hasSavedSession))}; val scope=rememberCoroutineScope()
     var activeDownload by remember{mutableStateOf<String?>(null)}; var downloadProgress by remember{mutableIntStateOf(0)}; var downloadMessage by remember{mutableStateOf("")}
@@ -314,7 +335,7 @@ class MainActivity:ComponentActivity(){
     LaunchedEffect(playback.playing,fullPlayer){while(playback.playing&&fullPlayer){delay(800);player.refreshPosition()}}
     LaunchedEffect(playback.currentIndex,playback.queue){val track=playback.queue.getOrNull(playback.currentIndex);if(track!=null)collections.recordPlayed(track)}
     Column(Modifier.fillMaxSize().background(Bg).statusBarsPadding()){
-         if(fullPlayer&&playback.hasItem) PlayerPage(playback,player,settings.desktopUrl.orEmpty(),accountRepo.desktopGrantId()!=null,settings.vinylPlayer,settings.dynamicAlbumColors,coverArtwork,accountRepo.currentDesktopGrantToken(),settings::saveVinylPlayer,{fullPlayer=false},{fullPlayer=false;page=Page.Queue},{trackId->
+         if(fullPlayer&&playback.hasItem) PlayerPage(playback,player,settings.desktopUrl.orEmpty(),accountRepo.desktopGrantId()!=null,settings.vinylPlayer,settings.dynamicAlbumColors,coverArtwork,accountRepo.currentDesktopGrantToken(),settings::saveVinylPlayer,{fullPlayer=false},{queueOpenedFromPlayer=true;fullPlayer=false;navigateTo(Page.Queue,false)},{trackId->
             scope.launch {
                 runCatching { accountRepo.sendDesktopCommand(settings.desktopUrl.orEmpty(),"play",trackId.toDouble()) }
                     .onSuccess {
@@ -325,7 +346,7 @@ class MainActivity:ComponentActivity(){
             }
         },{track->coverSearchAlbum=Album(track.albumArtist.ifBlank{track.artist},track.album,track.year,listOf(track))},collections,{selectedAlbum->albumInfoAlbum=selectedAlbum})
         else {
-            Header(page,search,query,{query=it},{search=!search;query="";tab=LibraryTab.Tracks;album=null;artist=null},{page=Page.Queue;search=false},{page=Page.Collections;search=false},{scope.launch{granted=ContextCompat.checkSelfPermission(context,permission)==PackageManager.PERMISSION_GRANTED;localTracks=if(granted)runCatching{library.load(folderUri?.let{Uri.parse(it)})}.getOrDefault(emptyList()) else emptyList();desktopRefreshKey++}})
+            Header(page,search,query,{query=it},{search=!search;query="";tab=LibraryTab.Tracks;album=null;artist=null},{queueOpenedFromPlayer=false;navigateTo(Page.Queue,false)},{navigateTo(Page.Collections,false)},{scope.launch{granted=ContextCompat.checkSelfPermission(context,permission)==PackageManager.PERMISSION_GRANTED;localTracks=if(granted)runCatching{library.load(folderUri?.let{Uri.parse(it)})}.getOrDefault(emptyList()) else emptyList();desktopRefreshKey++}})
             if(activeBatchLabel!=null||batchResult!=null){
                 val progress=((batchFinished+downloadProgress/100f)/batchTotal.coerceAtLeast(1)).coerceIn(0f,1f)
                 Card(Modifier.fillMaxWidth().padding(horizontal=14.dp,vertical=4.dp),colors=CardDefaults.cardColors(containerColor=CardBg),shape=RoundedCornerShape(13.dp)){
@@ -342,7 +363,7 @@ class MainActivity:ComponentActivity(){
                         tracks==null->Loading("Organizando sua biblioteca…")
                         tracks.isNullOrEmpty()&&desktopStatus.startsWith("Conectando")->Loading("Conectando ao Cobre Desktop…")
                         tracks.isNullOrEmpty()&&!granted->EmptyState(Icons.Default.LibraryMusic,"Sua música começa aqui","Conecte ao computador ou permita acesso ao áudio para usar a biblioteca deste aparelho."){askAudio.launch(permission)}
-                        else->LibraryPage(tracks.orEmpty(),library,collections,offlineTracks,downloadMessage,downloadProgress,activeDownload,::downloadTrack,{list,label->downloadTracksBatch(list,label)},tab,query,album,artist,librarySource,sourceCounts,desktopStatus,{page=Page.Account;search=false},{librarySource=it},{tab=it;album=null;artist=null},{album=it},{artist=it},{album=null;artist=null},{list,index->
+                        else->LibraryPage(tracks.orEmpty(),library,collections,offlineTracks,downloadMessage,downloadProgress,activeDownload,::downloadTrack,{list,label->downloadTracksBatch(list,label)},tab,query,album,artist,librarySource,sourceCounts,desktopStatus,{navigateTo(Page.Account,false)},{librarySource=it},{tab=it;album=null;artist=null},{album=it},{artist=it},{album=null;artist=null},{list,index->
                             if(Build.VERSION.SDK_INT>=33&&ContextCompat.checkSelfPermission(context,Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED)askNotifications.launch(Manifest.permission.POST_NOTIFICATIONS)
                             player.play(list,index)
                          },player::addToQueue,{selectedAlbum->coverSearchAlbum=selectedAlbum},{selectedAlbum->albumInfoAlbum=selectedAlbum})
@@ -413,14 +434,14 @@ class MainActivity:ComponentActivity(){
                             offlineClearBusy=true;offlineClearMessage=""
                             scope.launch{runCatching{offlineStore.clearAll()}.onSuccess{count->offlineClearMessage=if(count==0)"Nenhum download estava salvo." else "$count faixas removidas e espaço liberado."}.onFailure{offlineClearMessage=it.message?:"Não foi possível remover os downloads."};offlineClearBusy=false}
                         }
-                    },{page=Page.Account;search=false},{desktopRefreshKey++},{checkForMobileUpdate(true)},{downloadOrInstallUpdate()})
+                    },{navigateTo(Page.Account,false)},{desktopRefreshKey++},{checkForMobileUpdate(true)},{downloadOrInstallUpdate()})
                 }
             }
             if(playback.hasItem) MiniPlayer(playback,player){fullPlayer=true}
             NavigationBar(containerColor=Panel){
-                NavigationBarItem(page==Page.Library&&!search||page==Page.Queue||page==Page.Collections,{page=Page.Library;search=false;query=""},{Icon(Icons.Default.LibraryMusic,null)},label={Text("Início")},colors=navColors())
-                NavigationBarItem(page==Page.Library&&search,{page=Page.Library;search=true;query="";tab=LibraryTab.Tracks;album=null;artist=null},{Icon(Icons.Default.Search,null)},label={Text("Buscar")},colors=navColors())
-                NavigationBarItem(page==Page.Settings||page==Page.Account,{page=Page.Settings;search=false},{Icon(Icons.Default.Settings,null)},label={Text("Ajustes")},colors=navColors())
+                NavigationBarItem(page==Page.Library&&!search||page==Page.Queue||page==Page.Collections,{queueOpenedFromPlayer=false;navigateTo(Page.Library,false);query=""},{Icon(Icons.Default.LibraryMusic,null)},label={Text("Início")},colors=navColors())
+                NavigationBarItem(page==Page.Library&&search,{navigateTo(Page.Library,true);query="";tab=LibraryTab.Tracks;album=null;artist=null},{Icon(Icons.Default.Search,null)},label={Text("Buscar")},colors=navColors())
+                NavigationBarItem(page==Page.Settings||page==Page.Account,{queueOpenedFromPlayer=false;navigateTo(Page.Settings,false)},{Icon(Icons.Default.Settings,null)},label={Text("Ajustes")},colors=navColors())
             }
         }
     }

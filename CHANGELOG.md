@@ -6,6 +6,7 @@
 - Separadas as telas principais de biblioteca, player e componentes compartilhados, facilitando manutenção e evolução.
 - Sessão Cobre ID lembrada de forma criptografada no Android Keystore; quando a rede falhar, o app mostra a conta salva e permite reconectar sem redigitar a senha.
 - Player reduz ruído visual nos controles de aleatório/repetição e mostra codec e detalhes de áudio fornecidos pelo decodificador.
+- O botão Voltar do Android agora fecha primeiro telas internas e retorna à seção anterior; a fila aberta no player também volta ao player.
 - APK de distribuição passa por R8 e redução de recursos para diminuir o pacote; testes unitários cobrem o analisador de espectro, QR de pareamento e formatação de tempo.
 - Inclui a correção da versão 0.43: operações offline ordenadas para evitar divergência entre banco, arquivos e interface.
 - Aguardando build, assinatura estável, testes automatizados e publicação pelo GitHub Actions.
