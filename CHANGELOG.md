@@ -7,6 +7,7 @@
 - Tocar no Desktop agora é um ícone compacto ao lado das ações da faixa, sem botão largo.
 - Letras ficam acessíveis no rodapé do player; espectro recolhido em Mais ações e fechado por padrão.
 - Barras de progresso e volume redesenhadas como linhas finas, com toque e arraste.
+- Testes, build assinado, verificação de assinatura e publicação passaram no [GitHub Actions](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/46156248995). Pacotes e checksums na [release mobile-v0.45.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.45.0-rc.1).
 
 ## 0.44.0-rc.1 — espectro local, estrutura organizada e pacote otimizado
 

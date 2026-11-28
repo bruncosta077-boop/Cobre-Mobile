@@ -1,9 +1,10 @@
 # Cobre Mobile — status
 
-## 0.45.0-rc.1 em preparação
+## 0.45.0-rc.1 publicado — 28/11/2026
 
 - Refinamento visual focado no player: layout mais limpo, controles por ícones, letras no rodapé, espectro sob demanda e barras de progresso/volume mais discretas.
-- Build, testes, assinatura e publicação aguardando GitHub Actions.
+- Testes, build assinado, verificação de assinatura APK/AAB e publicação passaram no [workflow 46156248995](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/46156248995).
+- APK, AAB e checksums estão na [release mobile-v0.45.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.45.0-rc.1).
 
 ## 0.44.0-rc.1 publicado — 28/11/2026
 
