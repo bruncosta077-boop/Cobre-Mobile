@@ -1,9 +1,10 @@
 # Cobre Mobile — status
 
-## 0.46.0-rc.1 em publicação
+## 0.46.0-rc.1 publicado — 28/11/2026
 
 - Recuperação de armazenamento offline: na inicialização, remove segmentos de downloads abandonados e cópias de áudio órfãs, restrita a nomes e pasta privada controlados pelo app.
-- Pacote 48. Aguardando build, testes, assinatura e publicação via GitHub Actions.
+- Pacote 48 / versionCode 48. Testes, builds assinados, verificação das assinaturas APK/AAB e publicação passaram no [workflow 46157219828](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/46157219828).
+- APK, AAB e checksums na [release mobile-v0.46.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.46.0-rc.1).
 
 ## 0.45.0-rc.1 publicado — 28/11/2026
 

@@ -5,6 +5,7 @@
 - Ao abrir a biblioteca offline, o app remove downloads temporários interrompidos por encerramento inesperado e arquivos de áudio órfãos que não constam no índice local.
 - A limpeza só atua em nomes gerados pelo próprio Cobre dentro da pasta privada de áudio; arquivos válidos registrados continuam intactos.
 - A recuperação acontece em segundo plano junto ao carregamento da biblioteca offline.
+- Pacote 48. Testes, build assinado, verificação de assinatura APK/AAB e publicação passaram no [GitHub Actions](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/46157219828). Artefatos e checksums na [release mobile-v0.46.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.46.0-rc.1).
 
 ## 0.45.0-rc.1 — player mais limpo e alinhado
 
