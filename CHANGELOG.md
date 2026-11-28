@@ -1,5 +1,15 @@
 # Histórico de versões — Cobre Mobile
 
+## 0.44.0-rc.1 — espectro local, estrutura organizada e pacote otimizado
+
+- O espectro agora analisa localmente o PCM já decodificado pelo player; remove a permissão de microfone e não grava nem envia áudio.
+- Separadas as telas principais de biblioteca, player e componentes compartilhados, facilitando manutenção e evolução.
+- Sessão Cobre ID lembrada de forma criptografada no Android Keystore; quando a rede falhar, o app mostra a conta salva e permite reconectar sem redigitar a senha.
+- Player reduz ruído visual nos controles de aleatório/repetição e mostra codec e detalhes de áudio fornecidos pelo decodificador.
+- APK de distribuição passa por R8 e redução de recursos para diminuir o pacote; testes unitários cobrem o analisador de espectro, QR de pareamento e formatação de tempo.
+- Inclui a correção da versão 0.43: operações offline ordenadas para evitar divergência entre banco, arquivos e interface.
+- Aguardando build, assinatura estável, testes automatizados e publicação pelo GitHub Actions.
+
 ## 0.43.0-rc.1 — operações offline ordenadas
 
 - Carregar, remover, baixar e limpar a biblioteca offline agora usam a mesma trava assíncrona, impedindo estado em tela divergente entre banco e arquivos quando operações se sobrepõem.

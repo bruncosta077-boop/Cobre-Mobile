@@ -21,6 +21,7 @@ data class NowPlaying(
     val hasItem: Boolean = false, val queue: List<Track> = emptyList(), val currentIndex: Int = 0,
     val positionMs: Long = 0, val durationMs: Long = 0,
     val shuffleEnabled: Boolean = false, val repeatMode: Int = Player.REPEAT_MODE_OFF,
+    val formatLabel: String = "",
 )
 
 class PlayerController(context: Context) {
@@ -79,11 +80,41 @@ class PlayerController(context: Context) {
         val index = player.currentMediaItemIndex.takeIf { it >= 0 } ?: 0
         val current = queue.getOrNull(index); val metadata = player.mediaMetadata
         val duration = player.duration.let { if (it == C.TIME_UNSET || it < 0) 0 else it }
+        val audioFormat = player.currentTracks.groups.asSequence()
+            .filter { it.type == C.TRACK_TYPE_AUDIO }
+            .flatMap { group -> (0 until group.length).asSequence().filter(group::isTrackSelected).map(group::getTrackFormat) }
+            .firstOrNull()
+            ?.let { format ->
+                val codec = when {
+                    format.sampleMimeType == "audio/raw" -> when (format.pcmEncoding) {
+                        C.ENCODING_PCM_16BIT -> "PCM 16-bit"
+                        C.ENCODING_PCM_FLOAT -> "PCM 32-bit"
+                        else -> "PCM"
+                    }
+                    format.sampleMimeType?.contains("flac", true) == true || format.codecs?.contains("flac", true) == true -> "FLAC"
+                    format.sampleMimeType?.contains("mpeg", true) == true -> "MP3"
+                    else -> format.codecs?.substringBefore('.')?.uppercase()
+                        ?: format.sampleMimeType?.substringAfter('/')?.uppercase()
+                        ?: "ÁUDIO"
+                }
+                buildList {
+                    add(codec)
+                    if (format.sampleRate > 0) add("${format.sampleRate / 1_000.0} kHz")
+                    val bits = when (format.pcmEncoding) {
+                        C.ENCODING_PCM_16BIT -> 16
+                        C.ENCODING_PCM_24BIT -> 24
+                        C.ENCODING_PCM_32BIT, C.ENCODING_PCM_FLOAT -> 32
+                        else -> 0
+                    }
+                    if (bits > 0) add("$bits-bit")
+                    if (format.bitrate > 0) add("${format.bitrate / 1_000} kb/s")
+                }.joinToString(" · ")
+            }.orEmpty()
         mutableState.value = NowPlaying(
             title = current?.title ?: metadata.title?.toString().orEmpty(), artist = current?.artist ?: metadata.artist?.toString().orEmpty(),
             playing = player.isPlaying, hasItem = player.currentMediaItem != null, queue = queue, currentIndex = index,
             positionMs = player.currentPosition.coerceAtLeast(0), durationMs = duration,
-            shuffleEnabled = player.shuffleModeEnabled, repeatMode = player.repeatMode,
+            shuffleEnabled = player.shuffleModeEnabled, repeatMode = player.repeatMode, formatLabel = audioFormat,
         )
         persistQueue(player, forceSave)
     }

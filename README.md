@@ -2,7 +2,7 @@
   <img src="assets/branding/cobre-logo.png" alt="Logo do Cobre" width="150">
   <h1>Cobre Mobile</h1>
   <p>Player Android integrado ao ecossistema Cobre</p>
-  <p><strong>Próxima versão: 0.43.0-rc.1 — operações offline ordenadas</strong></p>
+  <p><strong>Próxima versão: 0.44.0-rc.1 — espectro local e app otimizado</strong></p>
 </div>
 
 O código do Cobre é proprietário e está disponível publicamente para inspeção. Consulte o [aviso de licença](LICENSE); componentes de terceiros mantêm suas próprias licenças.
@@ -11,9 +11,9 @@ Desenvolvimento principal: Bruno C S Moraes · Contribuição ao projeto: [@dilu
 
 Aplicativo Android do ecossistema Cobre. Interface escura com a paleta, o símbolo e a organização visual do Cobre Desktop, adaptados para toque.
 
-## Versão em preparação: 0.43.0-rc.1
+## Versão em preparação: 0.44.0-rc.1
 
-Carregar, baixar, remover e limpar arquivos offline agora passam por uma fila assíncrona única. Operações concorrentes não deixam a biblioteca na tela fora de sincronia com o banco e os arquivos.
+O espectro analisa localmente o áudio já reproduzido, sem permissão de microfone. A conta Cobre ID fica lembrada de forma criptografada, o player mostra o codec disponível e a interface foi reorganizada com menos ruído nos controles. O APK de distribuição é otimizado e passa a ter testes automatizados; as operações offline ordenadas da 0.43 também estão incluídas.
 
 O backup leva aparência, áudio, e-mail e endereços do Server/Desktop para outra instalação. Senhas, tokens, concessões e permissões de pasta não são exportados.
 

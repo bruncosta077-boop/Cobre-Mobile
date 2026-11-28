@@ -135,7 +135,7 @@ class PlaybackService : MediaSessionService() {
             .putBoolean("bass_available", false).putBoolean("virtualizer_available", false).apply()
         updateGrantHeader(cobreHttpFactory)
         val dataSourceFactory = DefaultDataSource.Factory(this, cobreHttpFactory).setTransferListener(streamTransfers)
-        val player = ExoPlayer.Builder(this).setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory))
+        val player = ExoPlayer.Builder(this).setRenderersFactory(SpectrumRenderersFactory(this)).setMediaSourceFactory(DefaultMediaSourceFactory(dataSourceFactory))
             .setAudioAttributes(
                 AudioAttributes.Builder().setUsage(C.USAGE_MEDIA).setContentType(C.AUDIO_CONTENT_TYPE_MUSIC).build(),
                 /* handleAudioFocus = */ true,

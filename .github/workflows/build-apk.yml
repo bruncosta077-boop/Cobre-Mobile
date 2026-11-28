@@ -44,6 +44,9 @@ jobs:
           chmod 600 "$KEYSTORE_PATH"
           echo "COBRE_MOBILE_KEYSTORE_PATH=$KEYSTORE_PATH" >> "$GITHUB_ENV"
 
+      - name: Run unit tests
+        run: gradle testDirectDebugUnitTest --no-daemon
+
       - name: Build debug APK for manual runs
         if: ${{ !startsWith(github.ref, 'refs/tags/mobile-v') && !inputs.signed_candidate }}
         run: gradle assembleDirectDebug bundlePlayRelease --no-daemon

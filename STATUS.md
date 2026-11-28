@@ -1,9 +1,15 @@
 # Cobre Mobile — status
 
-## 0.43.0-rc.1 em preparação
+## 0.44.0-rc.1 em preparação
+
+- Inclui o patch enviado pelo usuário: espectro sem microfone, reorganização da interface, redução do APK e testes unitários.
+- Exibe a conta salva após falha temporária de conexão, preserva o token de renovação criptografado e mostra formato/qualidade disponível no player.
+- Mantida a correção posterior do 0.43: operações do armazenamento offline executadas em sequência assíncrona.
+- CI, build assinado, testes e publicação aguardando GitHub Actions.
+
+## 0.43.0-rc.1 incorporado ao 0.44.0-rc.1
 
 - Operações de leitura, download, remoção e limpeza offline serializadas sem trabalho síncrono na interface.
-- Build, assinatura estável e publicação aguardando GitHub Actions.
 
 ## 0.42.0-rc.1 publicado — 23/11/2026
 
