@@ -9,13 +9,12 @@
 - O botão Voltar do Android agora fecha primeiro telas internas e retorna à seção anterior; a fila aberta no player também volta ao player.
 - APK de distribuição passa por R8 e redução de recursos para diminuir o pacote; testes unitários cobrem o analisador de espectro, QR de pareamento e formatação de tempo.
 - Inclui a correção da versão 0.43: operações offline ordenadas para evitar divergência entre banco, arquivos e interface.
-- Aguardando build, assinatura estável, testes automatizados e publicação pelo GitHub Actions.
 
-## 0.43.0-rc.1 — operações offline ordenadas
+## 0.43.0-rc.1 — operações offline ordenadas (incluídas em 0.44.0-rc.1)
 
 - Carregar, remover, baixar e limpar a biblioteca offline agora usam a mesma trava assíncrona, impedindo estado em tela divergente entre banco e arquivos quando operações se sobrepõem.
 - A trava não bloqueia a interface; uma limpeza iniciada durante um download espera a operação atual concluir.
-- Build, assinatura e publicação pendentes no GitHub Actions.
+- Incluída nesta atualização antes da primeira publicação independente da 0.43.
 
 ## 0.42.0-rc.1 — caminhos offline protegidos
 
