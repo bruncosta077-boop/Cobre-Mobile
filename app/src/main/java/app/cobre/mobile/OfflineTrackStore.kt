@@ -29,6 +29,7 @@ class OfflineTrackStore(context: Context) {
         private set
 
     suspend fun load(): OfflineStorageSummary = operations.withLock { withContext(Dispatchers.IO) {
+        cleanupOrphanFiles()
         tracks = readAll()
         storageSummaryOnIo()
     }}
@@ -190,6 +191,24 @@ class OfflineTrackStore(context: Context) {
         }
         missingFiles.forEach { db.writableDatabase.delete("offline_tracks", "file_path=?", arrayOf(it)) }
         return result
+    }
+
+    /** Reclaim interrupted downloads and audio files left behind by a process crash. */
+    private fun cleanupOrphanFiles() {
+        val directory = offlineDirectory()
+        if (!directory.isDirectory) return
+        val referenced = db.readableDatabase.query("offline_tracks", arrayOf("file_path"), null, null, null, null, null)
+            .use { cursor -> buildSet {
+                while (cursor.moveToNext()) ownedAudioFile(cursor.getString(0))?.let { add(it.canonicalPath) }
+            } }
+        directory.listFiles().orEmpty().forEach { candidate ->
+            val file = runCatching { candidate.canonicalFile }.getOrNull() ?: return@forEach
+            if (file.parentFile != directory) return@forEach
+            when {
+                file.isFile && file.name.matches(PART_FILE_NAME) -> file.delete()
+                file.isFile && file.name.matches(AUDIO_FILE_NAME) && file.canonicalPath !in referenced -> file.delete()
+            }
+        }
     }
 
     private fun offlineDirectory()=File(appContext.filesDir,"offline-audio").canonicalFile

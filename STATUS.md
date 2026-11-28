@@ -1,5 +1,10 @@
 # Cobre Mobile — status
 
+## 0.46.0-rc.1 em publicação
+
+- Recuperação de armazenamento offline: na inicialização, remove segmentos de downloads abandonados e cópias de áudio órfãs, restrita a nomes e pasta privada controlados pelo app.
+- Pacote 48. Aguardando build, testes, assinatura e publicação via GitHub Actions.
+
 ## 0.45.0-rc.1 publicado — 28/11/2026
 
 - Refinamento visual focado no player: layout mais limpo, controles por ícones, letras no rodapé, espectro sob demanda e barras de progresso/volume mais discretas.

@@ -1,5 +1,11 @@
 # Histórico de versões — Cobre Mobile
 
+## 0.46.0-rc.1 — recuperação automática do espaço offline
+
+- Ao abrir a biblioteca offline, o app remove downloads temporários interrompidos por encerramento inesperado e arquivos de áudio órfãos que não constam no índice local.
+- A limpeza só atua em nomes gerados pelo próprio Cobre dentro da pasta privada de áudio; arquivos válidos registrados continuam intactos.
+- A recuperação acontece em segundo plano junto ao carregamento da biblioteca offline.
+
 ## 0.45.0-rc.1 — player mais limpo e alinhado
 
 - Player redesenhado para reduzir informação e manter capa, identificação, progresso e controles principais alinhados.
