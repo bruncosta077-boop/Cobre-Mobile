@@ -1,12 +1,13 @@
 # Cobre Mobile — status
 
-## 0.44.0-rc.1 em preparação
+## 0.44.0-rc.1 publicado — 28/11/2026
 
 - Inclui o patch enviado pelo usuário: espectro sem microfone, reorganização da interface, redução do APK e testes unitários.
 - Exibe a conta salva após falha temporária de conexão, preserva o token de renovação criptografado e mostra formato/qualidade disponível no player.
 - Botão Voltar agora percorre as telas anteriores do app em vez de encerrar a tela atual.
 - Mantida a correção posterior do 0.43: operações do armazenamento offline executadas em sequência assíncrona.
-- CI, build assinado, testes e publicação aguardando GitHub Actions.
+- Build, testes unitários, APK/AAB assinados, verificações de assinatura e publicação passaram no [workflow 46151295181](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/46151295181).
+- APK e AAB com checksums disponíveis na [release mobile-v0.44.0-rc.1](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.44.0-rc.1).
 
 ## 0.43.0-rc.1 incorporado ao 0.44.0-rc.1
 

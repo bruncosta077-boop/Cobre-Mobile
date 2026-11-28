@@ -9,6 +9,7 @@
 - O botão Voltar do Android agora fecha primeiro telas internas e retorna à seção anterior; a fila aberta no player também volta ao player.
 - APK de distribuição passa por R8 e redução de recursos para diminuir o pacote; testes unitários cobrem o analisador de espectro, QR de pareamento e formatação de tempo.
 - Inclui a correção da versão 0.43: operações offline ordenadas para evitar divergência entre banco, arquivos e interface.
+- Build, testes, assinatura estável do APK/AAB, verificações e publicação passaram no [GitHub Actions](https://github.com/bruncosta077-boop/Cobre-Mobile/actions/runs/46151295181). Artefatos e checksums na [release](https://github.com/bruncosta077-boop/Cobre-Mobile/releases/tag/mobile-v0.44.0-rc.1).
 
 ## 0.43.0-rc.1 — operações offline ordenadas (incluídas em 0.44.0-rc.1)
 
