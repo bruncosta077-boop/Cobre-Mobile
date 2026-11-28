@@ -1,5 +1,10 @@
 # Cobre Mobile — status
 
+## 0.45.0-rc.1 em preparação
+
+- Refinamento visual focado no player: layout mais limpo, controles por ícones, letras no rodapé, espectro sob demanda e barras de progresso/volume mais discretas.
+- Build, testes, assinatura e publicação aguardando GitHub Actions.
+
 ## 0.44.0-rc.1 publicado — 28/11/2026
 
 - Inclui o patch enviado pelo usuário: espectro sem microfone, reorganização da interface, redução do APK e testes unitários.

@@ -1,5 +1,14 @@
 # Histórico de versões — Cobre Mobile
 
+## 0.45.0-rc.1 — player mais limpo e alinhado
+
+- Player redesenhado para reduzir informação e manter capa, identificação, progresso e controles principais alinhados.
+- Removido o lápis sobre a arte; trocar capa continua disponível em Mais ações.
+- Tocar no Desktop agora é um ícone compacto ao lado das ações da faixa, sem botão largo.
+- Letras ficam acessíveis no rodapé do player; espectro recolhido em Mais ações e fechado por padrão.
+- Barras de progresso e volume redesenhadas como linhas finas, com toque e arraste.
+- Build e publicação pendentes no GitHub Actions.
+
 ## 0.44.0-rc.1 — espectro local, estrutura organizada e pacote otimizado
 
 - O espectro agora analisa localmente o PCM já decodificado pelo player; remove a permissão de microfone e não grava nem envia áudio.

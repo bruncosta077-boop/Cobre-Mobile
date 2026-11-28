@@ -18,6 +18,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -34,6 +35,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -46,6 +50,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.semantics.progressBarRangeInfo
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.setProgress
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -88,6 +99,58 @@ import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
     }
 }
 
+@Composable private fun MinimalPlayerSlider(
+    value:Float,
+    valueRange:ClosedFloatingPointRange<Float>,
+    color:Color,
+    modifier:Modifier=Modifier,
+    onValueChange:(Float)->Unit,
+    onValueChangeFinished:(()->Unit)?=null,
+){
+    val change by rememberUpdatedState(onValueChange)
+    val finished by rememberUpdatedState(onValueChangeFinished)
+    Canvas(
+        modifier.fillMaxWidth().height(28.dp)
+            .semantics {
+                progressBarRangeInfo=ProgressBarRangeInfo(value,valueRange)
+                setProgress { requested->change(requested.coerceIn(valueRange.start,valueRange.endInclusive));true }
+            }
+            .pointerInput(valueRange.start,valueRange.endInclusive){
+                fun at(x:Float):Float{
+                    val inset=6.dp.toPx()
+                    val usable=(size.width-2*inset).coerceAtLeast(1f)
+                    val fraction=((x-inset)/usable).coerceIn(0f,1f)
+                    return valueRange.start+(valueRange.endInclusive-valueRange.start)*fraction
+                }
+                detectTapGestures(onTap={change(at(it.x));finished?.invoke()})
+            }
+            .pointerInput(valueRange.start,valueRange.endInclusive){
+                fun at(x:Float):Float{
+                    val inset=6.dp.toPx()
+                    val usable=(size.width-2*inset).coerceAtLeast(1f)
+                    val fraction=((x-inset)/usable).coerceIn(0f,1f)
+                    return valueRange.start+(valueRange.endInclusive-valueRange.start)*fraction
+                }
+                detectHorizontalDragGestures(
+                    onDragStart={change(at(it.x))},
+                    onDragEnd={finished?.invoke()},
+                    onDragCancel={finished?.invoke()},
+                    onHorizontalDrag={pointer,_->pointer.consume();change(at(pointer.position.x))},
+                )
+            },
+    ){
+        val inset=6.dp.toPx()
+        val start=inset
+        val end=(size.width-inset).coerceAtLeast(start+1f)
+        val y=size.height/2
+        val fraction=((value-valueRange.start)/(valueRange.endInclusive-valueRange.start).coerceAtLeast(.0001f)).coerceIn(0f,1f)
+        val current=start+(end-start)*fraction
+        drawLine(Line.copy(alpha=.8f),Offset(start,y),Offset(end,y),strokeWidth=3.dp.toPx(),cap=StrokeCap.Round)
+        if(current>start)drawLine(color,Offset(start,y),Offset(current,y),strokeWidth=3.dp.toPx(),cap=StrokeCap.Round)
+        drawCircle(color,radius=3.5.dp.toPx(),center=Offset(current,y))
+    }
+}
+
 @Composable internal fun PlayerPage(s:NowPlaying,player:PlayerController,desktopOrigin:String,hasDesktopGrant:Boolean,vinylEnabled:Boolean,dynamicAlbumColors:Boolean,artworkRepository:CoverArtworkRepository,grantToken:String?,onVinylToggle:(Boolean)->Unit,onClose:()->Unit,onQueue:()->Unit,onPlayOnDesktop:(Int)->Unit,onChangeCover:(Track)->Unit,collections:LibraryCollections,onAlbumInfo:(Album)->Unit){
     val context=LocalContext.current
     val audio=context.getSystemService(android.content.Context.AUDIO_SERVICE) as AudioManager
@@ -97,6 +160,7 @@ import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
     val current=s.queue.getOrNull(s.currentIndex)
     val currentAlbum=current?.let{Album(it.albumArtist.ifBlank{it.artist},it.album,it.year,listOf(it))}
     var moreActionsExpanded by remember(current?.uri){mutableStateOf(false)}
+    var showSpectrum by remember(current?.uri){mutableStateOf(false)}
     var showPlaylistDialog by remember(current?.uri){mutableStateOf(false)}
     var newPlaylistName by remember(current?.uri){mutableStateOf("")}
     val coverSourceRepository=remember{DesktopLibraryRepository()}
@@ -126,19 +190,19 @@ import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
             }
             Column(Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal=26.dp),horizontalAlignment=Alignment.CenterHorizontally){
                 Spacer(Modifier.height(12.dp))
-                Box(Modifier.fillMaxWidth(.86f).aspectRatio(1f).clip(RoundedCornerShape(18.dp)).background(CardBg),contentAlignment=Alignment.Center){
+                Box(Modifier.fillMaxWidth(.78f).aspectRatio(1f).clip(RoundedCornerShape(18.dp)).background(CardBg),contentAlignment=Alignment.Center){
                     if(vinylEnabled)VinylRecord(current,s.playing,Modifier.fillMaxSize())else Cover(current,Modifier.fillMaxSize())
-                    if(current!=null)IconButton(onClick={onChangeCover(current)},modifier=Modifier.align(Alignment.TopEnd).padding(9.dp).size(42.dp).background(Color.Black.copy(alpha=.68f),CircleShape)){
-                        Icon(Icons.Default.Edit,"Alterar capa",tint=Color.White,modifier=Modifier.size(19.dp))
-                    }
                 }
-                Spacer(Modifier.height(24.dp))
+                Spacer(Modifier.height(18.dp))
                 Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically){
                     Column(Modifier.weight(1f)){
                         Text(s.title,color=Tx,style=MaterialTheme.typography.titleLarge,fontWeight=FontWeight.Bold,maxLines=1,overflow=TextOverflow.Ellipsis)
                         Text(s.artist,color=Mu,style=MaterialTheme.typography.titleMedium,maxLines=1,overflow=TextOverflow.Ellipsis)
                         Text(buildString{append(current?.album?:"Álbum desconhecido");if((current?.year?:0)>0)append(" · ${current?.year}");if((current?.trackNumber?:0)>0)append(" · Faixa ${current?.trackNumber}")},color=Mu.copy(alpha=.8f),style=MaterialTheme.typography.bodySmall,maxLines=1,overflow=TextOverflow.Ellipsis,modifier=Modifier.padding(top=3.dp))
                         if(s.formatLabel.isNotBlank()) Text(s.formatLabel,color=albumAccent,style=MaterialTheme.typography.labelSmall,maxLines=1,overflow=TextOverflow.Ellipsis,modifier=Modifier.padding(top=6.dp))
+                    }
+                    if(hasDesktopGrant&&desktopTrackId!=null)IconButton(onClick={confirmDesktopPlayback=true}){
+                        Icon(Icons.Default.Cast,"Tocar no computador",tint=albumAccent,modifier=Modifier.size(21.dp))
                     }
                     Box{
                         IconButton(onClick={moreActionsExpanded=true}){Icon(Icons.Default.MoreVert,"Mais ações da faixa",tint=Mu)}
@@ -149,8 +213,8 @@ import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
                                 DropdownMenuItem(text={Text("Buscar ou trocar capa")},leadingIcon={Icon(Icons.Default.Edit,null)},onClick={moreActionsExpanded=false;onChangeCover(track)})
                             }
                             currentAlbum?.let{item->DropdownMenuItem(text={Text("Créditos e encarte")},leadingIcon={Icon(Icons.Default.Info,null)},onClick={moreActionsExpanded=false;onAlbumInfo(item)})}
-                            DropdownMenuItem(text={Text("Abrir letra")},leadingIcon={Icon(Icons.Default.MusicNote,null)},onClick={moreActionsExpanded=false;requestLyrics()})
                             DropdownMenuItem(text={Text(if(vinylEnabled)"Mostrar capa do álbum" else "Ativar visual de vinil")},leadingIcon={Icon(Icons.Default.Album,null)},onClick={moreActionsExpanded=false;onVinylToggle(!vinylEnabled)})
+                            DropdownMenuItem(text={Text(if(showSpectrum)"Ocultar espectro de áudio" else "Mostrar espectro de áudio")},leadingIcon={Icon(Icons.Default.Equalizer,null)},onClick={moreActionsExpanded=false;showSpectrum=!showSpectrum})
                             if(current?.uri?.scheme=="content")DropdownMenuItem(text={Text("Compartilhar arquivo de áudio")},leadingIcon={Icon(Icons.Default.Share,null)},onClick={
                                 moreActionsExpanded=false
                                 runCatching{Intent(Intent.ACTION_SEND).apply{type="audio/*";putExtra(Intent.EXTRA_STREAM,current.uri);addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)}.let{context.startActivity(Intent.createChooser(it,"Compartilhar faixa"))}}
@@ -161,7 +225,7 @@ import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
                 }
                 Spacer(Modifier.height(14.dp))
                 val p=if(scrubbing)preview else s.positionMs.toFloat()
-                Slider(value=p.coerceIn(0f,s.durationMs.coerceAtLeast(1).toFloat()),onValueChange={preview=it;scrubbing=true},onValueChangeFinished={player.seekTo(preview.toLong());scrubbing=false},valueRange=0f..s.durationMs.coerceAtLeast(1).toFloat(),colors=SliderDefaults.colors(thumbColor=albumAccent,activeTrackColor=albumAccent,inactiveTrackColor=Line))
+                MinimalPlayerSlider(value=p.coerceIn(0f,s.durationMs.coerceAtLeast(1).toFloat()),valueRange=0f..s.durationMs.coerceAtLeast(1).toFloat(),color=albumAccent,modifier=Modifier.fillMaxWidth(),onValueChange={preview=it;scrubbing=true},onValueChangeFinished={player.seekTo(preview.toLong());scrubbing=false})
                 Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Text(time(p.toLong()),color=Mu,style=MaterialTheme.typography.labelSmall);Text("-${time((s.durationMs-p.toLong()).coerceAtLeast(0))}",color=Mu,style=MaterialTheme.typography.labelSmall)}
                 Spacer(Modifier.height(12.dp))
                 Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.Center,verticalAlignment=Alignment.CenterVertically){
@@ -180,18 +244,19 @@ import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
                         Icon(if(s.repeatMode==androidx.media3.common.Player.REPEAT_MODE_ONE)Icons.Default.RepeatOne else Icons.Default.Repeat,contentDescription=when(s.repeatMode){androidx.media3.common.Player.REPEAT_MODE_ONE->"Repetir faixa";androidx.media3.common.Player.REPEAT_MODE_ALL->"Repetir fila";else->"Repetir desligado"},tint=if(s.repeatMode!=androidx.media3.common.Player.REPEAT_MODE_OFF)albumAccent else Mu,modifier=Modifier.size(20.dp))
                     }
                 }
-                Spacer(Modifier.height(16.dp))
-                Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(15.dp)).background(Color.White.copy(alpha=.055f)).padding(horizontal=13.dp,vertical=4.dp),verticalAlignment=Alignment.CenterVertically){Icon(Icons.Default.VolumeDown,"Volume",tint=Mu,modifier=Modifier.size(20.dp));Slider(value=volume,onValueChange={volume=it;audio.setStreamVolume(AudioManager.STREAM_MUSIC,(it*maxVolume).toInt().coerceIn(0,maxVolume),0)},modifier=Modifier.weight(1f).padding(horizontal=10.dp),valueRange=0f..1f,colors=SliderDefaults.colors(thumbColor=albumAccent,activeTrackColor=albumAccent,inactiveTrackColor=Line));Text("${(volume*100).toInt()}%",color=Mu,style=MaterialTheme.typography.labelSmall,modifier=Modifier.width(38.dp),textAlign=TextAlign.End)}
-                AudioSpectrumVisualizer(s.playing)
-                if(hasDesktopGrant&&desktopTrackId!=null){
-                    Spacer(Modifier.height(8.dp))
-                    OutlinedButton(onClick={confirmDesktopPlayback=true},modifier=Modifier.fillMaxWidth(),shape=RoundedCornerShape(14.dp)){
-                        Icon(Icons.Default.Cast,null,tint=MaterialTheme.colorScheme.primary)
-                        Spacer(Modifier.width(8.dp))
-                        Text("Tocar esta faixa no computador",color=Tx)
-                    }
+                Spacer(Modifier.height(8.dp))
+                Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically){
+                    Icon(Icons.Default.VolumeDown,"Volume",tint=Mu,modifier=Modifier.size(18.dp))
+                    MinimalPlayerSlider(value=volume,valueRange=0f..1f,color=albumAccent,modifier=Modifier.weight(1f).padding(horizontal=10.dp),onValueChange={volume=it;audio.setStreamVolume(AudioManager.STREAM_MUSIC,(it*maxVolume).toInt().coerceIn(0,maxVolume),0)})
+                    Text("${(volume*100).toInt()}%",color=Mu,style=MaterialTheme.typography.labelSmall,modifier=Modifier.width(34.dp),textAlign=TextAlign.End)
                 }
-                Spacer(Modifier.height(12.dp))
+                if(showSpectrum)AudioSpectrumVisualizer(s.playing)
+                TextButton(onClick=::requestLyrics,modifier=Modifier.align(Alignment.CenterHorizontally)){
+                    Icon(Icons.Default.MusicNote,null,tint=albumAccent,modifier=Modifier.size(18.dp))
+                    Spacer(Modifier.width(7.dp))
+                    Text("Letras",color=Tx)
+                    Icon(Icons.Default.KeyboardArrowUp,null,tint=Mu,modifier=Modifier.size(18.dp))
+                }
                 Spacer(Modifier.height(14.dp))
             }
         }
