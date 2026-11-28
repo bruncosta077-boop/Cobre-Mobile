@@ -7,7 +7,6 @@
 - Tocar no Desktop agora é um ícone compacto ao lado das ações da faixa, sem botão largo.
 - Letras ficam acessíveis no rodapé do player; espectro recolhido em Mais ações e fechado por padrão.
 - Barras de progresso e volume redesenhadas como linhas finas, com toque e arraste.
-- Build e publicação pendentes no GitHub Actions.
 
 ## 0.44.0-rc.1 — espectro local, estrutura organizada e pacote otimizado
 
